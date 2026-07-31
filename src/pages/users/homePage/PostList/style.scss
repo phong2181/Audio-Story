@@ -1,0 +1,728 @@
+.hp-page {
+    background: #f8f9fb;
+    min-height: 100vh;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.hp-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px 60px;
+}
+
+.hp-divider {
+    height: 1px;
+    background: #e2e8f0;
+    margin: 8px 0;
+}
+
+/* ===== HERO ===== */
+.hp-hero {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    color: #fff;
+    text-align: center;
+    padding: 60px 20px 50px;
+}
+
+.hp-hero-sub {
+    font-size: 12px;
+    color: #94a3b8;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+
+.hp-hero-title {
+    font-size: clamp(24px, 5vw, 48px);
+    font-weight: 800;
+    margin: 0 0 24px;
+    line-height: 1.2;
+}
+
+.hp-hero-accent {
+    color: #f97316;
+}
+
+.hp-hero-btns {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.hp-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #f97316;
+    color: #fff;
+    padding: 12px 28px;
+    border-radius: 50px;
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 15px;
+}
+
+.hp-btn-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    color: #ffee00d8;
+    padding: 12px 28px;
+    border-radius: 50px;
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 15px;
+    border: 2px solid #ffee00d8;
+}
+
+/* ===== SECTION COMMON ===== */
+.hp-section {
+    padding-top: 40px;
+}
+
+.hp-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.hp-section-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.hp-section-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: #1e293b;
+    margin: 0;
+}
+
+.hp-view-all {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    color: #f97316;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+/* ===== TRENDING ===== */
+.hp-trending-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    height: 420px;
+}
+
+.hp-trending-big {
+    position: relative;
+    border-radius: 14px;
+    overflow: hidden;
+    text-decoration: none;
+    display: block;
+    height: 100%;
+}
+
+.hp-trending-big-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.hp-trending-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, transparent 55%);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 16px;
+}
+
+.hp-rank-badge {
+    display: inline-block;
+    background: #f97316;
+    color: #fff;
+    font-weight: 800;
+    font-size: 13px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 8px;
+    align-self: flex-start;
+}
+
+.hp-trending-category {
+    font-size: 11px;
+    color: #fb923c;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin: 0 0 4px;
+}
+
+.hp-trending-title-big {
+    font-size: 18px;
+    font-weight: 800;
+    color: #fff;
+    margin: 0 0 8px;
+    line-height: 1.3;
+}
+
+.hp-trending-meta {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: #cbd5e1;
+}
+
+.hp-trending-small-grid {
+    display: grid;
+    grid-template-rows: repeat(5, 1fr);
+    gap: 8px;
+}
+
+.hp-trending-small {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    text-decoration: none;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
+}
+
+.hp-trending-small-img {
+    width: 56px;
+    height: 100%;
+    min-height: 56px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.hp-trending-small-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 10px;
+    flex: 1;
+    min-width: 0;
+}
+
+.hp-rank-badge-small {
+    font-size: 12px;
+    font-weight: 800;
+    color: #f97316;
+    flex-shrink: 0;
+    width: 24px;
+}
+
+.hp-trending-title-small {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.hp-trending-description-small {
+    white-space: nowrap;
+    /* Ép văn bản luôn nằm trên 1 dòng */
+    overflow: hidden;
+    /* Ẩn phần chữ bị thừa ra ngoài khung */
+    text-overflow: ellipsis;
+    /* Tự động thêm dấu ba chấm (...) ở cuối dòng */
+    width: 100%;
+    /* Đảm bảo phần tử chiếm hết chiều rộng thẻ cha */
+    font-size: 11px;
+    color: #64748b;
+}
+
+.hp-trending-meta-small {
+    font-size: 11px;
+    color: #94a3b8;
+    margin: 2px 0 0;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+/* ===== CHAPTERS ===== */
+.hp-chapter-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px; // Khoảng cách giữa các dòng chương
+    padding: 8px 0;
+}
+
+.hp-chapter-item {
+    display: grid;
+    // 🔥 CHÌA KHÓA: Chia dòng thành các cột cố định trải dài hết 100% width
+    // Cột 1 (Số): 50px | Cột 2 (Tên truyện/chương): chiếm hết phần còn lại | Cột 3 (Badge): 120px | Cột 4 (Thời gian): 160px | Cột 5 (Tai nghe): 30px
+    grid-template-columns: 50px 1fr 120px 160px 30px;
+    align-items: center;
+
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 16px 20px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s ease-in-out;
+    box-sizing: border-box;
+
+    &:hover {
+        border-color: #3b82f6;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.06);
+        transform: translateY(-1px);
+    }
+
+    &.hp-chapter-vip {
+        border-left: 4px solid #f59e0b; // Làm vạch vàng VIP dày hơn một chút cho đẹp giống ảnh
+    }
+
+    // Cột 1: Số thứ tự
+    .hp-chapter-index {
+        font-weight: 700;
+        color: #cbd5e1;
+        font-size: 1.1rem;
+
+    }
+
+    .badge-vip-client.home-badge {
+        background-color: #fef3c7; // Nền vàng nhạt
+        color: #d97706; // Chữ vàng đậm cam
+        border: 1px solid #fcd34d; // Viền vàng mềm
+
+        svg {
+            color: #d97706; // Icon ổ khóa màu vàng cam
+        }
+    }
+
+    .badge-free-client.home-badge {
+        background-color: #f0fdf4; // Nền xanh lá nhạt
+        color: #16a34a; // Chữ xanh lá đậm
+        border: 1px solid #bbf7d0; // Viền xanh mềm
+
+        svg {
+            color: #16a34a; // Icon khóa mở màu xanh
+        }
+    }
+
+    // Cột 2: Phần text thông tin truyện và chương
+    // Cột 2: Phần text thông tin truyện và chương
+    .hp-chapter-info-main {
+        min-width: 0; // Bí kíp bắt buộc: Giúp Grid item có thể co nhỏ hơn kích thước text bên trong
+        max-width: 100%; // Giới hạn không cho tràn quá phần cột được chia
+        display: block; // Đảm bảo phần tử hoạt động theo khối
+        overflow: hidden; // Ẩn phần chữ thừa đi
+        padding-right: 20px;
+
+        .hp-chapter-story {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin: 0 0 4px 0;
+
+            // 🔥 BỘ BA THẦN THÁNH ÉP DẤU CHI TIẾT ... TRÊN 1 DÒNG
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .hp-chapter-name {
+            font-weight: 700;
+            font-size: 1rem;
+            color: #1e293b;
+            margin: 0;
+
+            // 🔥 BỘ BA THẦN THÁNH ÉP DẤU CHI TIẾT ... TRÊN 1 DÒNG
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
+
+    // Cột 3: Cụm chứa Badge VIP/Free luôn căn giữa cột
+    .hp-chapter-badge-wrap {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+
+        .home-badge {
+            font-size: 0.8rem;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 70px; // Đảm bảo độ dài nút bằng nhau
+            justify-content: center;
+        }
+    }
+
+    // Cột 4: Lượt xem và thời gian cập nhật
+    .hp-chapter-time {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        font-size: 0.85rem;
+        color: #64748b;
+        gap: 16px; // Khoảng cách giữa mắt xem và thời gian
+
+        span {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+    }
+
+    // Cột 5: Icon tai nghe cuối dòng luôn ở góc phải ngoài cùng
+    .hp-chapter-icon {
+        color: #3b82f6; // Đổi sang màu xanh giống ảnh demo của bạn luôn nhé
+        font-size: 1.1rem;
+        justify-self: end; // Đẩy sát lề phải cột
+    }
+}
+
+// Responsive: Trên màn hình điện thoại nhỏ, chuyển về dạng flex dọc để không bị nén chữ
+@media (max-width: 768px) {
+    .hp-chapter-item {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 12px;
+
+        .hp-chapter-info-main {
+            flex: 1;
+            padding-right: 0;
+        }
+
+        .hp-chapter-badge-wrap,
+        .hp-chapter-time {
+            flex-basis: auto;
+        }
+
+        .hp-chapter-icon {
+            display: none; // Ẩn tai nghe trên mobile cho thoáng
+        }
+    }
+}
+
+/* ===== POSTS ===== */
+.hp-posts-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 16px;
+}
+
+.hp-post-featured {
+    text-decoration: none;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+    display: flex;
+    flex-direction: column;
+}
+
+.hp-post-img-wrap {
+    position: relative;
+}
+
+.hp-post-img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    display: block;
+}
+
+.hp-post-cat-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: #8b5cf6;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+}
+
+.hp-post-content {
+    padding: 16px;
+}
+
+.hp-post-title-featured {
+    font-size: 13px;
+    font-weight: 800;
+    color: #1e293b;
+    margin: 0 0 8px;
+    line-height: 1.4;
+}
+
+.hp-post-excerpt {
+    font-size: 13px;
+    color: #64748b;
+    margin: 0 0 12px;
+    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.hp-post-meta {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: #94a3b8;
+    flex-wrap: wrap;
+}
+
+.hp-post-small-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.hp-post-small {
+    display: flex;
+    gap: 12px;
+    text-decoration: none;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
+}
+
+.hp-post-small-img {
+    width: 110px;
+    height: 90px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.hp-post-small-content {
+    padding: 10px 12px 10px 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.hp-post-cat-tag {
+    font-size: 10px;
+    font-weight: 700;
+    color: #8b5cf6;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.hp-post-title-small {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 4px 0 6px;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* ===================================
+   TABLET — max-width: 768px
+=================================== */
+@media (max-width: 768px) {
+    .hp-hero {
+        padding: 40px 16px 36px;
+    }
+
+    /* Trending: card lớn chiếm full width, small scroll ngang */
+    .hp-trending-grid {
+        grid-template-columns: 1fr;
+        height: auto;
+    }
+
+    .hp-trending-big {
+        height: 260px;
+    }
+
+    .hp-trending-small-grid {
+        grid-template-rows: none;
+        grid-template-columns: repeat(5, 160px);
+        grid-auto-flow: column;
+        overflow-x: auto;
+        padding-bottom: 8px;
+        gap: 10px;
+        scrollbar-width: none;
+    }
+
+    .hp-trending-small-grid::-webkit-scrollbar {
+        display: none;
+    }
+
+    .hp-trending-small {
+        position: relative;
+        flex-direction: column;
+        align-items: stretch;
+        border-radius: 10px;
+        overflow: hidden;
+        height: 140px;
+    }
+
+    .hp-trending-small-img {
+        width: 100%;
+        height: 90px;
+        min-height: unset;
+    }
+
+    .hp-trending-small-info {
+        padding: 6px 8px;
+        gap: 6px;
+    }
+
+    .hp-rank-badge-small {
+        position: absolute;
+        top: 6px;
+        left: 6px;
+        background: #f97316;
+        color: #fff;
+        font-weight: 800;
+        font-size: 10px;
+        padding: 2px 6px;
+        border-radius: 4px;
+        width: auto;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+        z-index: 2;
+    }
+
+    /* Chapters: ẩn số thứ tự và icon */
+    .hp-chapter-index {
+        display: none;
+    }
+
+    .hp-chapter-icon {
+        display: none;
+    }
+
+    .hp-chapter-time {
+        font-size: 10px;
+    }
+
+    .hp-chapter-item {
+        padding: 10px 12px;
+    }
+
+    /* Posts: xếp dọc */
+    .hp-posts-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hp-post-img {
+        height: 180px;
+    }
+}
+
+/* ===================================
+   MOBILE — max-width: 480px
+=================================== */
+@media (max-width: 480px) {
+    .hp-chapter-item {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        padding: 10px 12px;
+        gap: 10px;
+        width: 100%;
+        box-sizing: border-box;
+        position: relative;
+    }
+
+    .hp-chapter-index {
+        font-size: 15px;
+        font-weight: bold;
+        flex-shrink: 0;
+        /* Giữ nguyên kích thước số thứ tự */
+    }
+
+    /* 🔥 ĐÂY LÀ ĐOẠN QUAN TRỌNG NHẤT: Khối chữ tự co giãn theo chiều rộng còn lại */
+    .hp-chapter-info-main {
+        flex: 1;
+        /* Chiếm hết khoảng trống giữa */
+        min-width: 0;
+        /* Mẹo CSS bắt buộc để kích hoạt text-overflow bên trong khối flex */
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .hp-chapter-story {
+        font-size: 11px;
+        color: #8c8c8c;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        /* Tên truyện dài tự động ... */
+    }
+
+    .hp-chapter-name {
+        font-size: 13px !important;
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        /* Tên chương dài tự động ... không bao giờ đè lên badge */
+    }
+
+    /* 🔥 Khối chứa các icon/badge bên phải */
+    .hp-chapter-meta-right {
+        display: flex;
+        flex-direction: column;
+        /* Xếp dọc Badge và View trên Mobile cho tiết kiệm diện tích */
+        align-items: flex-end;
+        gap: 4px;
+        flex-shrink: 0;
+        /* Tuyệt đối không cho cụm này bị bóp nghẹt */
+    }
+
+    .hp-chapter-badge-wrap {
+        display: flex;
+    }
+
+    .home-badge {
+        padding: 2px 6px;
+        font-size: 9px;
+    }
+
+    .hp-chapter-time {
+        display: flex;
+        align-items: center;
+        font-size: 10px;
+        color: #a6a6a6;
+    }
+
+    /* Ẩn bớt chữ thời gian (ví dụ: "2 giờ trước") trên Mobile màn nhỏ kẻo bị dài quá */
+    .hp-time-text {
+        display: none;
+    }
+
+    /* Ẩn cái tai nghe trên mobile cho đỡ rối mắt */
+    .hp-chapter-icon {
+        display: none;
+    }
+}

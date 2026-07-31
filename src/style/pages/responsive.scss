@@ -1,0 +1,74 @@
+$DESKTOP: 'DESKTOP';
+$MEDIUM_DEVICE: 'MEDIUM_DEVICE';
+$MOBILE_DEVICE: 'MOBILE_DEVICE';
+$TABLET_DEVICE: 'TABLET_DEVICE';
+$SMALL_DEVICE: 'SMALL_DEVICE';
+$BIG_DESKTOP: 'BIG_DESKTOP';
+
+@mixin respond-to($canvas) {
+    @if $canvas == $BIG_DESKTOP {
+        @media (min-width: 1440px) {
+            @content; 
+        }
+    }
+    @else if $canvas == $DESKTOP {
+        @media (min-width: 1200px) {
+            @content; 
+        }
+    }
+    @else if $canvas == $MEDIUM_DEVICE {
+        @media (min-width: 1024px) and (max-width: 1199px) {
+            @content; 
+        }
+    }
+    @else if $canvas == $TABLET_DEVICE {
+        @media (min-width: 760px) and (max-width: 1024px) {
+            @content; 
+        }
+    }
+    @else if $canvas == $MOBILE_DEVICE {
+        @media (min-width: 300px) and (max-width: 759px) { 
+            @content; 
+            .slider-item {
+                position: relative; // Thiết lập làm gốc tọa độ cho các thành phần con
+                overflow: hidden;
+                border-radius: 12px;
+                background: none !important; // Ghi đè loại bỏ màu nền gradient
+
+                img {
+                width: 100%;
+                height: auto;
+                display: block;
+                }
+
+                /* Phần chứa chữ (First slide label...) */
+                .slider-caption { 
+                position: absolute; // Đưa chữ nằm đè lên ảnh
+                top: 50%;           // Căn giữa theo chiều dọc
+                left: 50%;          // Căn giữa theo chiều ngang
+                transform: translate(-50%, -50%); // Di chuyển về tâm chính xác
+                
+                width: 90%;         // Đảm bảo chữ không dính sát mép ảnh
+                text-align: center;
+                color: white;       // Đảm bảo chữ trắng nổi trên nền ảnh
+                background: transparent !important; // Loại bỏ mọi màu nền của text
+                z-index: 2;         // Đảm bảo chữ nằm trên cùng
+                }
+
+                /* Tạo một lớp phủ tối nhẹ để chữ dễ đọc hơn (Tùy chọn) */
+                &::after {
+                content: "";
+                position: absolute;
+                top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(0, 0, 0, 0.3); // Phủ lớp đen mờ 30%
+                z-index: 1;
+                }
+            }
+        }
+    }
+    @else if $canvas == $SMALL_DEVICE {
+        @media (max-width: 600px) { 
+            @content; 
+        }
+    }
+}

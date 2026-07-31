@@ -1,0 +1,166 @@
+// Khai báo biến màu sắc cho dễ quản lý
+$bg-card: #1e293b;
+$bg-header: #334155;
+$primary-color: #3b82f6;
+$accent-color: #f59e0b;
+$text-main: #e2e8f0;
+$text-muted: #94a3b8;
+
+.announcement-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.75); // Nền tối trong suốt
+    backdrop-filter: blur(6px); // Làm mờ hậu cảnh chuyên nghiệp
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 20px;
+    transition: all 0.3s ease;
+}
+
+.announcement-card {
+    background: $bg-card;
+    width: 100%;
+    max-width: 480px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+
+    .announcement-header {
+        padding: 20px;
+        background: $bg-header;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+
+        .title-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            .icon-circle {
+                width: 36px;
+                height: 36px;
+                background: rgba($accent-color, 0.2);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                
+                .bell-icon {
+                    color: $accent-color;
+                    font-size: 18px;
+                    animation: ring 2s ease infinite;
+                }
+            }
+
+            h3 {
+                margin: 0;
+                font-size: 18px;
+                font-weight: 600;
+                color: #fff;
+            }
+        }
+
+        .close-x {
+            background: transparent;
+            border: none;
+            color: $text-muted;
+            font-size: 20px;
+            cursor: pointer;
+            transition: 0.2s;
+            &:hover {
+                color: #ef4444;
+                transform: rotate(90deg);
+            }
+        }
+    }
+
+    .announcement-body {
+        padding: 30px 25px;
+        max-height: 60vh;
+        overflow-y: auto;
+
+        .html-content {
+            color: $text-main;
+            line-height: 1.6;
+            font-size: 16px;
+            text-align: center;
+
+            // Định dạng cho các tag HTML nếu admin chèn vào
+            b, strong { color: #fff; font-weight: 700; }
+            a { color: $primary-color; text-decoration: underline; }
+            p { margin-bottom: 10px; }
+        }
+    }
+
+    .announcement-footer {
+        padding: 20px;
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.1);
+
+        .btn-confirm, .btn-link {
+            padding: 10px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-confirm {
+            background: #475569;
+            color: white;
+            border: none;
+            &:hover { background: #64748b; }
+        }
+
+        .btn-link {
+            background: $primary-color;
+            color: white;
+            border: none;
+            &:hover {
+                background: darken($primary-color, 10%);
+                box-shadow: 0 0 15px rgba($primary-color, 0.4);
+            }
+        }
+    }
+}
+
+// Hiệu ứng hiện thông báo từ dưới lên
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(30px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+// Hiệu ứng chuông rung nhẹ thu hút sự chú ý
+@keyframes ring {
+    0%, 100% { transform: rotate(0); }
+    10%, 30% { transform: rotate(15deg); }
+    20%, 40% { transform: rotate(-15deg); }
+    50% { transform: rotate(0); }
+}
+
+// Reponsive cho điện thoại
+@media (max-width: 480px) {
+    .announcement-card {
+        max-width: 100%;
+        .announcement-footer {
+            flex-direction: column;
+            .btn-confirm, .btn-link { width: 100%; justify-content: center; }
+        }
+    }
+}

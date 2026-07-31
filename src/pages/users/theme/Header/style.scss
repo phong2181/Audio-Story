@@ -1,0 +1,426 @@
+@use 'sass:map';
+@import 'style/pages/theme';
+$primary-color: #764ba2;
+$secondary-color: #667eea;
+$text-color: #475569;
+$bg-color: #ffffff;
+$light-bg: #f1f5f9;
+
+.site-header {
+    background: $bg-color;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    width: 100%;
+
+    .header-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0.5rem 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        height: 70px;
+    }
+
+    /* Logo Section */
+    .logo-wrapper {
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        gap: 8px;
+
+        .logo-icon {
+            background: linear-gradient(135deg, $secondary-color 0%, $primary-color 100%);
+            color: #ffffff;
+            width: 38px;
+            height: 38px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+
+            img {
+                width: 30px;
+                height: 30px;
+            }
+        }
+
+
+        .logo-text {
+            font-weight: 700;
+            font-size: 20px;
+            color: #333333;
+            font-family: 'system-ui', sans-serif;
+
+            .logo-sub {
+                color: $primary-color;
+            }
+        }
+    }
+
+    /* Search Bar */
+    .search-bar {
+        display: flex;
+        align-items: center;
+        background: $light-bg;
+        border-radius: 25px;
+        padding: 2px 4px 2px 16px;
+        width: 35%;
+        max-width: 450px;
+        transition: all 0.3s ease;
+
+        &:focus-within {
+            box-shadow: 0 0 0 2px rgba(118, 75, 162, 0.2);
+            background: $bg-color;
+            border: 1px solid $primary-color;
+        }
+
+        input {
+            border: none;
+            background: transparent;
+            outline: none;
+            width: 100%;
+            padding: 8px 0;
+            font-size: 14px;
+            color: $text-color;
+
+            &::placeholder {
+                color: #94a3b8;
+            }
+        }
+
+        .search-btn {
+            background: linear-gradient(135deg, $secondary-color 0%, $primary-color 100%);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.2s;
+
+            &:hover {
+                opacity: 0.9;
+            }
+        }
+    }
+
+    /* Desktop Navigation */
+    // ✅ Fix
+    .nav-menu {
+        display: flex;
+        gap: 1.5rem;
+
+        .nav-item {
+            text-decoration: none;
+            color: $text-color; // ← bỏ !important ở đây
+            font-weight: 500;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+
+            &:hover {
+                color: $primary-color; // ← bỏ !important ở đây
+                background: rgba($primary-color, 0.1);
+            }
+
+            &.active {
+                background: linear-gradient(135deg, $secondary-color 0%, $primary-color 100%);
+                color: #ffffff; // ← giờ sẽ thắng vì specificity cao hơn (.nav-menu .nav-item.active)
+                box-shadow: 0 4px 12px rgba($primary-color, 0.3);
+
+                svg {
+                    color: #ffffff;
+                }
+            }
+        }
+    }
+
+    .mobile-nav-links {
+        .nav-item {
+            &.active {
+                background: $primary-color;
+                color: white;
+            }
+        }
+    }
+
+    /* Cho Mobile Menu */
+    .mobile-nav-links {
+        .nav-item {
+
+            // Đảm bảo các thẻ trong mobile menu cũng dùng NavLink
+            &.active {
+                background: $primary-color !important;
+                color: white !important;
+            }
+        }
+    }
+
+    /* Desktop User Section */
+    .user-section {
+        .user-logged {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            .user-name {
+                font-size: 13px;
+                font-weight: 600;
+                color: $text-color;
+            }
+
+            .profile-btn,
+            .logout-btn {
+                background: $light-bg;
+                color: $text-color;
+                width: 34px;
+                height: 34px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                text-decoration: none;
+                border: none;
+                cursor: pointer;
+                transition: all 0.2s;
+
+                &:hover {
+                    background: $primary-color;
+                    color: white;
+                }
+            }
+        }
+
+        .user-guest {
+            display: flex;
+            gap: 8px;
+
+            .login-btn {
+                text-decoration: none;
+                color: $primary-color;
+                border: 1px solid $primary-color;
+                padding: 6px 14px;
+                border-radius: 20px;
+                font-size: 13px;
+                font-weight: 600;
+                transition: 0.2s;
+
+                &:hover {
+                    background: $primary-color;
+                    color: white;
+                }
+            }
+
+            .register-btn {
+                text-decoration: none;
+                background: linear-gradient(135deg, $secondary-color 0%, $primary-color 100%);
+                color: white;
+                padding: 6px 14px;
+                border-radius: 20px;
+                font-size: 13px;
+                font-weight: 600;
+                transition: opacity 0.2s;
+
+                &:hover {
+                    opacity: 0.9;
+                }
+            }
+        }
+    }
+
+    /* Nút Toggle Mobile & Tablet */
+    .mobile-menu-toggle {
+        display: none;
+        background: transparent;
+        border: none;
+        font-size: 22px;
+        color: $text-color;
+        cursor: pointer;
+    }
+
+    .mobile-bottom-nav {
+        display: none;
+    }
+
+    /* Mobile Menu (Dropdown) */
+    .mobile-menu {
+        position: absolute;
+        top: 70px;
+        left: 0;
+        width: 100%;
+        background: $bg-color;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        border-top: 1px solid #e2e8f0;
+
+        // Slide animation properties
+        transform: translateY(-15px);
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s;
+        z-index: 999;
+
+        &.open {
+            transform: translateY(0);
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+
+        .mobile-nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+
+            a,
+            button {
+                text-decoration: none;
+                color: $text-color;
+                font-weight: 500;
+                font-size: 14px;
+                padding: 10px 14px;
+                border-radius: 6px;
+                background: $light-bg;
+                text-align: left;
+                border: none;
+                cursor: pointer;
+                transition: all 0.2s;
+
+                &:hover {
+                    background: rgba(118, 75, 162, 0.1);
+                    color: $primary-color;
+                }
+            }
+
+            .mobile-logout {
+                background: #fecaca;
+                color: #b91c1c;
+                font-weight: 600;
+            }
+        }
+    }
+
+    /* ================= TABLET BREAKPOINT ================= */
+    @media (max-width: 1024px) {
+        .header-container {
+            padding: 0.5rem 1.2rem;
+        }
+
+        .search-bar {
+            width: 40%;
+        }
+
+        .nav-menu {
+            gap: 1rem;
+        }
+    }
+
+    /* ================= MOBILE BREAKPOINT ================= */
+    @media (max-width: 768px) {
+        .header-container {
+            height: 64px;
+            padding: 0.5rem 1rem;
+        }
+
+        .search-bar {
+            width: 40%; // Thu nhỏ ô search để chừa chỗ cho các nút bấm
+
+            input {
+                font-size: 12px;
+            }
+
+            .search-btn {
+                padding: 6px 10px;
+
+                svg {
+                    font-size: 12px;
+                }
+            }
+        }
+
+        .nav-menu,
+        .user-section {
+            display: none; // Ẩn menu desktop để dùng hamburger menu
+        }
+
+        .mobile-menu-toggle {
+            display: block; // Hiện nút menu trên mobile và tablet
+        }
+
+        .mobile-menu {
+            top: 64px;
+        }
+
+        .mobile-bottom-nav {
+            display: flex;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 1100;
+            height: 60px;
+            background: rgba(15, 23, 42, 0.98);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 -12px 20px rgba(15, 23, 42, 0.08);
+            backdrop-filter: blur(10px);
+        }
+
+        .mobile-bottom-nav .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            width: 25%;
+            min-height: 52px;
+            color: #cbd5e1;
+            text-decoration: none;
+            font-size: 11px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: color 0.2s ease, transform 0.2s ease;
+        }
+
+        .mobile-bottom-nav .bottom-nav-item svg {
+            font-size: 20px;
+        }
+
+        .mobile-bottom-nav .bottom-nav-item.active,
+        .mobile-bottom-nav .bottom-nav-item:hover {
+            color: $primary-color;
+            transform: translateY(-1px);
+        }
+
+        .mobile-bottom-nav .nav-label {
+            font-size: 10px;
+            line-height: 1.2;
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .app-layout {
+        padding-bottom: calc(60px + 12px);
+    }
+
+    .layout-content {
+        padding-bottom: 84px;
+    }
+}

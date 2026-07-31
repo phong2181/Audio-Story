@@ -1,0 +1,321 @@
+// Biến màu sắc hệ thống (Dũng có thể thay đổi theo theme của Dashboard Admin nhé)
+$primary-color: #6c63ff;
+$success-color: #2ecc71;
+$warning-color: #f1c40f;
+$danger-color: #e74c3c;
+$text-main: #2c3e50;
+$text-sub: #7f8c8d;
+$bg-body: #f8f9fa;
+$border-color: #edf2f7;
+
+.membership-manager {
+    padding: 24px;
+    background-color: $bg-body;
+    min-height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+    &__header {
+        margin-bottom: 24px;
+        h2 {
+            margin: 0 0 6px 0;
+            color: $text-main;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        p {
+            margin: 0;
+            color: $text-sub;
+            font-size: 14px;
+        }
+    }
+
+    // Khu vực Thống kê Cards
+    &__overview {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 20px;
+        margin-bottom: 28px;
+
+        .overview-card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+
+            &__icon {
+                width: 48px;
+                height: 48px;
+                border-radius: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 20px;
+
+                &--revenue { background: rgba($primary-color, 0.1); color: $primary-color; }
+                &--active { background: rgba($success-color, 0.1); color: $success-color; }
+                &--warning { background: rgba($warning-color, 0.1); color: $warning-color; }
+            }
+
+            &__info {
+                span {
+                    display: block;
+                    font-size: 13px;
+                    color: $text-sub;
+                    margin-bottom: 4px;
+                }
+                h3 {
+                    margin: 0;
+                    font-size: 20px;
+                    color: $text-main;
+                    font-weight: 700;
+                }
+            }
+        }
+    }
+
+    // Thanh lọc Bộ dữ liệu
+    &__filter-bar {
+        background: #fff;
+        padding: 16px 20px;
+        border-radius: 12px 12px 0 0;
+        border-bottom: 1px solid $border-color;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+
+        .filter-search {
+            position: relative;
+            flex: 1;
+            max-width: 400px;
+            min-width: 250px;
+
+            &__icon {
+                position: absolute;
+                left: 14px;
+                top: 50%;
+                transform: translateY(-50%);
+                color: $text-sub;
+                font-size: 14px;
+            }
+
+            input {
+                width: 100%;
+                padding: 10px 16px 10px 40px;
+                border-radius: 8px;
+                border: 1px solid #e2e8f0;
+                outline: none;
+                font-size: 14px;
+                transition: border-color 0.2s;
+
+                &:focus {
+                    border-color: $primary-color;
+                }
+            }
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 12px;
+
+            .filter-select {
+                padding: 10px 16px;
+                border-radius: 8px;
+                border: 1px solid #e2e8f0;
+                background-color: #fff;
+                outline: none;
+                font-size: 14px;
+                color: $text-main;
+                cursor: pointer;
+
+                &:focus {
+                    border-color: $primary-color;
+                }
+            }
+        }
+    }
+
+    // Khung Bảng Dữ Liệu
+    &__table-wrapper {
+        background: #fff;
+        border-radius: 0 0 12px 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        overflow-x: auto;
+    }
+}
+
+// Cấu trúc Table chi tiết
+.membership-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 14px;
+
+    thead {
+        background-color: #fcfdfe;
+        tr {
+            border-bottom: 1px solid $border-color;
+        }
+        th {
+            padding: 16px 20px;
+            color: $text-sub;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+    }
+
+    tbody {
+        tr {
+            border-bottom: 1px solid $border-color;
+            transition: background-color 0.2s;
+
+            &:last-child { border-bottom: none; }
+            &:hover { background-color: #fdfdfd; }
+        }
+
+        td {
+            padding: 16px 20px;
+            color: $text-main;
+            vertical-align: middle;
+        }
+    }
+
+    // Khối User Column
+    &__user {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        .user-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background-color: rgba($primary-color, 0.1);
+            color: $primary-color;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+
+            &__name {
+                font-weight: 600;
+                color: $text-main;
+            }
+            &__email {
+                font-size: 12px;
+                color: $text-sub;
+                margin-top: 2px;
+            }
+        }
+    }
+}
+
+// Các Badges nhãn trạng thái và loại gói
+.plan-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: #fff9db;
+    color: #f0932b;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid #ffe066;
+
+    svg { font-size: 11px; }
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+
+    &--active {
+        background-color: rgba($success-color, 0.1);
+        color: $success-color;
+    }
+
+    &--expired {
+        background-color: rgba($danger-color, 0.1);
+        color: $danger-color;
+    }
+}
+
+.action-btn-trigger {
+    background: none;
+    border: none;
+    color: $text-sub;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 4px;
+    transition: background-color 0.2s, color 0.2s;
+
+    &:hover {
+        background-color: #f1f3f5;
+        color: $text-main;
+    }
+}
+
+.membership-table__user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-weight: 600;
+    font-size: 16px;
+    color: #fff;
+
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+
+    transition: all 0.2s ease;
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    &:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+    }
+}
+
+.avatar-fallback {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-transform: uppercase;
+}

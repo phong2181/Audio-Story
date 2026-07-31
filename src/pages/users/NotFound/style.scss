@@ -1,0 +1,140 @@
+$primary-color: #6366f1;
+$primary-hover: #4f46e5;
+$text-dark: #1e293b;
+$text-muted: #64748b;
+
+.not-found-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8fafc;
+  padding: 20px;
+  font-family: 'Segoe UI', Roboto, sans-serif;
+  box-sizing: border-box;
+
+  .not-found-content {
+    text-align: center;
+    max-width: 550px;
+    width: 100%;
+    background: #ffffff;
+    padding: 50px 40px;
+    border-radius: 24px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+    // Hiệu ứng số 404 lớn ấn tượng
+    .error-code {
+      font-size: 7.5rem;
+      font-weight: 900;
+      line-height: 1;
+      color: $text-dark;
+      letter-spacing: -2px;
+      margin-bottom: 10px;
+
+      span {
+        color: $primary-color;
+        display: inline-block;
+        animation: float 3s ease-in-out infinite; // Hiệu ứng số 0 bay nhẹ
+      }
+    }
+
+    .error-icon {
+      color: #f59e0b; // Màu vàng cảnh báo
+      margin-bottom: 25px;
+      animation: pulse 2s infinite;
+    }
+
+    h2 {
+      font-size: 1.8rem;
+      color: $text-dark;
+      font-weight: 700;
+      margin-bottom: 15px;
+    }
+
+    .error-message {
+      font-size: 1rem;
+      color: $text-muted;
+      line-height: 1.6;
+      margin-bottom: 35px;
+    }
+
+    // Phần cấu trúc các nút bấm
+    .action-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+
+      .btn-back, .btn-home {
+        padding: 12px 24px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .btn-back {
+        background-color: #f1f5f9;
+        color: #334155;
+        border: 1px solid #e2e8f0;
+
+        &:hover {
+          background-color: #e2e8f0;
+          color: $text-dark;
+        }
+      }
+
+      .btn-home {
+        background-color: $primary-color;
+        color: #ffffff;
+        border: none;
+
+        &:hover {
+          background-color: $primary-hover;
+          box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+      }
+    }
+  }
+}
+
+// ─── Keyframes Hiệu ứng động ───────────────────────────────────
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.9; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+// Responsive thiết bị di động
+@media (max-width: 576px) {
+  .not-found-container {
+    .not-found-content {
+      padding: 40px 20px;
+
+      .error-code {
+        font-size: 5.5rem;
+      }
+
+      h2 {
+        font-size: 1.5rem;
+      }
+
+      .action-buttons {
+        flex-direction: column; // Chuyển nút thành hàng dọc trên điện thoại
+        
+        .btn-back, .btn-home {
+          width: 100%;
+        }
+      }
+    }
+  }
+}

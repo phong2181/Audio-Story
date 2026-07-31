@@ -1,0 +1,247 @@
+.transaction-stats {
+    padding: 24px;
+    background-color: #f8fafc;
+    min-height: 100vh;
+
+    // Header Section
+    &__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+
+        .header-title {
+            h2 {
+                font-size: 24px;
+                color: #0f172a;
+                margin: 0 0 4px 0;
+                font-weight: 600;
+            }
+            p {
+                font-size: 14px;
+                color: #64748b;
+                margin: 0;
+            }
+        }
+
+        .export-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background-color: #10b981; // Màu xanh emerald bắt mắt
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+
+            &:hover {
+                background-color: #059669;
+                transform: translateY(-1px);
+            }
+        }
+    }
+
+    // Toolbar (Search & Filters)
+    &__toolbar {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 20px;
+        background-color: white;
+        padding: 16px;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+        .search-box {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+
+            .search-icon {
+                position: absolute;
+                left: 14px;
+                color: #94a3b8;
+            }
+
+            input {
+                width: 100%;
+                padding: 10px 10px 10px 40px;
+                border: 1px solid #e2e8f0;
+                border-radius: 8px;
+                font-size: 14px;
+                outline: none;
+                transition: border-color 0.2s;
+
+                &:focus {
+                    border-color: #4f46e5;
+                }
+            }
+        }
+
+        .filter-box {
+            display: flex;
+            align-items: center;
+            position: relative;
+
+            .filter-icon {
+                position: absolute;
+                left: 12px;
+                color: #94a3b8;
+                pointer-events: none;
+            }
+
+            select {
+                padding: 10px 32px 10px 36px;
+                border: 1px solid #e2e8f0;
+                border-radius: 8px;
+                font-size: 14px;
+                outline: none;
+                background-color: white;
+                cursor: pointer;
+                appearance: none; // Ẩn mũi tên mặc định để custom css nếu muốn
+
+                &:focus {
+                    border-color: #4f46e5;
+                }
+            }
+        }
+    }
+
+    // Table Styling
+    &__table-wrapper {
+        background-color: white;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+
+        .transaction-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 14px;
+
+            th {
+                background-color: #f1f5f9;
+                color: #475569;
+                padding: 14px 16px;
+                font-weight: 600;
+                border-bottom: 1px solid #e2e8f0;
+            }
+
+            td {
+                padding: 14px 16px;
+                border-bottom: 1px solid #f1f5f9;
+                color: #334155;
+                vertical-align: middle;
+            }
+
+            tr:hover td {
+                background-color: #f8fafc; // Hiệu ứng hover dòng bảng
+            }
+
+            .empty-row {
+                text-align: center;
+                padding: 40px;
+                color: #94a3b8;
+                font-style: italic;
+            }
+
+            .tx-code {
+                font-family: 'Courier New', Courier, monospace;
+                font-weight: bold;
+                color: #4f46e5;
+            }
+
+            .user-info {
+                display: flex;
+                flex-direction: column;
+                strong {
+                    color: #1e293b;
+                }
+                span {
+                    font-size: 12px;
+                    color: #64748b;
+                }
+            }
+
+            .membership-plan {
+                background-color: #eff6ff;
+                color: #1d4ed8;
+                padding: 4px 8px;
+                border-radius: 6px;
+                font-weight: 500;
+                font-size: 13px;
+            }
+
+            .tx-amount {
+                color: #0f172a;
+            }
+
+            .tx-time {
+                color: #64748b;
+                font-size: 13px;
+            }
+
+            // Status Badges
+            .status-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                padding: 4px 10px;
+                border-radius: 20px;
+                font-size: 12px;
+                font-weight: 500;
+
+                &--success {
+                    background-color: #d1fae5;
+                    color: #065f46;
+                }
+                &--pending {
+                    background-color: #fef3c7;
+                    color: #92400e;
+                }
+                &--failed {
+                    background-color: #fee2e2;
+                    color: #991b1b;
+                }
+            }
+        }
+    }
+
+    // Pagination
+    &__pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 16px;
+        margin-top: 20px;
+
+        span {
+            font-size: 14px;
+            color: #475569;
+        }
+
+        button {
+            background-color: white;
+            border: 1px solid #e2e8f0;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+
+            &:hover:not(:disabled) {
+                background-color: #f1f5f9;
+                border-color: #cbd5e1;
+            }
+
+            &:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+        }
+    }
+}

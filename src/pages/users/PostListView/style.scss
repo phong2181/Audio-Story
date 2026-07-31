@@ -1,0 +1,388 @@
+// Variables
+$primary-color: #2563eb;
+$primary-hover: #1d4ed8;
+$text-main: #1f2937;
+$text-muted: #6b7280;
+$bg-body: #f9fafb;
+$border-color: #e5e7eb;
+$white: #ffffff;
+$tablet: 768px;
+$desktop: 1024px;
+
+.post-list-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 15px;
+  font-family: 'Inter', -apple-system, sans-serif;
+  color: $text-main;
+  background-color: $bg-body;
+
+  // Hero Section
+  .list-hero {
+    text-align: center;
+    margin-bottom: 40px;
+
+    .hero-title {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: $text-main;
+      margin-bottom: 12px;
+
+      @media (min-width: $tablet) {
+        font-size: 2.8rem;
+      }
+    }
+
+    .hero-subtitle {
+      font-size: 1.1rem;
+      color: $text-muted;
+      max-width: 600px;
+      margin: 0 auto 24px;
+      line-height: 1.6;
+    }
+
+    // Search Bar
+    .search-bar {
+      position: relative;
+      max-width: 500px;
+      margin: 0 auto;
+
+      .search-icon {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: $text-muted;
+      }
+
+      input {
+        width: 100%;
+        padding: 14px 16px 14px 48px;
+        border: 1px solid $border-color;
+        border-radius: 30px;
+        font-size: 1rem;
+        outline: none;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+
+        &:focus {
+          border-color: $primary-color;
+          box-shadow: 0 0 0 4px rgba($primary-color, 0.15);
+        }
+      }
+    }
+  }
+
+  // Featured Post Section
+  .featured-section {
+    margin-bottom: 40px;
+
+    .featured-card {
+      display: grid;
+      grid-template-columns: 1fr;
+      background: $white;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+
+      @media (min-width: $tablet) {
+        grid-template-columns: 1.2fr 1fr;
+      }
+
+      .featured-image {
+        height: 300px;
+        @media (min-width: $tablet) {
+          height: 100%;
+          min-height: 380px;
+        }
+
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+      }
+
+      .featured-info {
+        padding: 30px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+
+        .post-tag {
+          align-self: flex-start;
+          background-color: rgba($primary-color, 0.1);
+          color: $primary-color;
+          padding: 4px 12px;
+          border-radius: 20px;
+          font-size: 0.85rem;
+          font-weight: 600;
+          margin-bottom: 16px;
+        }
+
+        .featured-title {
+          font-size: 1.6rem;
+          font-weight: 700;
+          line-height: 1.3;
+          margin-bottom: 12px;
+
+          @media (min-width: $tablet) {
+            font-size: 2rem;
+          }
+        }
+
+        .featured-excerpt {
+          color: $text-muted;
+          line-height: 1.6;
+          font-size: 1rem;
+          margin-bottom: 24px;
+        }
+
+        .featured-meta {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          border-top: 1px solid $border-color;
+          padding-top: 20px;
+
+          .post-date {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9rem;
+            color: $text-muted;
+          }
+
+          .btn-read-more {
+            background-color: $primary-color;
+            color: $white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s ease;
+
+            &:hover {
+              background-color: $primary-hover;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Category Tabs
+  .category-tabs {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+    margin-bottom: 30px;
+    border-bottom: 1px solid $border-color;
+
+    // Ẩn scrollbar thô sơ trên mobile nhưng vẫn kéo được
+    &::-webkit-scrollbar {
+      height: 4px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background-color: transparent;
+    }
+
+    .tab-item {
+      white-space: nowrap;
+      background: none;
+      border: none;
+      padding: 10px 20px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: $text-muted;
+      cursor: pointer;
+      position: relative;
+      transition: color 0.2s ease;
+
+      &:hover {
+        color: $text-main;
+      }
+
+      &.active {
+        color: $primary-color;
+        font-weight: 600;
+
+        &::after {
+          content: '';
+          position: absolute;
+          bottom: -10px;
+          left: 0;
+          width: 100%;
+          height: 3px;
+          background-color: $primary-color;
+          border-radius: 2px;
+        }
+      }
+    }
+  }
+
+  // Grid List
+  .posts-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+
+    @media (min-width: $tablet) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media (min-width: $desktop) {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .post-card {
+      background-color: $white;
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+      &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      }
+
+      .card-image {
+        position: relative;
+        height: 200px;
+
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .card-tag {
+          position: absolute;
+          top: 12px;
+          left: 12px;
+          background-color: rgba($white, 0.9);
+          color: $text-main;
+          padding: 4px 10px;
+          border-radius: 6px;
+          font-size: 0.75rem;
+          font-weight: 600;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+      }
+
+      .card-body {
+        padding: 20px;
+        flex-grow: 1;
+
+        .card-date {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 0.8rem;
+          color: $text-muted;
+          margin-bottom: 8px;
+        }
+
+        .card-title {
+          font-size: 1.15rem;
+          font-weight: 700;
+          line-height: 1.4;
+          margin-bottom: 10px;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+          color: $text-main;
+        }
+
+        .card-excerpt {
+          font-size: 0.9rem;
+          color: $text-muted;
+          line-height: 1.5;
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+      }
+
+      .card-footer {
+        padding: 0 20px 20px;
+        background-color: $white;
+
+        .btn-link {
+          background: none;
+          border: none;
+          color: $primary-color;
+          font-weight: 600;
+          font-size: 0.9rem;
+          cursor: pointer;
+          padding: 0;
+          display: inline-flex;
+          align-items: center;
+          transition: color 0.2s ease;
+
+          &:hover {
+            color: $primary-hover;
+            text-decoration: underline;
+          }
+        }
+      }
+    }
+  }
+
+  // No Results State
+  .no-results {
+    text-align: center;
+    padding: 60px 0;
+    color: $text-muted;
+    font-size: 1.1rem;
+  }
+
+  // Pagination
+  .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 50px;
+
+    .page-btn {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid $border-color;
+      background-color: $white;
+      border-radius: 8px;
+      color: $text-main;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s ease;
+
+      &:hover:not(.disabled):not(.active) {
+        border-color: $primary-color;
+        color: $primary-color;
+        background-color: rgba($primary-color, 0.05);
+      }
+
+      &.active {
+        background-color: $primary-color;
+        border-color: $primary-color;
+        color: $white;
+        cursor: default;
+      }
+
+      &.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+  }
+}

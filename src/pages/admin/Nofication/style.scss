@@ -1,0 +1,151 @@
+.admin-form-noti {
+    max-width: 650px;
+    margin: 20px auto;
+    background-color: #ffffff;
+    padding: 28px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(15, 23, 42, 0.05);
+    border: 1px solid #e2e8f0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+    h3 {
+        font-size: 20px;
+        color: #0f172a;
+        margin-top: 0;
+        margin-bottom: 24px;
+        font-weight: 600;
+        border-bottom: 2px solid #f1f5f9;
+        padding-bottom: 12px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 20px;
+
+        label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #475569;
+        }
+
+        input[type="text"] {
+            padding: 10px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #1e293b;
+            outline: none;
+            transition: all 0.2s ease-in-out;
+
+            &:focus {
+                border-color: #4f46e5; // Màu xanh Indigo hiện đại
+                box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            }
+
+            &::placeholder {
+                color: #94a3b8;
+            }
+        }
+
+        textarea {
+            padding: 12px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #1e293b;
+            outline: none;
+            resize: vertical; // Cho phép kéo rộng theo chiều dọc
+            font-family: inherit;
+            transition: all 0.2s ease-in-out;
+
+            &:focus {
+                border-color: #4f46e5;
+                box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            }
+        }
+
+        // Style riêng cho cụm Checkbox kích hoạt inline
+        &.form-inline {
+            flex-direction: row;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            margin-top: 8px;
+            margin-bottom: 24px;
+            background-color: #f8fafc;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px dashed #e2e8f0;
+
+            input[type="checkbox"] {
+                width: 16px;
+                height: 16px;
+                cursor: pointer;
+                accent-color: #4f46e5; // Custom màu tick của checkbox
+            }
+
+            label {
+                cursor: pointer;
+                color: #334155;
+                user-select: none;
+                font-weight: 500;
+            }
+        }
+    }
+
+    button[type="submit"] {
+        width: 100%;
+        padding: 11px;
+        background-color: #4f46e5;
+        color: #ffffff;
+        border: none;
+        border-radius: 8px;
+        font-size: 15px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        &:hover:not(:disabled) {
+            background-color: #4338ca;
+            transform: translateY(-1px);
+        }
+
+        &:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        &:disabled {
+            background-color: #94a3b8;
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+    }
+}
+
+// Trạng thái Loading và Error bao ngoài khi fetch dữ liệu
+.admin-noti-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    color: #64748b;
+    font-size: 15px;
+    font-style: italic;
+}
+
+.admin-noti-error {
+    text-align: center;
+    padding: 20px;
+    background-color: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fee2e2;
+    border-radius: 8px;
+    max-width: 650px;
+    margin: 20px auto;
+    font-size: 14px;
+}

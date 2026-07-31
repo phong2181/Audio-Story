@@ -1,0 +1,336 @@
+// Variables màu sắc hiện đại
+$primary-color: #6366f1; // Indigo làm chủ đạo
+$primary-hover: #4f46e5;
+$accent-color: #ff4757; // Màu badge phổ biến
+$bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+$card-bg: #ffffff;
+$text-main: #2d3436;
+$text-muted: #636e72;
+
+// Gói màu đặc trưng (Silver, Gold, Diamond)
+$color-silver: #a1a1aa;
+$color-gold: #eab308;
+$color-diamond: #06b6d4;
+
+.membership-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 60px 20px;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  color: $text-main;
+
+  .membership-header {
+    text-align: center;
+    margin-bottom: 50px;
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 15px;
+      background: linear-gradient(45deg, #4f46e5, #06b6d4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    p {
+      font-size: 1.1rem;
+      color: $text-muted;
+      margin-bottom: 30px;
+    }
+
+    // Toggle chuyển đổi tháng/năm
+    .billing-toggle {
+      display: inline-flex;
+      background-color: #f1f5f9;
+      padding: 6px;
+      border-radius: 30px;
+      border: 1px solid #e2e8f0;
+
+      .toggle-btn {
+        padding: 10px 24px;
+        border: none;
+        background: transparent;
+        border-radius: 20px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        color: $text-muted;
+
+        &.active {
+          background-color: #ffffff;
+          color: $primary-color;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .discount-badge {
+          position: absolute;
+          top: -15px;
+          right: -10px;
+          background-color: $accent-color;
+          color: #ffffff;
+          font-size: 0.7rem;
+          padding: 2px 6px;
+          border-radius: 10px;
+          white-space: nowrap;
+        }
+      }
+    }
+  }
+
+  // Grid hiển thị các thẻ gói cước
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    align-items: stretch;
+  }
+
+  // Cấu trúc thẻ Card chung
+  .pricing-card {
+    background-color: $card-bg;
+    border-radius: 20px;
+    padding: 40px 30px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    border: 2px solid #f1f5f9;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    // Border trên đỉnh để phân biệt level gói
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 6px;
+      border-radius: 20px 20px 0 0;
+    }
+
+    &.silver::before { background-color: $color-silver; }
+    &.gold::before { background-color: $color-gold; }
+    &.diamond::before { background-color: $color-diamond; }
+
+    // Style riêng cho gói phổ biến nhất (Gold)
+    &.popular {
+      border-color: $primary-color;
+      transform: scale(1.03);
+
+      &:hover {
+        transform: scale(1.03) translateY(-5px);
+      }
+
+      .popular-badge {
+        position: absolute;
+        top: -14px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: $primary-color;
+        color: #ffffff;
+        padding: 4px 16px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+      }
+
+      .select-plan-btn {
+        background-color: $primary-color;
+        color: #ffffff;
+
+        &:hover {
+          background-color: $primary-hover;
+        }
+      }
+    }
+
+    .card-header {
+      text-align: center;
+      margin-bottom: 30px;
+
+      h3 {
+        font-size: 1.5rem;
+        margin-bottom: 15px;
+        font-weight: 700;
+      }
+
+      .price-box {
+        .amount {
+          font-size: 2rem;
+          font-weight: 800;
+          color: #1e293b;
+        }
+        .period {
+          font-size: 0.95rem;
+          color: $text-muted;
+        }
+      }
+    }
+
+    .card-body {
+      flex-grow: 1;
+      margin-bottom: 30px;
+
+      .features-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+
+        li {
+          display: flex;
+          align-items: flex-start;
+          margin-bottom: 14px;
+          font-size: 0.95rem;
+          color: #475569;
+          line-height: 1.4;
+
+          .check-icon {
+            color: #10b981;
+            font-weight: bold;
+            margin-right: 10px;
+            font-size: 1.1rem;
+          }
+        }
+      }
+    }
+
+    .card-footer {
+      .select-plan-btn {
+        width: 100%;
+        padding: 14px;
+        border: 2px solid $primary-color;
+        background: transparent;
+        color: $primary-color;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background-color: $primary-color;
+          color: #ffffff;
+        }
+      }
+    }
+  }
+}
+
+// Responsive cho Mobile
+@media (max-width: 768px) {
+  .membership-container {
+    padding: 40px 15px;
+
+    .membership-header h1 {
+      font-size: 2rem;
+    }
+
+    .pricing-grid {
+      gap: 20px;
+    }
+
+    .pricing-card.popular {
+      transform: none;
+      
+      &:hover {
+        transform: translateY(-5px);
+      }
+    }
+  }
+}
+
+// --- SKELETON LOADING EFFECTS ---
+.skeleton-loading {
+  .skeleton-card {
+    background: #ffffff;
+    border: 1px solid #f1f5f9;
+    pointer-events: none;
+    position: relative;
+    overflow: hidden;
+
+    // Hiệu ứng quét bóng sáng chạy ngang qua thẻ
+    &::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      transform: translateX(-100%);
+      background-image: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.6) 20%,
+        rgba(255, 255, 255, 0.6) 60%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      animation: shimmer 1.6s infinite;
+    }
+  }
+
+  .skeleton-line {
+    background: #e2e8f0;
+    border-radius: 4px;
+    margin-bottom: 12px;
+
+    &.title {
+      width: 50%;
+      height: 24px;
+      margin: 0 auto 16px auto;
+    }
+
+    &.price {
+      width: 40%;
+      height: 32px;
+      margin: 0 auto;
+    }
+
+    &.text {
+      width: 90%;
+      height: 14px;
+      margin-bottom: 16px;
+      
+      &.short {
+        width: 60%;
+      }
+    }
+  }
+
+  .skeleton-header {
+    padding: 24px 0;
+    border-bottom: 1px dashed #f1f5f9;
+  }
+
+  .skeleton-body {
+    padding: 24px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .skeleton-footer {
+    padding: 16px;
+    
+    .skeleton-btn {
+      width: 100%;
+      height: 40px;
+      background: #e2e8f0;
+      border-radius: 24px;
+    }
+  }
+}
+
+// Animation quét sáng mượt mà
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
