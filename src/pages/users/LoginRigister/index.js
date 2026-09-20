@@ -11,7 +11,6 @@ import {
     useForgotPasswordSendCode, 
     useForgotPasswordVerifyCode, 
     useForgotPasswordReset } from "api/homePage"; 
-import axios from "axios"; 
 
 const AuthDialog = ({ onClose, isLogin: defaultIsLogin }) => {
     const [isLogin, setIsLogin] = useState(defaultIsLogin !== undefined ? defaultIsLogin : true);
@@ -39,7 +38,7 @@ const AuthDialog = ({ onClose, isLogin: defaultIsLogin }) => {
     const [confirmNewPassword, setConfirmNewPassword] = useState("");
 
     const handleGoogleLogin = () => {
-       window.location.href = 'http://localhost:3000/auth/google';
+       window.location.href = 'http://127.0.0.1:8000/auth/google';
     };
 
     const loginMutation = useMutation({

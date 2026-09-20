@@ -1,0 +1,411 @@
+/**
+ * 🎨 VietQR Payment Component Styles
+ */
+
+.vietqr-payment {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  .payment-container {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    max-width: 500px;
+    width: 100%;
+    padding: 40px;
+    animation: slideUp 0.3s ease-out;
+
+    @media (max-width: 600px) {
+      padding: 25px;
+    }
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// 📌 Header
+.payment-header {
+  text-align: center;
+  margin-bottom: 30px;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 20px;
+
+  h2 {
+    font-size: 24px;
+    color: #333;
+    margin: 0 0 8px 0;
+    font-weight: 700;
+  }
+
+  p {
+    color: #666;
+    font-size: 14px;
+    margin: 0;
+
+    strong {
+      color: #667eea;
+    }
+  }
+}
+
+// 📱 QR Code Section
+.qr-section {
+  margin: 30px 0;
+}
+
+.qr-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 25px;
+
+  .qr-image {
+    width: 280px;
+    height: 280px;
+    border: 3px solid #667eea;
+    border-radius: 12px;
+    padding: 10px;
+    background: #f9f9f9;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+
+    @media (max-width: 600px) {
+      width: 220px;
+      height: 220px;
+    }
+  }
+
+  .qr-fallback {
+    width: 280px;
+    height: 280px;
+    border: 2px dashed #ccc;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    text-align: center;
+    background: #f5f5f5;
+
+    p {
+      color: #999;
+      margin: 10px 0;
+    }
+
+    details {
+      margin-top: 10px;
+      text-align: left;
+
+      summary {
+        cursor: pointer;
+        color: #667eea;
+        text-decoration: underline;
+      }
+
+      p {
+        background: #f0f0f0;
+        padding: 10px;
+        border-radius: 8px;
+        font-size: 12px;
+        word-break: break-all;
+        margin-top: 10px;
+      }
+    }
+  }
+}
+
+// 📋 Instructions
+.instructions {
+  background: #f0f7ff;
+  border-left: 4px solid #667eea;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 25px;
+
+  h3 {
+    margin: 0 0 12px 0;
+    color: #333;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  ol {
+    margin: 0;
+    padding-left: 20px;
+    color: #555;
+    font-size: 13px;
+    line-height: 1.8;
+
+    li {
+      margin-bottom: 8px;
+
+      strong {
+        color: #667eea;
+      }
+    }
+  }
+}
+
+// 💳 Payment Details
+.payment-details {
+  background: #f9f9f9;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 25px;
+  border: 1px solid #e0e0e0;
+
+  .detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #e8e8e8;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .label {
+      color: #666;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .value {
+      color: #333;
+      font-size: 13px;
+      font-weight: 600;
+      word-break: break-word;
+      text-align: right;
+      flex: 1;
+      margin-left: 15px;
+
+      &.highlight {
+        color: #27ae60;
+        font-size: 15px;
+        font-weight: 700;
+      }
+
+      &.account-number {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+    }
+
+    .copy-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: background 0.2s;
+
+      &:hover {
+        background: #e0e0e0;
+      }
+
+      &:active {
+        transform: scale(0.95);
+      }
+    }
+
+    .description {
+      color: #764ba2;
+      font-style: italic;
+    }
+  }
+}
+
+// ✅ Confirmation Section
+.confirmation-section {
+  margin-bottom: 20px;
+
+  .warning {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 13px;
+    margin: 0 0 15px 0;
+    border-left: 4px solid #ffc107;
+
+    strong {
+      color: #d63031;
+    }
+  }
+}
+
+// 🔘 Buttons
+.confirm-btn,
+.cancel-btn {
+  width: 100%;
+  padding: 14px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 12px;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+}
+
+.confirm-btn {
+  background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+  color: white;
+
+  &:hover:not(:disabled) {
+    background: linear-gradient(135deg, #229954 0%, #1e8449 100%);
+  }
+}
+
+.cancel-btn {
+  background: #ecf0f1;
+  color: #666;
+
+  &:hover:not(:disabled) {
+    background: #d5dbdb;
+  }
+}
+
+// 💡 Info Box
+.info-box {
+  background: #e8f4f8;
+  border-left: 4px solid #3498db;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  color: #2c3e50;
+  line-height: 1.6;
+
+  p {
+    margin: 0;
+  }
+
+  strong {
+    color: #2980b9;
+  }
+}
+
+// ⏳ Loading State
+.loading-state {
+  text-align: center;
+  padding: 60px 20px;
+
+  .spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #f0f0f0;
+    border-top: 4px solid #667eea;
+    border-radius: 50%;
+    margin: 0 auto 20px;
+    animation: spin 1s linear infinite;
+  }
+
+  p {
+    color: #667eea;
+    font-size: 16px;
+    font-weight: 500;
+  }
+}
+
+// ❌ Error State
+.error-state {
+  text-align: center;
+  padding: 40px 20px;
+
+  p {
+    color: #d63031;
+    font-size: 16px;
+    margin-bottom: 20px;
+  }
+
+  .close-btn {
+    padding: 10px 20px;
+    background: #d63031;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+
+    &:hover {
+      background: #c92a2a;
+    }
+  }
+}
+
+// 📱 Mobile Responsive
+@media (max-width: 600px) {
+  .vietqr-payment {
+    padding: 15px;
+
+    .payment-container {
+      padding: 20px;
+    }
+  }
+
+  .payment-header {
+    h2 {
+      font-size: 20px;
+    }
+  }
+
+  .qr-container .qr-image {
+    width: 200px;
+    height: 200px;
+  }
+
+  .payment-details .detail-row {
+    flex-direction: column;
+    align-items: flex-start;
+
+    .value {
+      margin-left: 0;
+      margin-top: 8px;
+      text-align: left;
+    }
+  }
+
+  .instructions ol {
+    font-size: 12px;
+  }
+}

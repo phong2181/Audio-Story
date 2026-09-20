@@ -197,7 +197,7 @@ const PostDetailPage = () => {
             <span className="post-badge">{post.category?.name || 'Chưa phân loại'}</span>
           </div>
 
-          {/* Intro Section - ĐÃ LOẠI BỎ TOÀN BỘ PHẦN HIỂN THỊ DESCRIPTION */}
+{/* Intro Section - ĐÃ LOẠI BỎ TOÀN BỘ PHẦN HIỂN THỊ DESCRIPTION */}
           <div className="post-intro">
             <h1 className="post-title">{post.title}</h1>
             <div className="post-info">
@@ -212,7 +212,7 @@ const PostDetailPage = () => {
             </div>
           </div>
 
-          {/* Featured Image */}
+{/* Featured Image */}
           <div className="post-media">
             <img src={getThumbnailUrl(post.avatar_post || post.thumbnail)} alt={post.title} className="post-image" />
           </div>

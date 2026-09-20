@@ -1,43 +1,49 @@
+/**
+ * Route configuration constants for Bloger.
+ * Centralizes all route paths used across the app.
+ */
 
+/** Prefix for all admin routes */
 export const ADMIN_PATH = '/admin';
 
-
+/**
+ * All route paths organized by domain (USER / ADMIN).
+ */
 export const ROUTES = {
-    USER: {
-        HOME: "/",
-        PROFILE: "/profile",
-        POSTS: "/post",
-        AUTHOR_PAGE: "/authors/:authorName",
-        POST_DETAIL: "/post/:id",
-        POST_LIST_VIEW: "/bai-viet",
-        AUDIO_LIST: "/truyen",
-        STORY_DETAIL: "/story/:slug",
-        MEMBERSHIP: "/membership",
-    },
+  USER: {
+    HOME: '/',
+    AUDIO_LIST: '/truyen',
+    STORY_DETAIL: '/story/:slug',
+    POSTS: '/posts',
+    POST_DETAIL: '/post/:id',
+    POST_LIST_VIEW: '/bai-viet',
+    PROFILE: '/profile',
+    MEMBERSHIP: '/membership',
+    AUTHOR_PAGE: '/authors/:authorName',
+  },
+  ADMIN: {
+    LOGIN: '/admin/login',
+    DASHBOARD: '/admin/dashboard',
+    POSTS_ADD: '/admin/posts/add',
+    All_POSTS: '/admin/posts',
+    POSTS_CATEGORY: '/admin/posts/category',
+    EDITPOSTS: '/admin/edit-posts',
+    FOOTERS: '/admin/footers',
+    AUDIO_ADD: '/admin/stories/add',
+    MANAGE_COMMENTS_AUDIO: '/admin/stories',
+    MANAGE_AUDIO_CATEGORY: '/admin/categories',
+    INFOMATION_AUTHORS: '/admin/profile',
+    MANAGE_USERS_AUTHORS: '/admin/users',
+    MANAGE_VIP_APPROVAL: '/admin/users/vip',
+    NOTEIFICATION: '/admin/notifications',
+    ADD_MEMBERSHIP: '/admin/membership/add',
+    MANAGE_USERS_MEMBERSHIP: '/admin/membership',
+    REVENUE_STATISTICS: '/admin/revenue',
+    MANAGE_TRANSACTIONS: '/admin/transactions',
+ADDFILEREAD: '/admin/add-file-read',
+    MANAGE_BACKGROUND_MUSIC: '/admin/background-music',
+    LETTER_FEEDBACK: '/admin/letters',
+    LOGOUT: '/admin/logout',
+  },
+};
 
-    ADMIN: {
-        LOGIN: `${ADMIN_PATH}/login`,
-        DASHBOARD: `${ADMIN_PATH}/dashboard`,
-        POSTS: `${ADMIN_PATH}/all/posts`,
-        LOGOUT: `${ADMIN_PATH}/logout`,
-        POSTS_ADD: `${ADMIN_PATH}/add/posts`,
-        EDITPOSTS: `${ADMIN_PATH}/edit/posts/:id`,
-        All_POSTS: `${ADMIN_PATH}/all/posts`,
-        POSTS_CATEGORY: `${ADMIN_PATH}/category/posts`,
-        FOOTERS: `${ADMIN_PATH}/footers`,
-        LETTER_FEEDBACK: `${ADMIN_PATH}/letters/feedback`,
-        LETTER_NOTIFICATION: `${ADMIN_PATH}/letters/notification`,
-        AUDIO_ADD: `${ADMIN_PATH}/add/audio`,
-        MANAGE_AUDIO_CATEGORY: `${ADMIN_PATH}/manage/audio/category`,
-        MANAGE_COMMENTS_AUDIO: `${ADMIN_PATH}/manage/audio/series`,
-        INFOMATION_AUTHORS: `${ADMIN_PATH}/profile/authors`,
-        MANAGE_USERS_AUTHORS: `${ADMIN_PATH}/manage/users/authors`,
-        NOTEIFICATION: `${ADMIN_PATH}/notification`,
-        ADD_MEMBERSHIP: `${ADMIN_PATH}/membership/add`,
-        MANAGE_USERS_MEMBERSHIP: `${ADMIN_PATH}/membership/manage`,
-        REVENUE_STATISTICS: `${ADMIN_PATH}/revenue/statistics`,
-        MANAGE_TRANSACTIONS: `${ADMIN_PATH}/revenue/transactions`,
-        MANAGE_VIP_APPROVAL: `${ADMIN_PATH}/vip/approval`,
-        ADDFILEREAD: `${ADMIN_PATH}/add/audio/fileread`,
-    },
-}

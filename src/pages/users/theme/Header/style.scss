@@ -7,8 +7,8 @@ $bg-color: #ffffff;
 $light-bg: #f1f5f9;
 
 .site-header {
-    background: $bg-color;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    background: var(--header-bg, $bg-color);
+    box-shadow: var(--header-shadow, 0 2px 8px rgba(0, 0, 0, 0.05));
     position: sticky;
     top: 0;
     z-index: 1000;
@@ -52,7 +52,7 @@ $light-bg: #f1f5f9;
         .logo-text {
             font-weight: 700;
             font-size: 20px;
-            color: #333333;
+            color: var(--text-title, #333333);
             font-family: 'system-ui', sans-serif;
 
             .logo-sub {
@@ -65,7 +65,7 @@ $light-bg: #f1f5f9;
     .search-bar {
         display: flex;
         align-items: center;
-        background: $light-bg;
+        background: var(--bg-light, $light-bg);
         border-radius: 25px;
         padding: 2px 4px 2px 16px;
         width: 35%;
@@ -85,10 +85,10 @@ $light-bg: #f1f5f9;
             width: 100%;
             padding: 8px 0;
             font-size: 14px;
-            color: $text-color;
+            color: var(--text-color, $text-color);
 
             &::placeholder {
-                color: #94a3b8;
+                color: var(--text-subtle, #94a3b8);
             }
         }
 
@@ -166,8 +166,40 @@ $light-bg: #f1f5f9;
         }
     }
 
-    /* Desktop User Section */
+/* Desktop User Section */
     .user-section {
+        .user-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Nút chuyển đổi theme sáng/tối */
+        .theme-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--bg-light, $light-bg);
+            color: var(--text-color, $text-color);
+            border: 1px solid var(--border-color, #e2e8f0);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+
+            svg {
+                font-size: 15px;
+            }
+
+            &:hover {
+                background: $primary-color;
+                color: white;
+                border-color: $primary-color;
+            }
+        }
+
         .user-logged {
             display: flex;
             align-items: center;
@@ -179,8 +211,7 @@ $light-bg: #f1f5f9;
                 color: $text-color;
             }
 
-            .profile-btn,
-            .logout-btn {
+            .profile-btn {
                 background: $light-bg;
                 color: $text-color;
                 width: 34px;
@@ -197,6 +228,35 @@ $light-bg: #f1f5f9;
                 &:hover {
                     background: $primary-color;
                     color: white;
+                }
+            }
+
+/* Nút đăng xuất - chỉ hiển thị icon logout */
+            .logout-btn {
+                background: transparent;
+                border: none;
+                padding: 6px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                color: var(--text-color, $text-color);
+                text-decoration: none;
+                cursor: pointer;
+                border-radius: 8px;
+                transition: all 0.2s;
+
+                svg {
+                    font-size: 18px;
+                    transition: transform 0.2s ease;
+                }
+
+                &:hover {
+                    color: #ef4444;
+                    background: rgba(239, 68, 68, 0.1);
+
+                    svg {
+                        transform: translateX(2px);
+                    }
                 }
             }
         }
@@ -252,19 +312,31 @@ $light-bg: #f1f5f9;
         display: none;
     }
 
+/* Nút chuyển theme trên mobile */
+    .mobile-theme-toggle {
+        width: 100%;
+        justify-content: center;
+        padding: 10px 14px;
+        font-size: 14px;
+        background: var(--bg-light, $light-bg);
+        color: var(--text-color, $text-color);
+        border: 1px solid var(--border-color, #e2e8f0);
+        border-radius: 6px;
+    }
+
     /* Mobile Menu (Dropdown) */
     .mobile-menu {
         position: absolute;
         top: 70px;
         left: 0;
         width: 100%;
-        background: $bg-color;
+        background: var(--bg-color, $bg-color);
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         padding: 1rem;
         display: flex;
         flex-direction: column;
         gap: 12px;
-        border-top: 1px solid #e2e8f0;
+        border-top: 1px solid var(--border-color, #e2e8f0);
 
         // Slide animation properties
         transform: translateY(-15px);
@@ -306,10 +378,25 @@ $light-bg: #f1f5f9;
                 }
             }
 
-            .mobile-logout {
-                background: #fecaca;
-                color: #b91c1c;
+.mobile-nav-links .mobile-logout {
+                background: transparent !important;
+                color: #ef4444;
                 font-weight: 600;
+                border: none;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                transition: all 0.2s ease;
+
+                svg {
+                    font-size: 15px;
+                }
+
+                &:hover {
+                    color: #dc2626;
+                    background: rgba(239, 68, 68, 0.08) !important;
+                }
             }
         }
     }

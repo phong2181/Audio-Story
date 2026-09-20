@@ -1,7 +1,9 @@
 import axios from "axios";
 
 const baseURL = process.env.VITE_API_URI || "http://bloger.test/api/";
-const timeout = +(process.env.VITE_API_TIMEOUT) || 20000;
+// Tăng timeout mặc định lên 60s để hỗ trợ các thao tác dài (upload file, TTS...).
+// Riêng TTS sẽ ghi đè timeout lên 5 phút trong generateTTSAudioAPI.
+const timeout = +(process.env.VITE_API_TIMEOUT) || 60000;
 
 const axiosinstance = axios.create({
   baseURL,

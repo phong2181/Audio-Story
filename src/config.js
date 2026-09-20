@@ -1,34 +1,9 @@
 /**
  * TTS Configuration for Bloger (React app)
- * Provides model URL resolution for Piper TTS models.
+ * Note: Piper TTS models are now served from the Laravel backend.
+ * The voice list is dynamically loaded via GET /api/admin/tts/voices.
+ * This file only provides fallback metadata for the UI.
  */
-
-/**
- * Get base URL for TTS model files.
- * In production, serves from API. In development, serves from /public/tts-model/.
- * @param {string} lang - Language code (e.g. 'vi', 'en', 'id')
- * @returns {string} Base URL ending with '/'
- */
-export function getModelBaseUrl(lang = 'vi') {
-  // React CRA uses PUBLIC_URL, not import.meta.env
-  const publicUrl = process.env.PUBLIC_URL || '';
-  return `${publicUrl}/tts-model/${lang}/`;
-}
-
-/**
- * Get API URL to list available models for a language.
- * @param {string} lang - Language code
- * @returns {string}
- */
-export function getModelsListUrl(lang = 'vi') {
-  return `/api/piper/${lang}/models`;
-}
-
-/** Default model name per language when API is unavailable. */
-export const DEFAULT_MODEL = {
-  vi: 'ngochuyen',
-  en: 'en_US-libritts_r-medium',
-};
 
 /** localStorage key for saving the user-selected TTS voice. */
 export const TTS_VOICE_STORAGE_KEY = 'tts-selected-voice';
@@ -37,8 +12,10 @@ export const TTS_VOICE_STORAGE_KEY = 'tts-selected-voice';
 export const TTS_SPEED_STORAGE_KEY = 'tts-selected-speed';
 
 /**
- * Full list of available Vietnamese TTS voices with metadata.
- * Mirrors the ONNX files in /public/tts-model/vi/.
+ * Full list of available Vietnamese TTS voices with metadata (fallback).
+ * The primary source is the backend API. This list is used as a fallback
+ * when the backend cannot be reached, and to enrich backend voice data
+ * with gender/region/description for the UI.
  */
 export const VI_VOICES = [
   { id: 'ngochuyen',       name: 'Ngọc Huyền',       gender: 'Nữ',  region: 'Miền Bắc', desc: 'Giọng đọc truyền cảm, phù hợp đọc truyện tự sự.' },

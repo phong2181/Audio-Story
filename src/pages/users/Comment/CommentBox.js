@@ -101,7 +101,7 @@ const CommentItem = ({ comment, chapterId, currentUserId, currentUserRole, story
         if (isCommentAdminOrStaff) return "#e74c3c"; 
         if (isCommentAuthor) return "#2ecc71";       
         if (isUserVip) return "#d4af37";      
-        return "#1e293b";                     
+        return "var(--text-title, #1e293b)";                     
     };
 
     // HÀM XỬ LÝ NHẤN LIKE & HUỶ LIKE NGAY LẬP TỨC TRÊN UI
@@ -192,7 +192,7 @@ const CommentItem = ({ comment, chapterId, currentUserId, currentUserRole, story
                             </span>
                         )}
 
-                        <span style={{ fontSize: "12px", color: "#999" }}>
+<span style={{ fontSize: "12px", color: "var(--text-muted, #999)" }}>
                             {new Date(comment.created_at).toLocaleDateString("vi-VN")}
                         </span>
                     </div>
@@ -203,7 +203,7 @@ const CommentItem = ({ comment, chapterId, currentUserId, currentUserRole, story
                                 value={editText}
                                 onChange={(e) => setEditText(e.target.value)}
                                 rows={2}
-                                style={{ width: "100%", padding: "6px", borderRadius: "6px", border: "1px solid #ddd" }}
+                                style={{ width: "100%", padding: "6px", borderRadius: "6px", border: "1px solid var(--border-color, #ddd)", background: "var(--bg-card, #fff)", color: "var(--text-color, #111827)" }}
                             />
                             <div style={{ display: "flex", gap: "8px", marginTop: "4px" }}>
                                 <button onClick={handleEdit} style={btnStyle("#6c63ff")}>Lưu</button>
@@ -211,7 +211,7 @@ const CommentItem = ({ comment, chapterId, currentUserId, currentUserRole, story
                             </div>
                         </div>
                     ) : (
-                        <p style={{ margin: "4px 0", fontSize: "14px", color: "#334155", overflowWrap: "anywhere", wordBreak: "break-word" }}>{comment.content}</p>
+                        <p style={{ margin: "4px 0", fontSize: "14px", color: "var(--text-color, #334155)", overflowWrap: "anywhere", wordBreak: "break-word" }}>{comment.content}</p>
                     )}
 
                     {/* Khu vực Actions */}
@@ -257,17 +257,17 @@ const CommentItem = ({ comment, chapterId, currentUserId, currentUserRole, story
                             </>
                         )}
 
-                        {showDeleteConfirm && (
+{showDeleteConfirm && (
                             <div style={{ 
                                 display: "flex", alignItems: "center", gap: "8px", 
-                                background: "#fff5f5", padding: "4px 10px", borderRadius: "6px",
-                                border: "1px solid #ffe3e3"
+                                background: "rgba(239, 68, 68, 0.08)", padding: "4px 10px", borderRadius: "6px",
+                                border: "1px solid rgba(239, 68, 68, 0.2)"
                             }}>
                                 <span style={{ fontSize: "13px", color: "#e74c3c", fontWeight: "500" }}>
                                     {currentUserId !== comment.user_id ? "Xóa bình luận này với tư cách Quản trị/Tác giả?" : "Bạn chắc chắn muốn xóa?"}
                                 </span>
                                 <button onClick={handleConfirmDelete} style={confirmBtnStyle("#e74c3c")}>Xóa</button>
-                                <button onClick={() => setShowDeleteConfirm(false)} style={confirmBtnStyle("#999")}>Hủy</button>
+                                <button onClick={() => setShowDeleteConfirm(false)} style={confirmBtnStyle("#6b7280")}>Hủy</button>
                             </div>
                         )}
                     </div>
@@ -278,8 +278,8 @@ const CommentItem = ({ comment, chapterId, currentUserId, currentUserRole, story
                                 value={replyText}
                                 onChange={(e) => setReplyText(e.target.value)}
                                 onKeyDown={(e) => e.key === "Enter" && handleReply()}
-                                placeholder={isMaxDepth ? "Viết bình luận..." : "Viết trả lời..."}
-                                style={{ flex: 1, minWidth: 0, width: "100%", padding: "6px 10px", borderRadius: "20px", border: "1px solid #ddd", outline: "none", boxSizing: "border-box" }}
+placeholder={isMaxDepth ? "Viết bình luận..." : "Viết trả lời..."}
+                                style={{ flex: 1, minWidth: 0, width: "100%", padding: "6px 10px", borderRadius: "20px", border: "1px solid var(--border-color, #ddd)", background: "var(--bg-card, #fff)", color: "var(--text-color, #111827)", outline: "none", boxSizing: "border-box" }}
                             />
                             <button onClick={handleReply} disabled={addComment.isPending} style={btnStyle("#6c63ff")}>
                                 {addComment.isPending ? "..." : "Gửi"}
@@ -340,8 +340,8 @@ const CommentSection = ({ story_id, storyAuthorId }) => { // Correct prop is sto
     };
 
     return (
-        <div style={{ marginTop: "32px", padding: "20px", background: "#fff", borderRadius: "12px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", width: "100%", boxSizing: "border-box" }}>
-            <h3 style={{ marginBottom: "16px", fontSize: "18px" }}>
+        <div className="comment-section-wrapper" style={{ marginTop: "32px", padding: "20px", background: "var(--bg-card, #fff)", borderRadius: "12px", boxShadow: "var(--shadow-md, 0 2px 8px rgba(0,0,0,0.08))", width: "100%", boxSizing: "border-box" }}>
+            <h3 style={{ marginBottom: "16px", fontSize: "18px", color: "var(--text-title, #1e293b)" }}>
                 💬 Bình luận ({comments.length})
             </h3>
 
@@ -354,7 +354,7 @@ const CommentSection = ({ story_id, storyAuthorId }) => { // Correct prop is sto
                             onChange={(e) => setNewComment(e.target.value)}
                             onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
                             placeholder="Viết bình luận..."
-                            style={{ flex: 1, minWidth: 0, width: "100%", padding: "8px 14px", borderRadius: "20px", border: "1px solid #ddd", outline: "none", boxSizing: "border-box" }}
+                            style={{ flex: 1, minWidth: 0, width: "100%", padding: "8px 14px", borderRadius: "20px", border: "1px solid var(--border-color, #ddd)", background: "var(--bg-card, #fff)", color: "var(--text-color, #111827)", outline: "none", boxSizing: "border-box" }}
                         />
                         <button onClick={handleSubmit} disabled={addComment.isPending} style={btnStyle("#6c63ff")}> 
                             {addComment.isPending ? "..." : "Gửi"}
@@ -362,15 +362,15 @@ const CommentSection = ({ story_id, storyAuthorId }) => { // Correct prop is sto
                     </div>
                 </div>
             ) : (
-                <p style={{ color: "#999", marginBottom: "16px", fontSize: "14px" }}>
+                <p style={{ color: "var(--text-muted, #999)", marginBottom: "16px", fontSize: "14px" }}>
                     Vui lòng đăng nhập để bình luận.
                 </p>
             )}
 
             {isLoading ? (
-                <p style={{ color: "#999" }}>Đang tải bình luận...</p>
+                <p style={{ color: "var(--text-muted, #999)" }}>Đang tải bình luận...</p>
             ) : comments.length === 0 ? (
-                <p style={{ color: "#999", textAlign: "center" }}>Chưa có bình luận nào. Hãy là người đầu tiên!</p>
+                <p style={{ color: "var(--text-muted, #999)", textAlign: "center" }}>Chưa có bình luận nào. Hãy là người đầu tiên!</p>
             ) : (
                 comments.map((comment) => (
                     <CommentItem
@@ -402,7 +402,7 @@ const confirmBtnStyle = (bg) => ({
 
 const actionBtn = {
     background: "none", border: "none", cursor: "pointer",
-    fontSize: "13px", color: "#666", display: "flex", alignItems: "center", gap: "4px"
+    fontSize: "13px", color: "var(--text-muted, #666)", display: "flex", alignItems: "center", gap: "4px"
 };
 
 export default CommentSection;

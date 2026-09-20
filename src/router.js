@@ -35,6 +35,7 @@ import RevenueStatistics from "pages/admin/Revenue/Statistical";
 import TransactionStatistics from "pages/admin/Revenue/Transaction";
 import ManagerAuthorsUser from "pages/admin/Authors/ManagerAuthorsUser";
 import AddFileRead from "pages/admin/Audio/Addfileread";
+import ManageBackgroundMusic from "pages/admin/Audio/ManageBackgroundMusic";
 
 const renderUsersRoutes = () => {
   const usersRoutes = [
@@ -185,9 +186,14 @@ const renderAdminRoutes = () => {
       component: <ProtectedRoute><ManagerAuthorsUser /></ProtectedRoute>,
       protected: true,
     },
-    {
+{
       path: ROUTES.ADMIN.ADDFILEREAD,
       component: <ProtectedRoute><AddFileRead /></ProtectedRoute>,
+      protected: true,
+    },
+    {
+      path: ROUTES.ADMIN.MANAGE_BACKGROUND_MUSIC,
+      component: <ProtectedRoute><ManageBackgroundMusic /></ProtectedRoute>,
       protected: true,
     }
 

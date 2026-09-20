@@ -4,10 +4,11 @@ import { BrowserRouter } from 'react-router-dom';
 import RouterCustom from './router';
 import { Toaster } from "react-hot-toast";
 import './style/style.scss';
+import './style/theme.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import ScrollToTop from 'pages/scrolltotop';
-import { SocketProvider } from 'context/SocketContext';
+import { ThemeProvider } from 'context/ThemeContext';
 
 
 const queryClient = new QueryClient({
@@ -25,7 +26,7 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 
 
 root.render(
-  <SocketProvider serverUrl={process.env.REACT_APP_API_URL || 'http://localhost:3001'}>
+  <ThemeProvider>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Toaster position="top-right" reverseOrder={false} />
@@ -35,5 +36,5 @@ root.render(
         <RouterCustom />
       </BrowserRouter>
     </QueryClientProvider>
-  </SocketProvider>
+  </ThemeProvider>
 );

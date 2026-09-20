@@ -62,7 +62,7 @@ import {
     getAdminMembershipsAPI,
     getAdminRevenueStatsAPI,
     getActiveNotificationAPI,
-    updateAdminNotificationAPI,
+updateAdminNotificationAPI,
     getAdminNotificationDetailAPI,
     deleteChapterAPI,
     postForgotPasswordVerifyCodeAPI,
@@ -71,7 +71,12 @@ import {
     updateProfileAdminAPI,
     getAuthorContentAPI,
     getPublicAuthorProfileAPI,
-    getActiveUser
+getActiveUser,
+    getTTSVoicesAPI,
+    getBackgroundMusicsAPI,
+    addBackgroundMusicAPI,
+    deleteBackgroundMusicAPI,
+    getBackgroundMusicsPublicAPI
 } from "./request";
 
 // 🚀 Hook gửi mã OTP khôi phục mật khẩu
@@ -595,6 +600,22 @@ export const useGetChaptersByStoryAD = (storyId) => {
     });
 };
 
+// Hook lấy danh sách giọng đọc TTS từ backend
+export const useGetTTSVoicesAD = () => {
+    const token = localStorage.getItem("adminToken");
+    return useQuery({
+        queryKey: ["GetTTSVoices"],
+        queryFn: async () => {
+            const res = await getTTSVoicesAPI();
+            // res.data chứa { status, data, count }
+            return res?.data?.data || res?.data || [];
+        },
+        enabled: !!token,
+        retry: 1,
+        refetchOnWindowFocus: false,
+    });
+};
+
 export const useAddChapterAD = () => {
     const queryClient = useQueryClient();
     return useMutation({
@@ -884,6 +905,63 @@ export const useGetAdminMemberships = () => {
         },
         enabled: !!token,
         retry: 1,
+        refetchOnWindowFocus: false,
+    });
+};
+
+// =========================================================================
+// Background Music (Nhạc nền) - Hooks
+// =========================================================================
+
+// Hook lấy danh sách nhạc nền (Admin)
+export const useGetBackgroundMusicsAD = () => {
+    const token = localStorage.getItem("adminToken");
+    return useQuery({
+        queryKey: ["backgroundMusicsAD"],
+        queryFn: async () => {
+            const res = await getBackgroundMusicsAPI();
+            // Backend trả về { status, data }
+            return res?.data || res || [];
+        },
+        enabled: !!token,
+        retry: 1,
+        refetchOnWindowFocus: false,
+    });
+};
+
+// Hook upload nhạc nền mới (Chỉ Admin)
+export const useAddBackgroundMusicAD = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (formData) => addBackgroundMusicAPI(formData),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["backgroundMusicsAD"] });
+        },
+    });
+};
+
+// Hook xóa nhạc nền (Chỉ Admin)
+export const useDeleteBackgroundMusicAD = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (id) => deleteBackgroundMusicAPI(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["backgroundMusicsAD"] });
+        },
+    });
+};
+
+// Hook lấy danh sách nhạc nền công khai (Client)
+export const useGetBackgroundMusicsPublic = () => {
+    return useQuery({
+        queryKey: ["backgroundMusicsPublic"],
+        queryFn: async () => {
+            const res = await getBackgroundMusicsPublicAPI();
+            return res?.data || res || [];
+        },
+        retry: 1,
+        staleTime: 5 * 60 * 1000,
+        gcTime: 15 * 60 * 1000,
         refetchOnWindowFocus: false,
     });
 };

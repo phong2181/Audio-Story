@@ -1,0 +1,468 @@
+// ===== MANAGE BACKGROUND MUSIC (NHẠC NỀN) - ADMIN =====
+.manageBgMusic {
+    padding: 35px;
+    background: #f4f6fb;
+    min-height: 100vh;
+}
+
+// ===== NO PERMISSION SCREEN =====
+.noPermission {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 70vh;
+    text-align: center;
+    padding: 40px;
+    background: #f4f6fb;
+
+    .lockIcon {
+        font-size: 60px;
+        color: #ef4444;
+        margin-bottom: 20px;
+        background: #fee2e2;
+        padding: 22px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    h2 {
+        font-size: 26px;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 12px;
+    }
+
+    p {
+        max-width: 480px;
+        color: #6b7280;
+        font-size: 15px;
+        line-height: 1.6;
+        margin: 0;
+    }
+}
+
+// ===== PAGE HEADER =====
+.pageHeader {
+    margin-bottom: 25px;
+
+    h2 {
+        font-size: 28px;
+        font-weight: 700;
+        color: #222;
+        margin-bottom: 8px;
+    }
+
+    p {
+        color: #666;
+        margin-top: 0;
+        font-size: 15px;
+    }
+}
+
+// ===== ADMIN PERMISSION BANNER =====
+.adminBanner {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 24px;
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border-radius: 16px;
+    margin-bottom: 25px;
+    color: white;
+    box-shadow: 0 8px 24px rgba(30, 41, 59, 0.3);
+
+    .adminBannerIcon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        flex-shrink: 0;
+    }
+
+    .adminBannerInfo {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+
+        .bannerLabel {
+            font-size: 12px;
+            opacity: 0.7;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+        }
+
+        .bannerValue {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 17px;
+            font-weight: 700;
+        }
+    }
+
+    .adminBannerUser {
+        margin-left: auto;
+        font-size: 14px;
+        opacity: 0.9;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 8px 16px;
+        border-radius: 12px;
+
+        strong {
+            color: #fbbf24;
+        }
+    }
+}
+
+// ===== LAYOUT =====
+.bgMusicLayout {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 25px;
+    align-items: start;
+}
+
+// ===== CARD CHUNG =====
+.uploadCard,
+.listCard {
+    background: white;
+    border-radius: 18px;
+    padding: 28px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
+
+    h3 {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 25px;
+        font-size: 18px;
+        font-weight: 700;
+        color: #333;
+    }
+}
+
+// ===== UPLOAD FORM =====
+.uploadForm {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.formGroup {
+    display: flex;
+    flex-direction: column;
+
+    label {
+        margin-bottom: 10px;
+        font-weight: 600;
+        color: #444;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 14px;
+    }
+
+    input[type="text"],
+    textarea,
+    select {
+        border: 1px solid #ddd;
+        border-radius: 12px;
+        padding: 13px 16px;
+        font-size: 14px;
+        transition: 0.25s;
+        outline: none;
+        background: #fafafa;
+        font-family: inherit;
+
+        &:focus {
+            border-color: #4f8cff;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(79, 140, 255, 0.15);
+        }
+    }
+
+    textarea {
+        resize: vertical;
+    }
+
+    .fileInput {
+        border: 2px dashed #cbd5e1;
+        border-radius: 12px;
+        padding: 25px 16px;
+        background: #f8fafc;
+        cursor: pointer;
+        font-size: 14px;
+        text-align: center;
+        transition: 0.25s;
+
+        &:hover {
+            border-color: #4f8cff;
+            background: #f0f6ff;
+        }
+
+        &::file-selector-button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin-right: 15px;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: inherit;
+        }
+    }
+}
+
+.previewAudio {
+    audio {
+        width: 100%;
+        border-radius: 8px;
+    }
+}
+
+.submitBtn {
+    width: 100%;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 15px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600;
+    transition: 0.3s;
+    font-family: inherit;
+
+    &:hover:not(:disabled) {
+        background: #1d4ed8;
+        transform: translateY(-2px);
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+}
+
+// ===== LIST =====
+.listHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+
+    h3 {
+        margin-bottom: 0;
+    }
+}
+
+.musicList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 600px;
+    overflow-y: auto;
+
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+    &::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 3px;
+    }
+    &::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 3px;
+        &:hover {
+            background: #94a3b8;
+        }
+    }
+}
+
+.musicItem {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 16px 18px;
+    border: 1px solid #f1f5f9;
+    border-radius: 14px;
+    background: white;
+    transition: 0.25s;
+
+    &:hover {
+        border-color: #c7d2fe;
+        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.1);
+    }
+
+    .musicPlayBtn {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: #eef2ff;
+        color: #4f46e5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 16px;
+        flex-shrink: 0;
+        transition: 0.2s;
+
+        &:hover {
+            background: #4f46e5;
+            color: white;
+        }
+    }
+
+    .musicInfo {
+        flex: 1;
+        min-width: 0;
+
+        .musicTitle {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1f2937;
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .musicDesc {
+            font-size: 13px;
+            color: #6b7280;
+            margin: 4px 0 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .musicMeta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 8px;
+            font-size: 12px;
+            color: #9ca3af;
+            flex-wrap: wrap;
+
+            .badge {
+                display: inline-flex;
+                align-items: center;
+                padding: 3px 12px;
+                border-radius: 999px;
+                font-size: 11px;
+                font-weight: 700;
+
+                &.active {
+                    background: #dcfce7;
+                    color: #15803d;
+                }
+
+                &.inactive {
+                    background: #fee2e2;
+                    color: #b91c1c;
+                }
+            }
+        }
+    }
+
+    .hiddenAudio {
+        display: none;
+    }
+
+    .deleteBtn {
+        background: #fee2e2;
+        color: #ef4444;
+        border: none;
+        border-radius: 10px;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 15px;
+        transition: 0.2s;
+        flex-shrink: 0;
+
+        &:hover:not(:disabled) {
+            background: #ef4444;
+            color: white;
+        }
+
+        &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    }
+}
+
+// ===== LOADING & EMPTY =====
+.loadingState,
+.emptyState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: #9ca3af;
+    gap: 15px;
+
+    svg {
+        font-size: 45px;
+    }
+
+    p {
+        margin: 0;
+        font-size: 15px;
+    }
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+// ===== RESPONSIVE =====
+@media (max-width: 900px) {
+    .bgMusicLayout {
+        grid-template-columns: 1fr;
+    }
+
+    .adminBanner {
+        flex-direction: column;
+        align-items: flex-start;
+
+        .adminBannerUser {
+            margin-left: 0;
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .manageBgMusic {
+        padding: 16px;
+    }
+}

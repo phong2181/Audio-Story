@@ -1,7 +1,8 @@
 import { useSaveUserHistory } from "api/homePage";
 import { useParams } from "react-router-dom";
 import React, { useState, useEffect, useRef } from "react";
-import { FaPause, FaPlay, FaRegClock, FaBackward, FaForward, FaTimes } from "react-icons/fa";
+import { FaPause, FaPlay, FaRegClock, FaStepBackward, FaTimesCircle } from "react-icons/fa";
+import { TbPlayerTrackNextFilled, TbPlayerTrackPrevFilled } from "react-icons/tb";
 import "./style.scss";
 
 const AudioPlayer = ({ chapter, onPrev, onNext, onClose, cover }) => {
@@ -145,66 +146,71 @@ const AudioPlayer = ({ chapter, onPrev, onNext, onClose, cover }) => {
 
     const progressPercent = duration ? Math.min(100, Math.max(0, ((isSeeking ? localTime : currentTime) / duration) * 100)) : 0;
 
-    return (
+return (
         <div className={`audio-player ${isPlaying ? 'playing' : ''}`}>
             {audioSrc ? (
                 <>
-                    <div className="audio-player-row">
-                        <div className="audio-player-left">
-                            <div className="cover-wrapper">
-                                <img className="cover-image" src={coverImage} alt={chapter.chapter_name || chapter.title || 'Cover'} />
+                    <div className="audio-player-inner">
+                        <div className="audio-player-row">
+                            <div className="audio-player-left">
+                                <div className="cover-wrapper">
+                                    <img className="cover-image" src={coverImage} alt={chapter.chapter_name || chapter.title || 'Cover'} />
+                                </div>
+                                <div className="track-details">
+                                    <span className="track-title" title={chapter.chapter_name || chapter.title || 'Chương'}>{chapter.chapter_name || chapter.title || 'Chương'}</span>
+                                    {chapter?.author_post && (
+                                        <span className="track-artist">{chapter.author_post}</span>
+                                    )}
+                                </div>
                             </div>
-                            <div className="track-details">
-                                <span className="track-title" title={chapter.chapter_name || chapter.title || 'Chương'}>{chapter.chapter_name || chapter.title || 'Chương'}</span>
+
+                            <div className="audio-player-actions">
+                                <button className="control-btn prev" type="button" onClick={handlePrev} disabled={!audioSrc} title="Lùi 5s">
+                                    <TbPlayerTrackPrevFilled />
+                                </button>
+                                <button className="play-btn" type="button" onClick={togglePlayAudio} disabled={isAudioLoading} title={isPlaying ? 'Tạm dừng' : 'Phát'}>
+                                    <span className="play-icon">
+                                        {isAudioLoading ? <span className="loader" /> : (isPlaying ? <FaPause /> : <FaPlay />)}
+                                    </span>
+                                </button>
+                                <button className="control-btn next" type="button" onClick={handleNext} disabled={!audioSrc} title="Tua 5s">
+                                    <TbPlayerTrackNextFilled />
+                                </button>
+                                <div className="speed-label">
+                                    <FaRegClock className="speed-icon" />
+                                    <span className="speed-text">Tốc độ</span>
+                                    <select value={playbackSpeed} onChange={handleSpeedChange} className="speed-select">
+                                        <option value="0.5">0.5x</option>
+                                        <option value="0.75">0.75x</option>
+                                        <option value="1.0">1.0x</option>
+                                        <option value="1.25">1.25x</option>
+                                        <option value="1.5">1.5x</option>
+                                        <option value="1.75">1.75x</option>
+                                        <option value="2.0">2.0x</option>
+                                    </select>
+                                </div>
+                                <button className="close-btn" type="button" onClick={handleClose} title="Đóng" aria-label="Đóng" disabled={!onClose}>
+                                    <FaTimesCircle />
+                                </button>
                             </div>
                         </div>
 
-                        <div className="audio-player-actions">
-                            <button className="control-btn" type="button" onClick={handlePrev} disabled={!audioSrc} title="Lùi 5s">
-                                <FaBackward />
-                            </button>
-                            <button className="play-btn" type="button" onClick={togglePlayAudio} disabled={isAudioLoading} title={isPlaying ? 'Tạm dừng' : 'Phát'}>
-                                <span className="play-icon">
-                                    {isAudioLoading ? <span className="loader" /> : (isPlaying ? <FaPause /> : <FaPlay />)}
-                                </span>
-                            </button>
-                            <button className="control-btn" type="button" onClick={handleNext} disabled={!audioSrc} title="Tua 5s">
-                                <FaForward />
-                            </button>
-                            <div className="speed-label">
-                                <FaRegClock className="speed-icon" />
-                                <span className="speed-text">Tốc độ</span>
-                                <select value={playbackSpeed} onChange={handleSpeedChange} className="speed-select">
-                                    <option value="0.5">0.5x</option>
-                                    <option value="0.75">0.75x</option>
-                                    <option value="1.0">1.0x</option>
-                                    <option value="1.25">1.25x</option>
-                                    <option value="1.5">1.5x</option>
-                                    <option value="1.75">1.75x</option>
-                                    <option value="2.0">2.0x</option>
-                                </select>
-                            </div>
-                            <button className="close-btn" type="button" onClick={handleClose} title="Đóng" aria-label="Đóng" disabled={!onClose}>
-                                <FaTimes />
-                            </button>
+                        <div className="timeline-container">
+                            <span className="time-display">{formatTime(isSeeking ? localTime : currentTime)}</span>
+                            <input 
+                                type="range" 
+                                min="0" 
+                                max={duration || 0} 
+                                step="any"
+                                value={isSeeking ? localTime : currentTime} 
+                                onChange={handleSeekChange}
+                                onMouseUp={handleSeekEnd}
+                                onTouchEnd={handleSeekEnd}
+                                className="timeline-slider"
+                                style={{ background: `linear-gradient(90deg, #f59e0b ${progressPercent}%, rgba(248,250,252,0.12) ${progressPercent}%)` }}
+                            />
+                            <span className="time-display">{formatTime(duration)}</span>
                         </div>
-                    </div>
-
-                    <div className="timeline-container">
-                        <span className="time-display">{formatTime(isSeeking ? localTime : currentTime)}</span>
-                        <input 
-                            type="range" 
-                            min="0" 
-                            max={duration || 0} 
-                            step="any"
-                            value={isSeeking ? localTime : currentTime} 
-                            onChange={handleSeekChange}
-                            onMouseUp={handleSeekEnd}
-                            onTouchEnd={handleSeekEnd}
-                            className="timeline-slider"
-                            style={{ background: `linear-gradient(90deg, #f59e0b ${progressPercent}%, rgba(248,250,252,0.12) ${progressPercent}%)` }}
-                        />
-                        <span className="time-display">{formatTime(duration)}</span>
                     </div>
 
                     <audio 

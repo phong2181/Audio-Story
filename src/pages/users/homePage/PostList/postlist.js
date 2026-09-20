@@ -121,7 +121,7 @@ const NewChaptersSection = ({ chapters, handleChapterAccess }) => {
 
     return (
         <div className="hp-chapter-list" >
-            {chapters.slice(0, 10).map((ch, i) => {
+            {chapters.slice(0, 5).map((ch, i) => {
                 const isVip = parseInt(ch.is_vip) === 1;
                 return (
                     <Link

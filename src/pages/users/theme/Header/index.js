@@ -6,13 +6,16 @@ import {
     FaTimes,
     FaSignOutAlt,
     FaUser,
-    FaCrown
+    FaCrown,
+    FaMoon,
+    FaSun
 } from "react-icons/fa";
 import { RiArticleLine } from "react-icons/ri";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import AuthDialog from "../../LoginRigister/index";
 import "./style.scss";
 import { STORAGE_URL } from "config/config";
+import { useTheme } from "context/ThemeContext";
 
 // Helper lấy URL avatar đúng
 const getAvatarUrl = (avatar) => {
@@ -48,6 +51,22 @@ const UserAvatar = ({ avatar, name, size = 36 }) => {
                 </span>
             )}
         </div>
+    );
+};
+
+const ThemeToggleButton = ({ className = "" }) => {
+    const { isDark, toggleTheme } = useTheme();
+    return (
+        <button
+            type="button"
+            className={`theme-toggle ${className}`}
+            onClick={toggleTheme}
+            title={isDark ? "Chuyển sang chế độ sáng" : "Chuyển sang chế độ tối"}
+            aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+        >
+            {isDark ? <FaSun /> : <FaMoon />}
+            <span className="theme-toggle-label">{isDark ? "Sáng" : "Tối"}</span>
+        </button>
     );
 };
 
@@ -146,28 +165,33 @@ const Header = () => {
 
                 {/* Khu vực tài khoản */}
                 <div className="user-section">
-                    {userInfo ? (
-                        <div className="user-logged">
-                            {/* Avatar thay cho tên + icon */}
-                            {!isUserVip && (
-                                <Link to="/membership" title="Mở Thành Viên">
-                                    <FaCrown />
+                    <div className="user-actions">
+                        {/* Nút chuyển chế độ sáng/tối */}
+                        <ThemeToggleButton />
+
+                        {userInfo ? (
+                            <div className="user-logged">
+                                {/* Avatar thay cho tên + icon */}
+                                {!isUserVip && (
+                                    <Link to="/membership" title="Mở Thành Viên">
+                                        <FaCrown />
+                                    </Link>
+                                )}
+                                <Link to="/profile" title={userInfo.name}>
+                                    <UserAvatar avatar={userInfo.avatar} name={userInfo.name} size={36} />
                                 </Link>
-                            )}
-                            <Link to="/profile" title={userInfo.name}>
-                                <UserAvatar avatar={userInfo.avatar} name={userInfo.name} size={36} />
-                            </Link>
-                            <button className="logout-btn" onClick={handleLogout} title="Đăng xuất">
-                                <FaSignOutAlt />
-                            </button>
-                        </div>
-                    ) : (
-                        <div className="user-guest">
-                            <button className="login-btn" onClick={handleOpenLogin}>
-                                Đăng nhập
-                            </button>
-                        </div>
-                    )}
+                                <button className="logout-btn" onClick={handleLogout} title="Đăng xuất">
+                                    <FaSignOutAlt />
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="user-guest">
+                                <button className="login-btn" onClick={handleOpenLogin}>
+                                    Đăng nhập
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Nút mở menu mobile */}
@@ -182,6 +206,8 @@ const Header = () => {
             {/* Menu mobile */}
             <div className={`mobile-menu ${isMobileMenuOpen ? "open" : ""}`}>
                 <nav className="mobile-nav-links">
+                    {/* Nút chuyển chế độ sáng/tối trên mobile */}
+                    <ThemeToggleButton className="mobile-theme-toggle" />
                     {!userInfo ? (
                         <button className="mobile-login" onClick={() => { handleOpenLogin(); setIsMobileMenuOpen(false); }}>
                             Đăng nhập
@@ -194,7 +220,9 @@ const Header = () => {
                                     <FaCrown style={{ color: "#ed1b33", bottom: 10, width: "18px", height: "18px", border: "2px solid #fff", borderRadius: "50%" }} /> Mở Thành Viên
                                 </Link>
                             )}
-                            <button className="mobile-logout" onClick={handleLogout}>Đăng xuất</button>
+                            <button className="mobile-logout" onClick={handleLogout}>
+                                <FaSignOutAlt /> Đăng xuất
+                            </button>
                         </>
                     )}
                 </nav>

@@ -1,70 +1,59 @@
-// Admin authentication utilities
+/**
+ * Admin authentication utilities.
+ * Manages admin token & user info in localStorage.
+ */
 
-export const AUTH_KEYS = {
-  TOKEN: "adminToken",
-  INFO: "adminInfo",
-};
+const ADMIN_TOKEN_KEY = 'adminToken';
+const ADMIN_INFO_KEY = 'adminInfo';
 
 /**
- * Save admin authentication
+ * Save admin authentication data to localStorage.
+ * @param {string} token - JWT token from backend
+ * @param {object} user - User object (id, name, email, avatar, etc.)
  */
-export const saveAdminAuth = (token, adminInfo) => {
-  localStorage.setItem(AUTH_KEYS.TOKEN, token);
-  localStorage.setItem(AUTH_KEYS.INFO, JSON.stringify(adminInfo));
-};
+export function saveAdminAuth(token, user) {
+  if (token) {
+    localStorage.setItem(ADMIN_TOKEN_KEY, token);
+  }
+  if (user) {
+    localStorage.setItem(ADMIN_INFO_KEY, JSON.stringify(user));
+  }
+}
 
 /**
- * Get admin token
+ * Check if admin is currently logged in.
+ * @returns {boolean}
  */
-export const getAdminToken = () => {
-  return localStorage.getItem(AUTH_KEYS.TOKEN);
-};
+export function isAdminLoggedIn() {
+  return !!localStorage.getItem(ADMIN_TOKEN_KEY);
+}
 
 /**
- * Get admin info
+ * Logout admin: remove token & info from localStorage.
  */
-export const getAdminInfo = () => {
+export function logoutAdmin() {
+  localStorage.removeItem(ADMIN_TOKEN_KEY);
+  localStorage.removeItem(ADMIN_INFO_KEY);
+}
+
+/**
+ * Get admin user info object from localStorage.
+ * @returns {object|null} Parsed user info or null
+ */
+export function getAdminInfo() {
   try {
-    const info = localStorage.getItem(AUTH_KEYS.INFO);
-    return info ? JSON.parse(info) : null;
-  } catch (error) {
-    console.error("Failed to parse admin info:", error);
+    const raw = localStorage.getItem(ADMIN_INFO_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
     return null;
   }
-};
+}
 
 /**
- * Check if admin is logged in
+ * Get admin JWT token from localStorage.
+ * @returns {string|null}
  */
-export const isAdminLoggedIn = () => {
-  return !!getAdminToken() && !!getAdminInfo();
-};
+export function getAdminToken() {
+  return localStorage.getItem(ADMIN_TOKEN_KEY);
+}
 
-/**
- * Logout admin
- */
-export const logoutAdmin = () => {
-  localStorage.removeItem(AUTH_KEYS.TOKEN);
-  localStorage.removeItem(AUTH_KEYS.INFO);
-};
-
-/**
- * Validate admin token
- */
-export const validateAdminToken = () => {
-  const token = getAdminToken();
-  const info = getAdminInfo();
-
-  if (!token || !info) {
-    return false;
-  }
-
-  // Add token expiration check if needed
-  // const tokenExpiry = localStorage.getItem(AUTH_KEYS.TOKEN_EXPIRY);
-  // if (tokenExpiry && new Date(tokenExpiry) < new Date()) {
-  //   logoutAdmin();
-  //   return false;
-  // }
-
-  return true;
-};

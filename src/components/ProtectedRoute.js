@@ -1,23 +1,20 @@
-import { Navigate } from "react-router-dom";
-import { ROUTES } from "utils/route";
-import { validateAdminToken, getAdminInfo } from "utils/adminAuth";
+import React from 'react';
+import { Navigate } from 'react-router-dom';
+import { isAdminLoggedIn } from '../utils/adminAuth';
+import { ROUTES } from '../utils/route';
 
-const ProtectedRoute = ({ children, requiredRole = "admin" }) => {
-  // Kiểm tra token hợp lệ
-  const isValid = validateAdminToken();
-
-  if (!isValid) {
+/**
+ * ProtectedRoute component.
+ * Redirects to admin login if user is not authenticated.
+ * Otherwise renders the children (protected content).
+ */
+const ProtectedRoute = ({ children }) => {
+  if (!isAdminLoggedIn()) {
     return <Navigate to={ROUTES.ADMIN.LOGIN} replace />;
   }
 
-  const admin = getAdminInfo();
-
-  // Có thể thêm kiểm tra role ở đây nếu cần
-  // if (admin.role !== requiredRole) {
-  //   return <Navigate to={ROUTES.ADMIN.DASHBOARD} replace />;
-  // }
-
-  return children;
+  return <>{children}</>;
 };
 
 export default ProtectedRoute;
+

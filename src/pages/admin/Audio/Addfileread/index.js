@@ -17,10 +17,11 @@ import {
     FaHeadphones,
     FaRedo,
 } from "react-icons/fa";
-import { useGetStoriesAD, useGetChaptersByStoryAD, useAddChapterAD } from "api/homePage";
+import { useGetStoriesAD, useGetChaptersByStoryAD, useAddChapterAD, useGetTTSVoicesAD, generateTTSAudioAPI, useGetBackgroundMusicsPublic } from "api/homePage";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { VI_VOICES, TTS_VOICE_STORAGE_KEY, TTS_SPEED_STORAGE_KEY } from "../../../../config.js";
+import { FaMusic, FaVolumeDown } from "react-icons/fa";
 import "./style.scss";
 
 const DEMO_TEXT = "Chào mừng bạn đến với Audio Story. Tôi là giọng đọc AI tự động, mang đến những giờ phút thư giãn tuyệt vời.";
@@ -37,29 +38,39 @@ const AddFileRead = () => {
     // Load speed từ localStorage
     const [speed, setSpeed] = useState(() => {
         const saved = localStorage.getItem(TTS_SPEED_STORAGE_KEY);
-        return saved ? parseFloat(saved) : 1.0;
+return saved ? parseFloat(saved) : 1.0;
     });
 
     const [volume, setVolume] = useState(70);
     const [isVip, setIsVip] = useState(0);
     const [selectedStoryId, setSelectedStoryId] = useState("");
-    const [ttsStatus, setTtsStatus] = useState("idle"); // idle, loading-model, generating, error
+    const [ttsStatus, setTtsStatus] = useState("idle"); // idle, generating, error
     const [audioUrl, setAudioUrl] = useState(null);
     const [audioBlob, setAudioBlob] = useState(null);
     const [demoPlayingVoice, setDemoPlayingVoice] = useState(null);
+
+    // Nhạc nền (background music) - tùy chọn
+    const [selectedBgMusicId, setSelectedBgMusicId] = useState("");
+    const [bgVolume, setBgVolume] = useState(15); // Mặc định 15% (thấp hơn giọng đọc)
+    const [bgPreviewUrl, setBgPreviewUrl] = useState(null);
 
     // Voice filter state
     const [searchQuery, setSearchQuery] = useState("");
     const [filterGender, setFilterGender] = useState("all"); // all, Nữ, Nam
     const [filterRegion, setFilterRegion] = useState("all"); // all, Miền Bắc, Miền Nam, Miền Trung, Trung lập
 
-    const workerRef = useRef(null);
-    const currentModelRef = useRef(null);
     const audioPlayerRef = useRef(null);
     const previewAudioRef = useRef(null);
+    const bgAudioRef = useRef(null);
 
     // Lấy danh sách truyện từ API
     const { data: allStories } = useGetStoriesAD();
+
+// Danh sách giọng đọc lấy từ backend (quét model trong storage/app/tts/models)
+    const { data: backendVoices } = useGetTTSVoicesAD();
+
+    // Danh sách nhạc nền (công khai - chỉ admin đăng lên được)
+    const { data: publicBgMusics } = useGetBackgroundMusicsPublic();
 
     // Lấy danh sách chương dựa trên truyện được chọn
     const { data: chapters, isLoading: loadingChapters } = useGetChaptersByStoryAD(selectedStoryId);
@@ -69,28 +80,43 @@ const AddFileRead = () => {
 
     const updatingStories = allStories?.filter(story => story.status === "updating") || [];
 
+    // Voice list: ưu tiên dữ liệu từ backend, fallback về metadata tĩnh (VI_VOICES)
+    const voices = useMemo(() => {
+        if (backendVoices && backendVoices.length > 0) {
+            // Map backend voice (id, name, sample_rate, espeak_voice, ...) với metadata UI
+            return backendVoices.map((v) => {
+                const meta = VI_VOICES.find((m) => m.id === v.id) || {};
+                return {
+                    id: v.id,
+                    name: v.name || meta.name || v.id,
+                    gender: meta.gender || "Nữ",
+                    region: meta.region || "Miền Bắc",
+                    desc: meta.desc || "Giọng đọc AI",
+                };
+            });
+        }
+        return VI_VOICES;
+    }, [backendVoices]);
+
     // Filtered voices based on search and filter
     const filteredVoices = useMemo(() => {
-        return VI_VOICES.filter(v => {
+        return voices.filter(v => {
             const matchSearch = !searchQuery ||
                 v.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 v.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                v.desc.toLowerCase().includes(searchQuery.toLowerCase());
+                (v.desc || "").toLowerCase().includes(searchQuery.toLowerCase());
             const matchGender = filterGender === "all" || v.gender === filterGender;
             const matchRegion = filterRegion === "all" || v.region === filterRegion;
             return matchSearch && matchGender && matchRegion;
         });
-    }, [searchQuery, filterGender, filterRegion]);
+    }, [voices, searchQuery, filterGender, filterRegion]);
 
     // Get selected voice info
-    const selectedVoiceInfo = VI_VOICES.find(v => v.id === selectedVoice) || VI_VOICES[0];
+    const selectedVoiceInfo = voices.find(v => v.id === selectedVoice) || voices[0];
 
     useEffect(() => {
         document.title = "📚 Thêm chương mới (AI TTS)";
         return () => {
-            if (workerRef.current) {
-                workerRef.current.terminate();
-            }
             if (audioPlayerRef.current) {
                 audioPlayerRef.current.pause();
             }
@@ -100,17 +126,18 @@ const AddFileRead = () => {
         };
     }, []);
 
+// Điều chỉnh âm lượng thực tế của audio preview nhạc nền theo thời gian thực
+    useEffect(() => {
+        if (bgAudioRef.current) {
+            bgAudioRef.current.volume = bgVolume / 100;
+        }
+    }, [bgVolume]);
+
     // Save selectedVoice to localStorage whenever it changes
     const handleVoiceSelect = (voiceId) => {
         setSelectedVoice(voiceId);
         localStorage.setItem(TTS_VOICE_STORAGE_KEY, voiceId);
-        // Reset worker when voice changes
-        if (workerRef.current && currentModelRef.current !== voiceId) {
-            workerRef.current.terminate();
-            workerRef.current = null;
-            currentModelRef.current = null;
-        }
-        toast.success(`✅ Đã chọn giọng: ${VI_VOICES.find(v => v.id === voiceId)?.name || voiceId}`);
+        toast.success(`✅ Đã chọn giọng: ${voices.find(v => v.id === voiceId)?.name || voiceId}`);
     };
 
     // Save speed to localStorage
@@ -119,54 +146,38 @@ const AddFileRead = () => {
         localStorage.setItem(TTS_SPEED_STORAGE_KEY, newSpeed.toString());
     };
 
-    // Khởi tạo Web Worker để xử lý AI TTS
-    const initWorker = (modelName) => {
-        return new Promise((resolve, reject) => {
-            if (workerRef.current) {
-                workerRef.current.terminate();
-            }
-
-            setTtsStatus("loading-model");
-
-            try {
-                const worker = new Worker(
-                    new URL("../../../../workers/tts-worker.js", import.meta.url),
-                    { type: "module" }
-                );
-                workerRef.current = worker;
-
-                worker.onmessage = (e) => {
-                    const { status, data } = e.data;
-                    if (status === "ready") {
-                        setTtsStatus("idle");
-                        resolve(worker);
-                    } else if (status === "error") {
-                        setTtsStatus("error");
-                        toast.error(data || "Lỗi tải mô hình AI.");
-                        reject(new Error(data));
-                    }
-                };
-
-                worker.onerror = (err) => {
-                    setTtsStatus("error");
-                    toast.error("Worker gặp lỗi: " + err.message);
-                    reject(err);
-                };
-
-                worker.postMessage({
-                    type: "init",
-                    model: modelName,
-                    lang: "vi",
-                });
-            } catch (err) {
-                setTtsStatus("error");
-                toast.error("Không thể khởi tạo Web Worker.");
-                reject(err);
-            }
+// Gọi backend sinh audio (trả về Blob WAV)
+    const generateAudio = async (text, isPreview) => {
+        const blob = await generateTTSAudioAPI({
+            text,
+            model: selectedVoice,
+            speed,
+            isPreview: isPreview ? 1 : 0,
+            background_music_id: selectedBgMusicId || null,
+            bg_volume: bgVolume,
         });
+        return blob;
     };
 
-    // Tạo bản nghe thử cho 200 ký tự đầu tiên
+    // Xử lý chọn nhạc nền
+    const handleBgMusicSelect = (e) => {
+        const id = e.target.value;
+        setSelectedBgMusicId(id);
+
+        // Tạo URL preview cho nhạc nền được chọn
+        if (bgPreviewUrl) {
+            URL.revokeObjectURL(bgPreviewUrl);
+            setBgPreviewUrl(null);
+        }
+        if (id && publicBgMusics) {
+            const selected = publicBgMusics.find(m => String(m.id) === String(id));
+            if (selected?.audio_url) {
+                setBgPreviewUrl(selected.audio_url);
+            }
+        }
+    };
+
+    // Tạo bản nghe thử cho 300 ký tự đầu tiên
     const handlePreview = async () => {
         if (!content.trim()) {
             toast.warn("Vui lòng nhập nội dung tập để nghe thử!");
@@ -183,42 +194,33 @@ const AddFileRead = () => {
 
             setTtsStatus("generating");
 
-            let worker = workerRef.current;
-            if (!worker || currentModelRef.current !== selectedVoice) {
-                worker = await initWorker(selectedVoice);
-                currentModelRef.current = selectedVoice;
-            }
-
             const previewText = content.substring(0, 300);
+            const blob = await generateAudio(previewText, true);
 
-            worker.onmessage = (e) => {
-                const { status, audio, data } = e.data;
-                if (status === "preview" && audio) {
-                    const url = URL.createObjectURL(audio);
-                    setAudioUrl(url);
-                    setAudioBlob(audio);
-                    setTtsStatus("idle");
-                    toast.success("🎵 Đã tạo nghe thử thành công!");
+            const url = URL.createObjectURL(blob);
+            setAudioUrl(url);
+            setAudioBlob(blob);
+            setTtsStatus("idle");
+            toast.success("🎵 Đã tạo nghe thử thành công!");
 
-                    const player = new Audio(url);
-                    player.volume = volume / 100;
-                    audioPlayerRef.current = player;
-                    player.play().catch(err => console.warn("Auto-play failed:", err));
-                } else if (status === "error") {
-                    setTtsStatus("error");
-                    toast.error(data || "Lỗi tạo giọng đọc nghe thử.");
-                    setTtsStatus("idle");
-                }
-            };
-
-            worker.postMessage({
-                type: "preview",
-                text: previewText,
-                voice: 0,
-                speed: speed,
-            });
+            const player = new Audio(url);
+            player.volume = volume / 100;
+            audioPlayerRef.current = player;
+            player.play().catch(err => console.warn("Auto-play failed:", err));
         } catch (err) {
             console.error(err);
+            // Khi responseType=blob, error response cũng là Blob → phải đọc text
+            let errMsg = "Lỗi tạo giọng đọc nghe thử.";
+            if (err?.response?.data instanceof Blob) {
+                try {
+                    const errText = await err.response.data.text();
+                    const errJson = JSON.parse(errText);
+                    errMsg = errJson.message || errMsg;
+                } catch (_) {}
+            } else if (err?.response?.data?.message) {
+                errMsg = err.response.data.message;
+            }
+            toast.error(errMsg);
             setTtsStatus("idle");
         }
     };
@@ -243,57 +245,52 @@ const AddFileRead = () => {
             }
 
             setDemoPlayingVoice(voiceId);
-            setTtsStatus("loading-model");
-
-            let worker = workerRef.current;
-            if (!worker || currentModelRef.current !== voiceId) {
-                worker = await initWorker(voiceId);
-                currentModelRef.current = voiceId;
-            }
-
             setTtsStatus("generating");
 
-            const voiceName = VI_VOICES.find(v => v.id === voiceId)?.name || voiceId;
+            const voiceName = voices.find(v => v.id === voiceId)?.name || voiceId;
             const demoText = `Xin chào! Tôi là ${voiceName}. ${DEMO_TEXT}`;
 
-            worker.onmessage = (e) => {
-                const { status, audio, data } = e.data;
-                if (status === "preview" && audio) {
-                    setTtsStatus("idle");
-                    const url = URL.createObjectURL(audio);
-                    const player = new Audio(url);
-                    player.volume = volume / 100;
-                    previewAudioRef.current = player;
+            const blob = await generateTTSAudioAPI({
+                text: demoText,
+                model: voiceId,
+                speed: 1.0,
+                isPreview: 1,
+            });
 
-                    player.onended = () => {
-                        setDemoPlayingVoice(null);
-                        URL.revokeObjectURL(url);
-                    };
+            setTtsStatus("idle");
+            const url = URL.createObjectURL(blob);
+            const player = new Audio(url);
+            player.volume = volume / 100;
+            previewAudioRef.current = player;
 
-                    player.onerror = () => {
-                        setDemoPlayingVoice(null);
-                    };
-
-                    player.play().catch(err => {
-                        console.warn("Auto-play failed:", err);
-                        setDemoPlayingVoice(null);
-                        setTtsStatus("idle");
-                    });
-                } else if (status === "error") {
-                    toast.error(data || "Lỗi phát thử giọng.");
-                    setDemoPlayingVoice(null);
-                    setTtsStatus("idle");
-                }
+            player.onended = () => {
+                setDemoPlayingVoice(null);
+                URL.revokeObjectURL(url);
             };
 
-            worker.postMessage({
-                type: "preview",
-                text: demoText,
-                voice: 0,
-                speed: 1.0,
+            player.onerror = () => {
+                setDemoPlayingVoice(null);
+            };
+
+            player.play().catch(err => {
+                console.warn("Auto-play failed:", err);
+                setDemoPlayingVoice(null);
+                setTtsStatus("idle");
             });
         } catch (err) {
             console.error(err);
+            // Khi responseType=blob, error response cũng là Blob → phải đọc text
+            let errMsg = "Lỗi phát thử giọng.";
+            if (err?.response?.data instanceof Blob) {
+                try {
+                    const errText = await err.response.data.text();
+                    const errJson = JSON.parse(errText);
+                    errMsg = errJson.message || errMsg;
+                } catch (_) {}
+            } else if (err?.response?.data?.message) {
+                errMsg = err.response.data.message;
+            }
+            toast.error(errMsg);
             setDemoPlayingVoice(null);
             setTtsStatus("idle");
         }
@@ -323,47 +320,28 @@ const AddFileRead = () => {
 
             setTtsStatus("generating");
 
-            let worker = workerRef.current;
-            if (!worker || currentModelRef.current !== selectedVoice) {
-                worker = await initWorker(selectedVoice);
-                currentModelRef.current = selectedVoice;
-            }
+            const blob = await generateAudio(content, false);
 
-            worker.onmessage = (e) => {
-                const { status, audio, data, chunk } = e.data;
+            const url = URL.createObjectURL(blob);
+            setAudioUrl(url);
+            setAudioBlob(blob);
 
-                if (status === "stream" && chunk) {
-                    // Streaming chunks (optional: could show progress)
-                    return;
-                }
-
-                if (status === "complete") {
-                    if (audio) {
-                        const url = URL.createObjectURL(audio);
-                        setAudioUrl(url);
-                        setAudioBlob(audio);
-
-                        // Tiến hành tải lên file audio đã sinh ra
-                        uploadAudioFile(audio);
-                    } else {
-                        setTtsStatus("error");
-                        toast.error("Lỗi tạo tệp âm thanh hoàn chỉnh.");
-                        setTtsStatus("idle");
-                    }
-                } else if (status === "error") {
-                    setTtsStatus("error");
-                    toast.error(data || "Lỗi tạo audio.");
-                    setTtsStatus("idle");
-                }
-            };
-
-            worker.postMessage({
-                text: content,
-                voice: 0,
-                speed: speed,
-            });
+            // Tiến hành tải lên file audio đã sinh ra
+            uploadAudioFile(blob);
         } catch (err) {
             console.error(err);
+            // Khi responseType=blob, error response cũng là Blob → phải đọc text
+            let errMsg = "Lỗi tạo audio.";
+            if (err?.response?.data instanceof Blob) {
+                try {
+                    const errText = await err.response.data.text();
+                    const errJson = JSON.parse(errText);
+                    errMsg = errJson.message || errMsg;
+                } catch (_) {}
+            } else if (err?.response?.data?.message) {
+                errMsg = err.response.data.message;
+            }
+            toast.error(errMsg);
             setTtsStatus("idle");
         }
     };
@@ -398,7 +376,7 @@ const AddFileRead = () => {
     };
 
     // Get unique regions for filter
-    const regions = ["all", ...new Set(VI_VOICES.map(v => v.region))];
+    const regions = ["all", ...new Set(voices.map(v => v.region))];
 
     return (
         <div className="addChapter">
@@ -406,7 +384,7 @@ const AddFileRead = () => {
 
             <div className="pageHeader">
                 <h2>📚 Thêm chương mới</h2>
-                <p>Thêm tập truyện mới với tính năng chuyển đổi văn bản thành giọng nói AI (Piper-TTS)</p>
+                <p>Thêm tập truyện mới với tính năng chuyển đổi văn bản thành giọng nói AI (Piper-TTS chạy tại máy chủ)</p>
             </div>
 
             {/* Current Voice Banner */}
@@ -569,6 +547,74 @@ const AddFileRead = () => {
                     </div>
                 </div>
 
+                {/* Background Music - Nhạc nền */}
+                <div className="card">
+                    <h3>
+                        <FaMusic />
+                        Nhạc nền (Tùy chọn)
+                    </h3>
+                    <p style={{ color: "#64748b", fontSize: "13px", marginBottom: "18px", marginTop: "-10px" }}>
+                        Chọn nhạc nền để trộn vào giọng đọc. Âm lượng nhạc nền sẽ được đặt thấp hơn giọng đọc.
+                        Bạn cần upload nhạc nền trước ở trang <strong>"Quản lý nhạc nền"</strong>.
+                    </p>
+
+                    <div className="grid">
+                        <div className="formGroup">
+                            <label>
+                                <FaMusic /> Chọn nhạc nền
+                            </label>
+                            <select value={selectedBgMusicId} onChange={handleBgMusicSelect}>
+                                <option value="">-- Không dùng nhạc nền --</option>
+                                {publicBgMusics && publicBgMusics.length > 0 ? (
+                                    publicBgMusics.map((m) => (
+                                        <option key={m.id} value={m.id}>
+                                            {m.title}
+                                        </option>
+                                    ))
+                                ) : (
+                                    <option value="" disabled>Chưa có nhạc nền nào</option>
+                                )}
+                            </select>
+                        </div>
+
+                        <div className="formGroup">
+                            <label>
+                                <FaVolumeDown /> Âm lượng nhạc nền ({bgVolume}%)
+                            </label>
+                            <div className="volumeControl">
+                                <input
+                                    type="range"
+                                    min="0"
+                                    max="50"
+                                    step="1"
+                                    value={bgVolume}
+                                    onChange={(e) => setBgVolume(parseInt(e.target.value))}
+                                />
+                                <span>{bgVolume}%</span>
+                            </div>
+                            <p style={{ fontSize: "11px", color: "#94a3b8", marginTop: "4px" }}>
+                                Giá trị thấp (0-50%) giúp nhạc nền không át giọng đọc.
+                            </p>
+                        </div>
+
+{bgPreviewUrl && (
+                            <div className="formGroup" style={{ gridColumn: "1 / -1" }}>
+                                <label>Nghe thử nhạc nền (âm lượng thực tế: {bgVolume}%)</label>
+                                <audio
+                                    ref={bgAudioRef}
+                                    controls
+                                    src={bgPreviewUrl}
+                                    style={{ width: "100%" }}
+                                    onPlay={(e) => { e.currentTarget.volume = bgVolume / 100; }}
+                                />
+                                <p style={{ fontSize: "12px", color: "#94a3b8", marginTop: "6px" }}>
+                                    💡 Kéo thanh "Âm lượng nhạc nền" bên trên để nghe trước mức độ trộn thực tế trước khi tải lên.
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
                 {/* Access Control */}
                 <div className="card">
                     <h3>
@@ -629,11 +675,6 @@ const AddFileRead = () => {
                                 <FaSpinner className="animate-spin" />
                                 Đang chuyển đổi...
                             </>
-                        ) : ttsStatus === "loading-model" ? (
-                            <>
-                                <FaSpinner className="animate-spin" />
-                                Đang tải model...
-                            </>
                         ) : (
                             <>
                                 <FaPlay />
@@ -667,7 +708,7 @@ const AddFileRead = () => {
             {/* Voice Selector Panel */}
             <div className="voiceCard">
                 <div className="voiceHeader">
-                    <h3>🎙 Danh sách giọng đọc AI ({VI_VOICES.length} giọng)</h3>
+                    <h3>🎙 Danh sách giọng đọc AI ({voices.length} giọng)</h3>
                     <p>Nhấn <strong>"Nghe thử"</strong> để xem trước, nhấn <strong>"Chọn giọng"</strong> để áp dụng.</p>
                 </div>
 
@@ -802,11 +843,7 @@ const AddFileRead = () => {
                 <div className="tts-loading-overlay">
                     <div className="tts-loading-content">
                         <FaSpinner className="spinner-icon" />
-                        <p>
-                            {ttsStatus === "loading-model"
-                                ? "Đang tải mô hình giọng đọc AI (lần đầu sẽ mất 10-20 giây do lưu cache)..."
-                                : "Đang xử lý chuyển đổi văn bản sang âm thanh..."}
-                        </p>
+                        <p>Đang xử lý chuyển đổi văn bản sang âm thanh tại máy chủ...</p>
                     </div>
                 </div>
             )}

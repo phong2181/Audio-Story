@@ -55,13 +55,14 @@ const Sidebar = () => {
         { label: "Danh mục bài viết", path: ROUTES.ADMIN.POSTS_CATEGORY },
       ],
     },
-    {
+{
       label: "Truyện Audio",
       icon: <SiAudioboom />,
       children: [
         { label: "Đăng truyện mới", path: ROUTES.ADMIN.AUDIO_ADD },
         { label: "Thể loại truyện", path: ROUTES.ADMIN.MANAGE_AUDIO_CATEGORY },
         { label: "Quản lý bộ truyện", path: ROUTES.ADMIN.MANAGE_COMMENTS_AUDIO },
+        { label: "Quản lý nhạc nền", path: ROUTES.ADMIN.MANAGE_BACKGROUND_MUSIC },
       ],
     },
     {

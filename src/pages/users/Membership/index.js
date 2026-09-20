@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { useGetMembershipPlansClient, useCreatePayment } from 'api/homePage'; 
+import { useGetMembershipPlansClient } from 'api/homePage'; 
 import Swal from 'sweetalert2';
 import './style.scss';
 import { useLocation, useNavigate } from 'react-router-dom';
-import AuthDialog from "../LoginRigister/index"; 
+import AuthDialog from "../LoginRigister/index";
+import VietQRPayment from './VietQRPayment'; 
 
 const Membership = () => {
   const [billingCycle, setBillingCycle] = useState('monthly'); 
+  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [showVietQR, setShowVietQR] = useState(false);
   
   const { data: apiPlans, isLoading, isError } = useGetMembershipPlansClient();
-  const { mutateAsync: createPayment, isPending: isProcessing } = useCreatePayment();
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -70,32 +72,48 @@ const Membership = () => {
 
       Swal.fire({
           title: 'Xác nhận nâng cấp gói',
-          html: `Bạn có chắc chắn muốn nâng cấp lên gói <b>${plan.name}</b> với giá <b>${Number(plan.price).toLocaleString()}đ</b> qua ví MoMo không?`,
+          html: `Bạn có chắc chắn muốn nâng cấp lên gói <b>${plan.name}</b> với giá <b>${Number(plan.price).toLocaleString()}đ</b> không?`,
           icon: 'info',
           showCancelButton: true,
-          confirmButtonText: 'Thanh toán qua MoMo',
+          confirmButtonText: '💳 Thanh toán VietQR',
           cancelButtonText: 'Hủy bỏ',
-          showLoaderOnConfirm: true,
-          preConfirm: async () => {
-              try {
-                  const res = await createPayment({ plan_id: plan.id });
-                  if (res && res.success && res.payUrl) {
-                      return res.payUrl; 
-                  } else {
-                      throw new Error(res.message || "Không thể khởi tạo liên kết MoMo");
-                  }
-              } catch (error) {
-                  Swal.showValidationMessage(
-                      `Lỗi hệ thống: ${error.response?.data?.message || error.message || "Vui lòng thử lại sau"}`
-                  );
-              }
-          },
-          allowOutsideClick: () => !Swal.isLoading()
+          confirmButtonColor: '#667eea',
+          cancelButtonColor: '#aaa'
       }).then((result) => {
-          if (result.isConfirmed && result.value) {
-              window.location.href = result.value;
+          if (result.isConfirmed) {
+              setSelectedPlan(plan);
+              setShowVietQR(true);
           }
       });
+  };
+
+  const handlePaymentSuccess = (response) => {
+    setShowVietQR(false);
+    setSelectedPlan(null);
+    
+    Swal.fire({
+      title: '🎉 Chúc mừng!',
+      html: `
+        <p style="font-size: 16px; margin: 15px 0;">
+          Bạn đã nâng cấp thành công lên <strong>${selectedPlan?.name}</strong>
+        </p>
+        <p style="color: #27ae60; font-size: 14px;">
+          📅 Hết hạn: <strong>${response.vip_expires_at}</strong>
+        </p>
+      `,
+      icon: 'success',
+      confirmButtonText: 'Quay lại',
+      confirmButtonColor: '#27ae60',
+      allowOutsideClick: false,
+      allowEscapeKey: false
+    }).then(() => {
+      navigate('/dashboard');
+    });
+  };
+
+  const handlePaymentCancel = () => {
+    setShowVietQR(false);
+    setSelectedPlan(null);
   };
 
   const formatPrice = (price) => {
@@ -103,6 +121,17 @@ const Membership = () => {
   };
 
   if (isError) return <div className="error">Không thể tải dữ liệu.</div>;
+
+  // 🎯 Show VietQR Payment Modal khi user bấm nâng cấp
+  if (showVietQR && selectedPlan) {
+    return (
+      <VietQRPayment 
+        plan={selectedPlan} 
+        onSuccess={handlePaymentSuccess}
+        onClose={handlePaymentCancel}
+      />
+    );
+  }
 
   return (
     <div className="membership-container">
@@ -198,9 +227,8 @@ const Membership = () => {
                   <button 
                     className="select-plan-btn"
                     onClick={() => handleSelectPlan(plan)}
-                    disabled={isProcessing}
                   >
-                    {isProcessing ? 'Đang xử lý...' : 'Nâng cấp ngay'}
+                    Nâng cấp ngay
                   </button>
                 </div>
               </div>

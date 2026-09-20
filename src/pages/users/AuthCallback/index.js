@@ -15,17 +15,29 @@ const AuthCallback = () => {
                 const userData = JSON.parse(decodeURIComponent(user));
                 localStorage.setItem("ACCESS_TOKEN", token);
                 localStorage.setItem("USER", JSON.stringify(userData));
+
+                // Nếu user là admin/staff, lưu thêm token để vào được trang quản trị
+                // Lưu cả ADMIN_TOKEN (dùng trong login thường) và adminToken (dùng trong interceptor axios)
+                const userRole = userData?.role;
+                if (userRole === "admin" || userRole === "staff") {
+                    localStorage.setItem("ADMIN_TOKEN", token);
+                    localStorage.setItem("adminToken", token);
+                } else {
+                    localStorage.removeItem("ADMIN_TOKEN");
+                    localStorage.removeItem("adminToken");
+                }
+
                 // Redirect về trang chủ hoặc trang trước đó
                 navigate('/');
             } catch (e) {
                 console.error('Error parsing user data:', e);
-                navigate('/login');
+                navigate('/');
             }
         } else if (error) {
             console.error('Google login error:', decodeURIComponent(error));
-            navigate('/login');
+            navigate('/');
         } else {
-            navigate('/login');
+            navigate('/');
         }
     }, [navigate]);
 

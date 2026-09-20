@@ -8,12 +8,19 @@
 
   // Cột bên trái: Thông tin tổng quan
   .profile-header {
-    background: #ffffff;
-    padding: 20px 12px;
-    border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.04);
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    padding: 24px 16px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
     text-align: center;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
+    border-top: 3px solid #3b82f6;
+    transition: all 0.3s ease;
+
+    &:hover {
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+      transform: translateY(-2px);
+    }
 
     .avatar-wrapper {
       position: relative;
@@ -59,28 +66,33 @@
     }
 
     .profile-name {
-      font-size: 1.15rem;
-      font-weight: 600;
-      color: #333333;
-      margin-bottom: 3px;
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 6px;
       word-break: break-word;
+      letter-spacing: -0.3px;
     }
 
     .profile-email {
-      color: #666666;
-      font-size: 0.78rem;
-      margin-bottom: 6px;
+      color: #6b7280;
+      font-size: 0.85rem;
+      margin-bottom: 12px;
       word-break: break-all;
+      font-weight: 500;
     }
 
     .badge-role {
       display: inline-block;
-      background-color: #e9ecef;
-      color: #495057;
-      padding: 2px 8px;
-      border-radius: 20px;
-      font-size: 0.7rem;
-      font-weight: 500;
+      background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+      color: #1f2937;
+      padding: 6px 14px;
+      border-radius: 25px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border: 1px solid #e0e7ff;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
   }
 
@@ -121,11 +133,17 @@
 
   // Cột bên phải: Nội dung chính
   .profile-content {
-    background: #ffffff;
-    padding: 14px 12px;
-    border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.04);
-    margin-bottom: 12px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    padding: 20px 16px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    margin-bottom: 16px;
+    border-left: 4px solid #3b82f6;
+    transition: all 0.3s ease;
+
+    &:hover {
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    }
 
     .content-header {
       display: flex;
@@ -134,27 +152,32 @@
       margin-bottom: 14px;
 
       h2 {
-        font-size: 1.05rem;
-        color: #333333;
+        font-size: 1.25rem;
+        color: #1f2937;
         margin: 0;
+        font-weight: 700;
+        letter-spacing: -0.2px;
       }
 
       .edit-toggle-btn {
-        background-color: #f1f3f5;
-        color: #495057;
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: #ffffff;
         border: none;
-        padding: 4px 10px;
-        border-radius: 6px;
-        font-size: 0.75rem;
-        font-weight: 500;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
         cursor: pointer;
         display: flex;
         align-items: center;
-        gap: 4px;
-        transition: all 0.2s;
+        gap: 6px;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
 
         &:hover {
-          background-color: #e9ecef;
+          background: linear-gradient(135deg, #2563eb, #1d4ed8);
+          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+          transform: translateY(-1px);
         }
         svg {
           font-size: 0.75rem;
@@ -214,17 +237,20 @@
 
         input {
           width: 100%;
-          padding: 6px 8px;
-          border: 1px solid #ced4da;
-          border-radius: 6px;
-          font-size: 0.82rem;
+          padding: 10px 12px;
+          border: 1.5px solid #e5e7eb;
+          border-radius: 8px;
+          font-size: 0.85rem;
           box-sizing: border-box;
-          transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+          transition: all 0.2s ease;
+          font-weight: 500;
+          background: #fafbfc;
 
           &:focus {
-            border-color: #80bdff;
+            border-color: #3b82f6;
             outline: 0;
-            box-shadow: 0 0 0 0.18rem rgba(0, 123, 255, 0.25);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            background: #ffffff;
           }
         }
 
@@ -250,21 +276,25 @@
       }
 
       .save-btn {
-        background-color: #28a745;
+        background: linear-gradient(135deg, #10b981, #059669);
         color: #ffffff;
         border: none;
-        padding: 6px 12px;
-        border-radius: 6px;
-        font-size: 0.82rem;
-        font-weight: 500;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
         cursor: pointer;
         display: flex;
         align-items: center;
-        gap: 4px;
-        margin-top: 10px;
+        gap: 6px;
+        margin-top: 16px;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
 
         &:hover {
-          background-color: #218838;
+          background: linear-gradient(135deg, #059669, #047857);
+          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+          transform: translateY(-2px);
         }
       }
     }
@@ -335,24 +365,26 @@
   }
 
   .history-section {
-    margin-top: 16px;
-    background: #fff;
-    padding: 14px;
-    border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.04);
+    margin-top: 20px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    border-left: 4px solid #f59e0b;
 
     h3 {
-      font-size: 1rem;
-      font-weight: 600;
-      color: #333;
-      margin-bottom: 12px;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 14px;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
+      letter-spacing: -0.2px;
 
       svg {
-        font-size: 0.82rem;
-        color: #555;
+        font-size: 1rem;
+        color: #f59e0b;
       }
     }
 
@@ -386,41 +418,43 @@
           flex: 1;
 
           .activity-type {
-            font-size: 0.7rem;
-            font-weight: 500;
-            padding: 2px 6px;
-            border-radius: 4px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 6px;
             display: inline-block;
-            margin-bottom: 2px;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
 
             &.view {
-              background-color: #e3f2fd;
-              color: #1976d2;
+              background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+              color: #1e40af;
             }
 
             &.comment {
-              background-color: #e8f5e8;
-              color: #388e3c;
+              background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+              color: #15803d;
             }
 
             &.review {
-              background-color: #fff3e0;
-              color: #f57c00;
+              background: linear-gradient(135deg, #fed7aa, #fdba74);
+              color: #92400e;
             }
           }
 
           .story-title {
-            font-weight: 600;
-            color: #2c3e50;
-            font-size: 0.82rem;
+            font-weight: 700;
+            color: #1f2937;
+            font-size: 0.85rem;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
           }
 
           .chapter-title {
-            color: #7f8c8d;
-            font-size: 0.72rem;
+            color: #9ca3af;
+            font-size: 0.75rem;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -464,26 +498,28 @@
   }
 
   .favorites-section {
-    margin-top: 16px;
-    background: #fff;
-    padding: 14px;
-    border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.04);
+    margin-top: 20px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
     width: 100%;
     box-sizing: border-box;
+    border-left: 4px solid #ec4899;
 
     h3 {
-      font-size: 1.05rem;
-      font-weight: 600;
-      color: #333;
-      margin-bottom: 12px;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 16px;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
+      letter-spacing: -0.2px;
 
       svg {
-        color: #e74c3c;
-        font-size: 0.9rem;
+        color: #ec4899;
+        font-size: 1rem;
       }
     }
 

@@ -1,5 +1,5 @@
 .hp-page {
-    background: #f8f9fb;
+    background: var(--bg-page, #f8f9fb);
     min-height: 100vh;
     font-family: 'Segoe UI', sans-serif;
 }
@@ -12,7 +12,7 @@
 
 .hp-divider {
     height: 1px;
-    background: #e2e8f0;
+    background: var(--border-color, #e2e8f0);
     margin: 8px 0;
 }
 
@@ -98,7 +98,7 @@
 .hp-section-title {
     font-size: 20px;
     font-weight: 800;
-    color: #1e293b;
+    color: var(--text-title, #1e293b);
     margin: 0;
 }
 
@@ -193,11 +193,11 @@
 .hp-trending-small {
     display: flex;
     align-items: center;
-    background: #fff;
+    background: var(--bg-card, #fff);
     border-radius: 10px;
     overflow: hidden;
     text-decoration: none;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
+    box-shadow: var(--shadow-sm, 0 1px 4px rgba(0, 0, 0, 0.07));
 }
 
 .hp-trending-small-img {
@@ -228,7 +228,7 @@
 .hp-trending-title-small {
     font-size: 13px;
     font-weight: 700;
-    color: #1e293b;
+    color: var(--text-title, #1e293b);
     margin: 0;
     white-space: nowrap;
     overflow: hidden;
@@ -272,8 +272,8 @@
     grid-template-columns: 50px 1fr 120px 160px 30px;
     align-items: center;
 
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
+    background: var(--bg-card, #ffffff);
+    border: 1px solid var(--border-color, #e2e8f0);
     border-radius: 8px;
     padding: 16px 20px;
     text-decoration: none;
@@ -283,7 +283,7 @@
 
     &:hover {
         border-color: #3b82f6;
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.06);
+        box-shadow: var(--shadow-md, 0 4px 12px rgba(59, 130, 246, 0.06));
         transform: translateY(-1px);
     }
 
@@ -340,10 +340,10 @@
             text-overflow: ellipsis;
         }
 
-        .hp-chapter-name {
+.hp-chapter-name {
             font-weight: 700;
             font-size: 1rem;
-            color: #1e293b;
+            color: var(--text-title, #1e293b);
             margin: 0;
 
             // 🔥 BỘ BA THẦN THÁNH ÉP DẤU CHI TIẾT ... TRÊN 1 DÒNG
@@ -433,8 +433,8 @@
     text-decoration: none;
     border-radius: 14px;
     overflow: hidden;
-    background: #fff;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+    background: var(--bg-card, #fff);
+    box-shadow: var(--shadow-md, 0 2px 8px rgba(0, 0, 0, 0.07));
     display: flex;
     flex-direction: column;
 }
@@ -469,14 +469,14 @@
 .hp-post-title-featured {
     font-size: 13px;
     font-weight: 800;
-    color: #1e293b;
+    color: var(--text-title, #1e293b);
     margin: 0 0 8px;
     line-height: 1.4;
 }
 
 .hp-post-excerpt {
     font-size: 13px;
-    color: #64748b;
+    color: var(--text-muted, #64748b);
     margin: 0 0 12px;
     line-height: 1.6;
     display: -webkit-box;
@@ -504,10 +504,10 @@
     display: flex;
     gap: 12px;
     text-decoration: none;
-    background: #fff;
+    background: var(--bg-card, #fff);
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
+    box-shadow: var(--shadow-sm, 0 1px 4px rgba(0, 0, 0, 0.07));
 }
 
 .hp-post-small-img {
@@ -535,7 +535,7 @@
 .hp-post-title-small {
     font-size: 14px;
     font-weight: 700;
-    color: #1e293b;
+    color: var(--text-title, #1e293b);
     margin: 4px 0 6px;
     line-height: 1.4;
     display: -webkit-box;
