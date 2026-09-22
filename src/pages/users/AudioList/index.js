@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { 
+import {
     FaSearch, FaFilter, FaEye, FaHeadphones, FaChevronRight,
     FaTags, FaBookOpen, FaStar, FaTimes, FaUndo, FaListOl,
     FaClock
@@ -68,13 +68,13 @@ const StoryList = () => {
             if (sortBy === "rating") {
                 return (b.average_rating || 0) - (a.average_rating || 0);
             }
-            
+
             // TRƯỜNG HỢP MẶC ĐỊNH / "updated": Có chương mới đăng lên đầu
             // Sử dụng chính xác trường 'chapters_max_created_at' do Laravel trả về
             const dateA = new Date(a.chapters_max_created_at || a.created_at || 0).getTime();
             const dateB = new Date(b.chapters_max_created_at || b.created_at || 0).getTime();
-            
-            return dateB - dateA; 
+
+            return dateB - dateA;
         });
 
     const handleResetFilter = () => {
@@ -107,8 +107,8 @@ const StoryList = () => {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                
-                <button 
+
+                <button
                     className={`btn-filter-toggle ${isFilterOpen ? 'active' : ''}`}
                     onClick={() => setIsFilterOpen(true)}
                 >
@@ -208,9 +208,9 @@ const StoryList = () => {
                             <div className="story-card" key={story.id}>
                                 <Link to={`/story/${story.slug}`} className="card-image-wrapper">
                                     <img
-                                        src={story.thumbnail ? `${STORAGE_URL}${story.thumbnail}` : "https://via.placeholder.com/300x400"}
+                                        src={story.thumbnail ? `${STORAGE_URL}${story.thumbnail}` : "https://placehold.co/300x400"}
                                         alt={story.title}
-                                        onError={(e) => { e.target.src = "https://via.placeholder.com/300x400"; }}
+                                        onError={(e) => { e.target.src = "https://placehold.co/300x400"; }}
                                     />
                                     <span className="category-badge">{categoryName}</span>
                                     {isRecentlyUpdated(story.chapters_max_created_at, story.created_at) && (
@@ -223,25 +223,25 @@ const StoryList = () => {
 
                                 <div className="card-content">
                                     <div className="meta-top">
-                                        <Link 
-                                            to={`/authors/${encodeURIComponent(story.author_slug || story.author)}`} 
+                                        <Link
+                                            to={`/authors/${encodeURIComponent(story.author_slug || story.author)}`}
                                             className="author-link"
                                             style={{
                                                 textDecoration: 'none'
                                             }}
                                         >
-                                            <span className="author" style={{ color: 'gray', fontWeight: 'bold'}}>{story.author || "Khuyết danh"}</span>
+                                            <span className="author" style={{ color: 'gray', fontWeight: 'bold' }}>{story.author || "Khuyết danh"}</span>
                                         </Link>
                                         <span className="rating"><FaStar /> {story.average_rating || "chưa có đánh giá nào"}</span>
                                     </div>
-                                    
+
                                     <Link to={`/story/${story.slug}`} className="title-link">
                                         <h3 className="card-title">{story.title}</h3>
                                     </Link>
 
                                     {/* Hiển thị thời gian dựa trên chương mới nhất thay vì updated_at tổng */}
                                     <div className="chapter-count">
-                                        <FaListOl /> <span>{story.chapters_count || 0} tập</span> 
+                                        <FaListOl /> <span>{story.chapters_count || 0} tập</span>
                                         <FaClock /> {moment(story.chapters_max_created_at || story.created_at).fromNow()}
                                     </div>
 
