@@ -1,12 +1,12 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import {
-    FaPlay, 
-    FaStar, 
-    FaEye, 
-    FaListUl, 
-    FaUser, 
-    FaCalendarAlt, 
+    FaPlay,
+    FaStar,
+    FaEye,
+    FaListUl,
+    FaUser,
+    FaCalendarAlt,
     FaChevronRight,
     FaHeadphones,
     FaHeart,
@@ -32,9 +32,10 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import CommentSection from "../Comment/CommentBox";
 import AudioPlayer from "../AudioPlayer";
+import { getStorageUrl } from "config/config";
 
 const StoryDetail = () => {
-    const { slug, id } = useParams(); 
+    const { slug, id } = useParams();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState("chapters");
     const vipBannerRef = useRef(null); // Ref để cuộn xuống banner VIP khi cần
@@ -50,18 +51,18 @@ const StoryDetail = () => {
     const [reviewContent, setReviewContent] = useState("");
     const [showReviewForm, setShowReviewForm] = useState(false);
     const [reviewMessage, setReviewMessage] = useState({ type: '', text: '' });
-    
+
     // Auth State giả định theo code cũ
     const [isAuthOpen, setIsAuthOpen] = useState(false);
     const [isLoginMode, setIsLoginMode] = useState(true);
-    
+
     // State cho nút yêu thích
     const [isToggling, setIsToggling] = useState(false);
 
     // Lấy thông tin user 
     const userInfo = JSON.parse(localStorage.getItem("USER") || "null");
     const isAuthenticated = !!userInfo;
-    
+
     //  KIỂM TRA USER CÓ PHẢI LÀ VIP HAY KHÔNG
     //  KIỂM TRA QUYỀN ĐẶC BIỆT (Admin, Staff) HOẶC CÓ GÓI VIP
     const isAdminOrStaff = userInfo?.role === "admin" || userInfo?.role === "staff" || userInfo?.user_type === "admin"; // Tùy thuộc vào key 'role' hay 'user_type' trong DB của bạn
@@ -75,7 +76,7 @@ const StoryDetail = () => {
 
         return new Date(vipExpire) > new Date();
     }, [userInfo, isAuthenticated, isAdminOrStaff]);
-    
+
 
     const queryClient = useQueryClient();
 
@@ -85,7 +86,7 @@ const StoryDetail = () => {
         // Nếu dự án điều hướng sang trang login riêng:
         // navigate("/login");
     };
-        
+
     // Lấy dữ liệu từ API
     const { data: storyData, isLoading: isStoriesLoading } = useGetStoryDetailClient(slug);
     const { data: categoriesData } = useCategoriesClient();
@@ -106,7 +107,7 @@ const StoryDetail = () => {
 
     const { data: chaptersData, isLoading: isChaptersLoading } = useGetChaptersByStoryClient(storyId);
     const { data: reviewsData, isLoading: isReviewsLoading } = useGetReviews(storyId);
-    
+
     const addReviewMutation = useAddReview();
     const addFavoriteMutation = useAddFavorite();
     const removeFavoriteMutation = useRemoveFavorite();
@@ -312,14 +313,14 @@ const StoryDetail = () => {
             viewCount: rawStory.views || 0,
             status: rawStory.status === 'completed' ? 'Hoàn thành' : 'Đang ra',
             rating: averageRating,
-            image: rawStory.thumbnail ? `http://bloger.test/storage/${rawStory.thumbnail}` : "https://picsum.photos/400/550",
+            image: rawStory.thumbnail ? getStorageUrl(rawStory.thumbnail) : "https://picsum.photos/400/550",
             createdAt: rawStory.created_at ? new Date(rawStory.created_at).toLocaleDateString('vi-VN') : "Chưa cập nhật",
             chapters: chaptersArray.map((ch, index) => ({
                 id: ch.id,
                 chapter_name: ch.chapter_name || ch.title,
                 duration: ch.duration || "N/A",
                 views: ch.views || 0,
-                is_vip: ch.is_vip || 0, 
+                is_vip: ch.is_vip || 0,
                 date: ch.created_at ? new Date(ch.created_at).toLocaleDateString('vi-VN') : "N/A"
             }))
         };
@@ -347,7 +348,7 @@ const StoryDetail = () => {
                     <div className="story-main-info">
                         <div className="skeleton-item tag"></div>
                         <div className="skeleton-item title"></div>
-                        
+
                         <div className="story-meta-grid">
                             <div className="skeleton-item meta-line"></div>
                             <div className="skeleton-item meta-line"></div>
@@ -394,7 +395,7 @@ const StoryDetail = () => {
         );
     }
 
-    
+
 
     // GIAO DIỆN CHÍNH THỨC SAU KHI SỬ DỤNG DỮ LIỆU THÀNH CÔNG
     return (
@@ -403,9 +404,9 @@ const StoryDetail = () => {
 
             {/* Breadcrumb */}
             <div className="breadcrumbs">
-                <Link to="/" style={{color: '#475569'}}>Trang chủ</Link>
+                <Link to="/" style={{ color: '#475569' }}>Trang chủ</Link>
                 <FaChevronRight />
-                <Link to="/truyen" style={{ color: '#475569'}}>Kho truyện</Link>
+                <Link to="/truyen" style={{ color: '#475569' }}>Kho truyện</Link>
                 <FaChevronRight />
                 <span>{story.title}</span>
             </div>
@@ -422,19 +423,19 @@ const StoryDetail = () => {
                 <div className="story-main-info">
                     <span className="category-tag">{story.category}</span>
                     <h1 className="story-title">{story.title}</h1>
-                    
+
                     <div className="story-meta-grid">
                         <div className="meta-item">
-                            <FaUser /> 
+                            <FaUser />
                             <span>
-                                Tác giả: 
-                                
-                                <Link 
+                                Tác giả:
+
+                                <Link
                                     to={`/authors/${encodeURIComponent(story?.author_slug || story?.author || '')}`}
                                     className="author-link"
                                     style={{ textDecoration: 'none', marginLeft: '5px' }}
                                 >
-                                    <strong style={{ color: 'black'}}>
+                                    <strong style={{ color: 'black' }}>
                                         {story?.author || 'Không rõ'}
                                     </strong>
                                 </Link>
@@ -475,14 +476,14 @@ const StoryDetail = () => {
                             <button className="btn-play-now" disabled><FaPlay /> Chưa có chương</button>
                         )}
 
-                            <button
-                                type="button"
-                                className="btn-share"
-                                onClick={handleShare}
-                            >
-                                <FaShareAlt />
-                                <span className="btn-text">Chia sẻ</span>
-                            </button>
+                        <button
+                            type="button"
+                            className="btn-share"
+                            onClick={handleShare}
+                        >
+                            <FaShareAlt />
+                            <span className="btn-text">Chia sẻ</span>
+                        </button>
 
                         <div className="actions-right">
                             <button
@@ -495,8 +496,8 @@ const StoryDetail = () => {
                                     {isToggling
                                         ? 'Đang xử lý...'
                                         : isFavorited
-                                        ? 'Đã yêu thích'
-                                        : 'Yêu thích'}
+                                            ? 'Đã yêu thích'
+                                            : 'Yêu thích'}
                                 </span>
                             </button>
                         </div>
@@ -521,7 +522,7 @@ const StoryDetail = () => {
                 <div className="tab-content">
                     {activeTab === 'chapters' && (
                         <div className="chapters-list">
-                            
+
                             {/* 🎯 BOX THÔNG BÁO MỞ GÓI VIP THÀNH VIÊN (Hiện khi user không phải VIP) */}
                             {isAuthenticated && !isUserVip && (
                                 <div className="vip-unlock-banner" ref={vipBannerRef}>
@@ -548,11 +549,11 @@ const StoryDetail = () => {
                                     const isActiveChapter = playingChapterId === chapterKey;
                                     return (
                                         <div className="chapter-item" key={chapterKey}>
-                                            
+
                                             <div className="chapter-left">
                                                 <span className="chapter-index">{index + 1}</span>
-                                                <Link 
-                                                    to={`/story/${story.slug}/chapter/${chapterKey}`} 
+                                                <Link
+                                                    to={`/story/${story.slug}/chapter/${chapterKey}`}
                                                     className="chapter-title"
                                                     onClick={(e) => handleChapterAccess(e, chapter)}
                                                 >
@@ -562,7 +563,7 @@ const StoryDetail = () => {
 
                                             <div className="chapter-right">
                                                 <span><FaHeadphones /> {chapter.views.toLocaleString()}</span>
-                                                
+
                                                 {parseInt(chapter.is_vip) === 1 ? (
                                                     <span className="badge-vip-client"><FaCrown /> VIP</span>
                                                 ) : (
@@ -580,16 +581,16 @@ const StoryDetail = () => {
                                                         <span className="now-playing-text">Đang nghe</span>
                                                     </div>
                                                 ) : parseInt(chapter.is_vip) === 1 ? (
-                                                    <Link 
-                                                        to={`/story/${story.slug}/chapter/${chapterKey}`} 
+                                                    <Link
+                                                        to={`/story/${story.slug}/chapter/${chapterKey}`}
                                                         className="btn-listen btn-vip"
                                                         onClick={(e) => handleChapterAccess(e, chapter)}
                                                     >
                                                         Nghe <FaPlay />
                                                     </Link>
                                                 ) : (
-                                                    <Link 
-                                                        to={`/story/${story.slug}/chapter/${chapterKey}`} 
+                                                    <Link
+                                                        to={`/story/${story.slug}/chapter/${chapterKey}`}
                                                         className="btn-listen"
                                                         onClick={(e) => handleChapterAccess(e, chapter)}
                                                     >
@@ -641,8 +642,8 @@ const StoryDetail = () => {
                                         <label>Chọn số sao:</label>
                                         <div className="stars">
                                             {[1, 2, 3, 4, 5].map((star) => (
-                                                <FaStar 
-                                                    key={star} 
+                                                <FaStar
+                                                    key={star}
                                                     className={`star ${star <= (hoverRating || userRating) ? 'active' : ''}`}
                                                     onMouseEnter={() => setHoverRating(star)}
                                                     onMouseLeave={() => setHoverRating(0)}
@@ -694,10 +695,10 @@ const StoryDetail = () => {
                     )}
                 </div>
             </div>
-            <CommentSection 
-                story_id={story.id} 
+            <CommentSection
+                story_id={story.id}
                 storyAuthorId={story.author_id}
-            />  
+            />
             {/* Thay vì playingChapter, dùng playingChapterId */}
             {playingChapterId && (
                 <div className="audio-player-shell">
