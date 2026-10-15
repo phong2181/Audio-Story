@@ -619,9 +619,9 @@ if (background_music_id) {
             "Content-Type": "multipart/form-data",
         },
         responseType: "blob",
-        // TTS (Piper) chạy local nên mất nhiều thời gian hơn các request thường.
-        // Ghi đè timeout mặc định 20s -> 5 phút để tránh lỗi "timeout of 20000ms exceeded".
-        timeout: 300000,
+        // TTS (Piper) chạy văn bản dài có thể mất nhiều thời gian.
+        // Ghi đè timeout lên 60 phút (3600000ms) để không bị Axios ngắt kết nối.
+        timeout: 3600000,
         // Cho phép nhận file audio lớn (blob WAV) trả về từ backend.
         maxContentLength: Infinity,
         maxBodyLength: Infinity,
