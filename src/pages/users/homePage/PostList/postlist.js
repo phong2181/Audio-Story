@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, memo } from "react";
 import { Link } from "react-router-dom";
-import "./style.scss";
 import {
     FaFire,
     FaClock,
@@ -11,7 +10,11 @@ import {
     FaUser,
     FaCrown,
     FaLock,
-    FaUnlock
+    FaUnlock,
+    FaBookOpen,
+    FaStar,
+    FaPlay,
+    FaCompass,
 } from "react-icons/fa";
 import {
     useGetStoriesClient,
@@ -21,199 +24,364 @@ import {
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { STORAGE_URL } from "config/config";
+import BrandAdBanner from "components/BrandAdBanner";
+import "./style.scss";
 
+// Utility định dạng lượt xem
 const formatViews = (n) => {
-    if (!n) return 0;
-    return n >= 1000 ? (n / 1000).toFixed(1) + "k" : n;
+    if (!n) return "0";
+    return n >= 1000 ? (n / 1000).toFixed(1) + "k" : String(n);
 };
 
+// Utility thời gian trước
 const timeAgo = (dateStr) => {
     if (!dateStr) return "Vừa xong";
     const diff = (Date.now() - new Date(dateStr)) / 1000 / 60;
-    if (diff < 60) return Math.floor(diff) + " phút trước";
-    if (diff < 1440) return Math.floor(diff / 60) + " giờ trước";
-    return Math.floor(diff / 1440) + " ngày trước";
+    if (diff < 1) return "Vừa xong";
+    if (diff < 60) return `${Math.floor(diff)} phút trước`;
+    if (diff < 1440) return `${Math.floor(diff / 60)} giờ trước`;
+    return `${Math.floor(diff / 1440)} ngày trước`;
 };
 
+// Utility lấy đường dẫn thumbnail
 const getThumbnailUrl = (url) => {
-    if (!url) return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='400' fill='%23e2e8f0'%3E%3Crect width='300' height='400'/%3E%3C/svg%3E";
-    if (url.startsWith("http")) return url;
+    if (!url) {
+        return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='400' fill='%23cbd5e1'%3E%3Crect width='300' height='400'/%3E%3C/svg%3E";
+    }
+    if (url.startsWith("http://") || url.startsWith("https://")) return url;
     return `${STORAGE_URL}${url}`;
 };
 
-// ==================== SECTIONS ====================
+// Dải thể loại nổi bật (WordPress Category Ribbon)
+const GENRES_RIBBON = [
+    { label: "Tất cả thể loại", slug: "", icon: <FaCompass /> },
+    { label: "Ngôn Tình", slug: "ngon-tinh" },
+    { label: "Tiên Hiệp", slug: "tien-hiep" },
+    { label: "Đô Thị", slug: "do-thi" },
+    { label: "Trinh Thám", slug: "trinh-tham" },
+    { label: "Kinh Dị", slug: "kinh-di" },
+    { label: "Học Đường", slug: "hoc-duong" },
+    { label: "Huyền Huyễn", slug: "huyen-huyen" },
+];
+
+const GenreRibbon = () => (
+    <div className="hp-genre-ribbon">
+        <div className="hp-genre-scroll">
+            {GENRES_RIBBON.map((g, idx) => (
+                <Link
+                    key={idx}
+                    to={g.slug ? `/truyen?category=${g.slug}` : "/truyen"}
+                    className={`hp-genre-pill ${idx === 0 ? "active" : ""}`}
+                >
+                    {g.icon && <span className="pill-icon">{g.icon}</span>}
+                    {g.label}
+                </Link>
+            ))}
+        </div>
+    </div>
+);
+
+// Bảng Xếp Hạng Thịnh Hành (Trending Section)
 const TrendingSection = ({ stories }) => {
     if (!stories || stories.length === 0) return null;
 
+    const topOne = stories[0];
+    const topOthers = stories.slice(1, 6);
+
     return (
-        <section className="hp-section">
+        <section className="hp-section hp-trending-section">
             <div className="hp-section-header">
                 <div className="hp-section-title-wrap">
-                    <FaFire style={{ color: "#f97316" }} />
-                    <h2 className="hp-section-title">Xu Hướng</h2>
+                    <span className="section-icon-badge fire">
+                        <FaFire />
+                    </span>
+                    <div>
+                        <h2 className="hp-section-title">Bảng Xếp Hạng Thịnh Hành</h2>
+                        <p className="hp-section-subtitle">Những bộ truyện Audio thu hút lượt nghe đông đảo nhất</p>
+                    </div>
                 </div>
-                <Link to="/truyen" className="hp-view-all">Xem tất cả <FaChevronRight size={11} /></Link>
+                <Link to="/truyen" className="hp-view-all">
+                    Xem tất cả <FaChevronRight className="arrow-icon" />
+                </Link>
             </div>
 
             <div className="hp-trending-grid">
-                {stories[0] && (
-                    <Link to={`/story/${stories[0].slug}`} className="hp-trending-big">
-                        <img src={getThumbnailUrl(stories[0].thumbnail)} alt={stories[0].title} className="hp-trending-big-img" style={{ height: 410, borderBottomLeftRadius: '16px', borderBottomRightRadius: '16px' }} />
-                        <div className="hp-trending-overlay" style={{ height: 410, borderBottomLeftRadius: '16px', borderBottomRightRadius: '16px' }}>
-                            <span className="hp-rank-badge">#1 Hot</span>
-                            <div>
-                                <p className="hp-trending-category">{stories[0].category?.name || "Audio"}</p>
-                                <h3 className="hp-trending-title-big">{stories[0].title}</h3>
-                                <div className="hp-trending-meta">
-                                    <FaEye size={12} /> {formatViews(stories[0].views)} lượt nghe
-                                    &nbsp;·&nbsp;
-                                    <FaHeadphones size={12} /> {stories[0].total_chapters || stories[0].chapters_count || 0} tập
-                                    &nbsp;·&nbsp;
-                                    <FaUser /> {stories[0].author || "Tác giả ẩn danh"}
+                {/* #1 Top Trending Big Card */}
+                {topOne && (
+                    <Link to={`/story/${topOne.slug}`} className="hp-trending-big-card">
+                        <div className="big-card-cover-wrap">
+                            <img
+                                src={getThumbnailUrl(topOne.thumbnail)}
+                                alt={topOne.title}
+                                className="big-card-img"
+                                onError={(e) => { e.target.src = "/placeholder.png"; }}
+                            />
+                            <div className="big-card-overlay">
+                                <div className="overlay-top">
+                                    <span className="rank-badge rank-1">#1 HOT NHẤT</span>
+                                    {topOne.category?.name && (
+                                        <span className="category-tag">{topOne.category.name}</span>
+                                    )}
+                                </div>
+                                <div className="overlay-bottom">
+                                    <h3 className="big-card-title">{topOne.title}</h3>
+                                    {topOne.summary && (
+                                        <p className="big-card-summary">
+                                            {topOne.summary.slice(0, 110)}{topOne.summary.length > 110 ? "..." : ""}
+                                        </p>
+                                    )}
+                                    <div className="big-card-meta">
+                                        <span className="meta-item">
+                                            <FaEye /> {formatViews(topOne.views)} lượt nghe
+                                        </span>
+                                        <span className="meta-item">
+                                            <FaHeadphones /> {topOne.total_chapters || topOne.chapters_count || 0} tập
+                                        </span>
+                                        <span className="meta-item">
+                                            <FaUser /> {topOne.author || "Tác giả"}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </Link>
                 )}
 
-                <div className="hp-trending-small-grid">
-                    {stories.slice(1, 6).map((s, i) => (
-                        <Link key={s.id} to={`/story/${s.slug}`} className="hp-trending-small">
-                            <img src={getThumbnailUrl(s.thumbnail)} alt={s.title} className="hp-trending-small-img" />
-                            <div className="hp-trending-small-info">
-                                <span className="hp-rank-badge-small">#{i + 2}</span>
-                                <div style={{ flex: 1, minWidth: 0 }}>
-                                    <p className="hp-trending-title-small">{s.title}</p>
-                                    <p className="hp-trending-description-small">{s.summary || s.description || "Không có mô tả"}</p>
-                                    <p className="hp-trending-meta-small">
-                                        <FaEye size={10} /> {formatViews(s.views)}
-                                        {s.rating && ` · ⭐ ${s.rating}`}
-                                        &nbsp;·&nbsp;
-                                        <FaHeadphones size={12} /> {s.total_chapters || s.chapters_count || 0} tập
-                                        &nbsp;·&nbsp;
-                                        <FaUser /> {s.author || "Tác giả ẩn danh"}
-                                    </p>
+                {/* #2 - #6 Ranked Items */}
+                <div className="hp-trending-list">
+                    {topOthers.map((s, idx) => {
+                        const rank = idx + 2;
+                        return (
+                            <Link key={s.id} to={`/story/${s.slug}`} className="hp-trending-item">
+                                <span className={`rank-number rank-${rank}`}>
+                                    {String(rank).padStart(2, "0")}
+                                </span>
+                                <div className="item-thumb-box">
+                                    <img
+                                        src={getThumbnailUrl(s.thumbnail)}
+                                        alt={s.title}
+                                        className="item-thumb"
+                                        onError={(e) => { e.target.src = "/placeholder.png"; }}
+                                    />
                                 </div>
-                            </div>
-                        </Link>
-                    ))}
+                                <div className="item-info">
+                                    <h4 className="item-title">{s.title}</h4>
+                                    <p className="item-summary">
+                                        {s.summary || s.description || "Không có tóm tắt nội dung"}
+                                    </p>
+                                    <div className="item-meta">
+                                        <span className="meta-sub">
+                                            <FaEye /> {formatViews(s.views)}
+                                        </span>
+                                        {s.rating && (
+                                            <span className="meta-sub rating">
+                                                <FaStar /> {s.rating}
+                                            </span>
+                                        )}
+                                        <span className="meta-sub">
+                                            <FaHeadphones /> {s.total_chapters || s.chapters_count || 0} tập
+                                        </span>
+                                        <span className="meta-sub author">
+                                            {s.author || "Chưa rõ"}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="item-arrow">
+                                    <FaChevronRight />
+                                </div>
+                            </Link>
+                        );
+                    })}
                 </div>
             </div>
         </section>
     );
 };
 
-// Hiển thị danh sách chương mới đăng từ Backend kèm check VIP/Free
+// Tập Mới Cập Nhật (New Chapters Section)
 const NewChaptersSection = ({ chapters, handleChapterAccess }) => {
     if (!chapters || chapters.length === 0) {
         return (
-            <section className="hp-section">
+            <section className="hp-section hp-chapters-section">
                 <div className="hp-section-header">
                     <div className="hp-section-title-wrap">
-                        <FaClock style={{ color: "#3b82f6" }} />
-                        <h2 className="hp-section-title">Tập Mới Cập Nhật</h2>
+                        <span className="section-icon-badge clock">
+                            <FaClock />
+                        </span>
+                        <div>
+                            <h2 className="hp-section-title">Tập Mới Cập Nhật</h2>
+                            <p className="hp-section-subtitle">Các chương audio vừa được xuất bản gần đây</p>
+                        </div>
                     </div>
                 </div>
-                <p style={{ textAlign: "center", padding: "20px", color: "#94a3b8" }}>Chưa có chương truyện nào được đăng tải.</p>
+                <div className="hp-empty-box">
+                    <p>Hiện chưa có chương truyện nào được phát hành.</p>
+                </div>
             </section>
         );
     }
 
     return (
-        <div className="hp-chapter-list" >
-            {chapters.slice(0, 5).map((ch, i) => {
-                const isVip = parseInt(ch.is_vip) === 1;
-                return (
-                    <Link
-                        key={ch.id}
-                        to={`/story/${ch.story?.slug}`}
-                        className={`hp-chapter-item ${isVip ? "hp-chapter-vip" : ""}`}
-                        onClick={(e) => handleChapterAccess(e, ch)}
-                    >
-                        {/* 1. Số thứ tự chương */}
-                        <span className="hp-chapter-index">{String(i + 1).padStart(2, "0")}</span>
+        <section className="hp-section hp-chapters-section">
+            <div className="hp-section-header">
+                <div className="hp-section-title-wrap">
+                    <span className="section-icon-badge clock">
+                        <FaClock />
+                    </span>
+                    <div>
+                        <h2 className="hp-section-title">Tập Mới Cập Nhật</h2>
+                        <p className="hp-section-subtitle">Nghe ngay các chương audio mới phát hành trên hệ thống</p>
+                    </div>
+                </div>
+                <Link to="/truyen" className="hp-view-all">
+                    Xem kho truyện <FaChevronRight className="arrow-icon" />
+                </Link>
+            </div>
 
-                        {/* 2. 🔥 KHỐI CHÍNH (Gom nhóm thông tin chữ) - Giúp xử lý chống tràn che chữ */}
-                        <div className="hp-chapter-info-main">
-                            <p className="hp-chapter-story">
-                                {ch.story?.title || "Truyện không tồn tại"}
-                            </p>
-                            <p className="hp-chapter-name">
-                                {ch.chapter_name || `Chương ${ch.chapter_number}`}
-                            </p>
-                        </div>
+            <div className="hp-chapters-grid">
+                {chapters.slice(0, 8).map((ch, idx) => {
+                    const isVip = parseInt(ch.is_vip) === 1;
 
-                        {/* 3. 🔥 KHỐI PHỤ (Gom nhóm các tag và thông số về bên phải) */}
-                        <div className="hp-chapter-meta-right">
-                            <div className="hp-chapter-badge-wrap">
-                                {isVip ? (
-                                    <span className="badge-vip-client home-badge"><FaLock size={10} /> VIP</span>
-                                ) : (
-                                    <span className="badge-free-client home-badge"><FaUnlock size={10} /> Free</span>
-                                )
-                                }
-                            </div>
-
-                            <div className="hp-chapter-time">
-                                <FaEye size={10} style={{ marginRight: 4 }} />
-                                {formatViews(ch.views)}
-                                {/* Trên mobile sẽ ẩn bớt thời gian cho đỡ chật */}
-                                <span className="hp-time-text">
-                                    <FaClock size={10} style={{ marginRight: 4, marginLeft: 8 }} />
-                                    {timeAgo(ch.created_at)}
+                    return (
+                        <Link
+                            key={ch.id}
+                            to={`/story/${ch.story?.slug}`}
+                            className={`hp-chapter-card ${isVip ? "is-vip-card" : ""}`}
+                            onClick={(e) => handleChapterAccess(e, ch)}
+                        >
+                            <div className="card-index-col">
+                                <span className="chapter-index-num">
+                                    {String(idx + 1).padStart(2, "0")}
                                 </span>
                             </div>
-                        </div>
 
-                        <FaHeadphones className="hp-chapter-icon" />
-                    </Link>
-                );
-            })}
-        </div>
+                            <div className="card-main-col">
+                                <div className="card-story-row">
+                                    <FaBookOpen className="story-icon" />
+                                    <span className="story-title-name">
+                                        {ch.story?.title || "Truyện audio"}
+                                    </span>
+                                </div>
+                                <h4 className="card-chapter-title">
+                                    {ch.chapter_name || `Chương ${ch.chapter_number}`}
+                                </h4>
+                                <div className="card-footer-meta">
+                                    <span className="meta-time">
+                                        <FaClock /> {timeAgo(ch.created_at)}
+                                    </span>
+                                    <span className="meta-views">
+                                        <FaEye /> {formatViews(ch.views)}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="card-action-col">
+                                {isVip ? (
+                                    <span className="badge-vip-pill">
+                                        <FaCrown /> VIP
+                                    </span>
+                                ) : (
+                                    <span className="badge-free-pill">
+                                        <FaUnlock /> Miễn phí
+                                    </span>
+                                )}
+                                <div className="card-play-btn" title="Nghe ngay">
+                                    <FaPlay className="play-ico" />
+                                </div>
+                            </div>
+                        </Link>
+                    );
+                })}
+            </div>
+        </section>
     );
 };
 
+// Bài Viết Nổi Bật (Editorial & Posts Section)
 const PostsSection = ({ posts }) => {
     if (!posts || posts.length === 0) return null;
 
+    const featuredPost = posts[0];
+    const otherPosts = posts.slice(1, 4);
+
     return (
-        <section className="hp-section">
+        <section className="hp-section hp-posts-section">
             <div className="hp-section-header">
                 <div className="hp-section-title-wrap">
-                    <FaNewspaper style={{ color: "#8b5cf6" }} />
-                    <h2 className="hp-section-title">Bài Viết Nổi Bật</h2>
+                    <span className="section-icon-badge news">
+                        <FaNewspaper />
+                    </span>
+                    <div>
+                        <h2 className="hp-section-title">Bài Viết & Tin Tức Mới</h2>
+                        <p className="hp-section-subtitle">Góc chia sẻ, cảm nhận văn học và tin tức nổi bật từ ban biên tập</p>
+                    </div>
                 </div>
-                <Link to="/posts" className="hp-view-all">Xem tất cả <FaChevronRight size={11} /></Link>
+                <Link to="/posts" className="hp-view-all">
+                    Xem tất cả bài viết <FaChevronRight className="arrow-icon" />
+                </Link>
             </div>
 
             <div className="hp-posts-grid">
-                {posts[0] && (
-                    <Link to={`/post/${posts[0].id}`} className="hp-post-featured">
-                        <div className="hp-post-img-wrap">
-                            <img src={getThumbnailUrl(posts[0].avatar_post || posts[0].thumbnail)} alt={posts[0].title} className="hp-post-img" />
-                            <span className="hp-post-cat-badge">{posts[0].category?.name || "Tin tức"}</span>
+                {/* Large Featured Article */}
+                {featuredPost && (
+                    <Link to={`/post/${featuredPost.id}`} className="hp-post-featured-card">
+                        <div className="featured-img-wrap">
+                            <img
+                                src={getThumbnailUrl(featuredPost.avatar_post || featuredPost.thumbnail)}
+                                alt={featuredPost.title}
+                                className="featured-img"
+                                onError={(e) => { e.target.src = "/placeholder.png"; }}
+                            />
+                            <span className="post-category-tag">
+                                {featuredPost.category?.name || "Tin tức"}
+                            </span>
                         </div>
-                        <div className="hp-post-content">
-                            <h3 className="hp-post-title-featured">{posts[0].title}</h3>
-                            <p className="hp-post-excerpt">
-                                {posts[0].description || (posts[0].content ? posts[0].content.replace(/<[^>]*>/g, '').slice(0, 120) + "..." : "")}
+                        <div className="featured-body">
+                            <h3 className="featured-title">{featuredPost.title}</h3>
+                            <p className="featured-excerpt">
+                                {featuredPost.description ||
+                                    (featuredPost.content
+                                        ? featuredPost.content.replace(/<[^>]*>/g, "").slice(0, 130) + "..."
+                                        : "")}
                             </p>
-                            <div className="hp-post-meta">
-                                <FaEye size={12} /> {formatViews(posts[0].views)} lượt xem &nbsp;·&nbsp; {new Date(posts[0].created_at).toLocaleDateString('vi-VN')}
+                            <div className="featured-meta">
+                                <span className="meta-item">
+                                    <FaEye /> {formatViews(featuredPost.views)} lượt đọc
+                                </span>
+                                <span className="meta-divider">·</span>
+                                <span className="meta-item">
+                                    {new Date(featuredPost.created_at).toLocaleDateString("vi-VN")}
+                                </span>
                             </div>
                         </div>
                     </Link>
                 )}
 
-                <div className="hp-post-small-list">
-                    {posts.slice(1, 4).map((p) => (
-                        <Link key={p.id} to={`/post/${p.id}`} className="hp-post-small">
-                            <img src={getThumbnailUrl(p.avatar_post || p.thumbnail)} alt={p.title} className="hp-post-small-img" />
-                            <div className="hp-post-small-content">
-                                <span className="hp-post-cat-tag">{p.category?.name || "Tin tức"}</span>
-                                <h4 className="hp-post-title-small">{p.title}</h4>
-                                <div className="hp-post-meta">
-                                    <FaEye size={11} /> {formatViews(p.views)} &nbsp;·&nbsp; {new Date(p.created_at).toLocaleDateString('vi-VN')}
+                {/* 3 Compact Post Cards */}
+                <div className="hp-posts-compact-list">
+                    {otherPosts.map((p) => (
+                        <Link key={p.id} to={`/post/${p.id}`} className="hp-post-compact-item">
+                            <div className="compact-img-wrap">
+                                <img
+                                    src={getThumbnailUrl(p.avatar_post || p.thumbnail)}
+                                    alt={p.title}
+                                    className="compact-img"
+                                    onError={(e) => { e.target.src = "/placeholder.png"; }}
+                                />
+                            </div>
+                            <div className="compact-body">
+                                <span className="compact-category">
+                                    {p.category?.name || "Bài viết"}
+                                </span>
+                                <h4 className="compact-title">{p.title}</h4>
+                                <div className="compact-meta">
+                                    <span className="meta-item">
+                                        <FaEye /> {formatViews(p.views)}
+                                    </span>
+                                    <span className="meta-divider">·</span>
+                                    <span className="meta-item">
+                                        {new Date(p.created_at).toLocaleDateString("vi-VN")}
+                                    </span>
                                 </div>
                             </div>
                         </Link>
@@ -224,15 +392,21 @@ const PostsSection = ({ posts }) => {
     );
 };
 
-// ==================== MAIN ====================
+// ==================== MAIN HOMEPAGE ====================
 const HomePage = () => {
-
     useEffect(() => {
-        document.title = "Trang chủ - BookAudio";
+        document.title = "Trang chủ ‹ BookAudio - Nền Tảng Truyện Audio & Tin Tức";
     }, []);
 
     // Lấy thông tin User và phân quyền VIP từ localStorage
-    const userInfo = JSON.parse(localStorage.getItem("USER") || "null");
+    const userInfo = useMemo(() => {
+        try {
+            return JSON.parse(localStorage.getItem("USER") || "null");
+        } catch {
+            return null;
+        }
+    }, []);
+
     const isAuthenticated = !!userInfo;
     const isUserVip = userInfo?.membership_plan_id === 1 || userInfo?.membership_plan_id === "";
 
@@ -274,257 +448,113 @@ const HomePage = () => {
             .slice(0, 6);
     }, [storiesData]);
 
-    // Hàm kiểm tra và chặn điều hướng nếu click vào chương VIP
+    // Xử lý kiểm tra và chặn điều hướng nếu click vào chương VIP
     const handleChapterAccess = (e, chapter) => {
-        // 2. Nếu chưa đăng nhập thì chặn
         if (!isAuthenticated) {
             e.preventDefault();
-            toast.warn("Vui lòng đăng nhập để có trải nghiệm tốt hơn");
+            toast.warn("Vui lòng đăng nhập để nghe trọn vẹn chương truyện!");
             return false;
         }
-        if (parseInt(chapter.is_vip) === 1) {
-            // 3. Cho phép truy cập nếu là:
-            // - Người dùng có role là 'admin' hoặc 'staff' (Admin/Staff)
-            // - Hoặc người dùng là 'vip' (Khách hàng trả phí)
-            const isAdminOrStaff = userInfo?.role === 'admin' || userInfo?.role === 'staff';
 
+        if (parseInt(chapter.is_vip) === 1) {
+            const isAdminOrStaff = userInfo?.role === "admin" || userInfo?.role === "staff";
             if (!isUserVip && !isAdminOrStaff) {
                 e.preventDefault();
-                toast.error("Đây là nội dung VIP. Vui lòng nâng cấp gói thành viên để nghe!");
+                toast.error("Đây là nội dung VIP. Vui lòng đăng ký gói thành viên để tiếp tục nghe!");
                 return false;
             }
         }
         return true;
     };
 
-    const heroImage = "https://picsum.photos/1600/900?random=hero";
-    const [isImageError, setIsImageError] = useState(false);
-
-    useEffect(() => {
-        const img = new Image();
-        img.src = heroImage;
-        img.onload = () => setIsImageError(false);
-        img.onerror = () => setIsImageError(true);
-    }, [heroImage]);
-
+    // Skeleton loader
     if (isStoriesLoading || isChaptersLoading || isPostsLoading) {
         return (
-            <div className="hp-skeleton-page">
-                {/* HERO SKELETON */}
-                <div className="hp-skeleton-hero">
-                    <div className="shimmer hero-line-1"></div>
-                    <div className="shimmer hero-line-2"></div>
-                    <div className="shimmer hero-buttons"></div>
-                </div>
-
-                <div className="hp-container">
-                    {/* SECTION TITLE */}
-                    {[1, 2, 3].map((i) => (
-                        <div className="hp-skeleton-section" key={i}>
-                            <div className="shimmer section-title"></div>
-
-                            {/* GRID CARDS */}
-                            <div className="hp-skeleton-grid">
-                                {[1, 2, 3, 4].map((j) => (
-                                    <div className="hp-skeleton-card" key={j}>
-                                        <div className="shimmer card-img"></div>
-                                        <div className="card-body">
-                                            <div className="shimmer line w80"></div>
-                                            <div className="shimmer line w60"></div>
-                                            <div className="shimmer line w90"></div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+            <div className="hp-page-wrapper">
+                <div className="hp-skeleton-container">
+                    <div className="shimmer skeleton-hero" />
+                    <div className="shimmer skeleton-ribbon" />
+                    <div className="skeleton-grid-row">
+                        <div className="shimmer skeleton-card-big" />
+                        <div className="skeleton-cards-stack">
+                            {[1, 2, 3, 4, 5].map((i) => (
+                                <div key={i} className="shimmer skeleton-card-item" />
+                            ))}
                         </div>
-                    ))}
+                    </div>
                 </div>
-
-                {/* STYLE */}
-                <style jsx="true">{`
-                    .hp-skeleton-page {
-                        padding: 20px;
-                        max-width: 1200px;
-                        margin: auto;
-                    }
-
-                    .hp-skeleton-hero {
-                        height: 260px;
-                        border-radius: 16px;
-                        background: #0f172a;
-                        margin-bottom: 30px;
-                        padding: 40px;
-                        display: flex;
-                        flex-direction: column;
-                        justify-content: center;
-                        gap: 14px;
-                    }
-
-                    .hp-skeleton-section {
-                        margin-bottom: 40px;
-                    }
-
-                    .hp-skeleton-grid {
-                        display: grid;
-                        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-                        gap: 16px;
-                        margin-top: 16px;
-                    }
-
-                    .hp-skeleton-card {
-                        background: #fff;
-                        border-radius: 14px;
-                        overflow: hidden;
-                        box-shadow: 0 6px 20px rgba(0,0,0,0.05);
-                    }
-
-                    .card-body {
-                        padding: 12px;
-                        display: flex;
-                        flex-direction: column;
-                        gap: 10px;
-                    }
-
-                    .shimmer {
-                        position: relative;
-                        overflow: hidden;
-                        background: #e5e7eb;
-                    }
-
-                    .shimmer::after {
-                        content: "";
-                        position: absolute;
-                        top: 0;
-                        left: -150px;
-                        width: 150px;
-                        height: 100%;
-                        background: linear-gradient(
-                            90deg,
-                            transparent,
-                            rgba(255,255,255,0.6),
-                            transparent
-                        );
-                        animation: shimmer 1.2s infinite;
-                    }
-
-                    @keyframes shimmer {
-                        0% { left: -150px; }
-                        100% { left: 100%; }
-                    }
-
-                    .hero-line-1 { height: 24px; width: 60%; border-radius: 8px; }
-                    .hero-line-2 { height: 16px; width: 40%; border-radius: 8px; }
-                    .hero-buttons { height: 42px; width: 180px; border-radius: 10px; }
-
-                    .section-title { height: 22px; width: 200px; border-radius: 8px; }
-
-                    .card-img { height: 180px; width: 100%; }
-
-                    .line { height: 12px; border-radius: 6px; }
-                    .w80 { width: 80%; }
-                    .w60 { width: 60%; }
-                    .w90 { width: 90%; }
-                `}</style>
             </div>
         );
     }
 
     return (
-        <>
-            <div className="hp-page">
-                {/* Khởi tạo ToastContainer nhận thông báo hiển thị */}
-                <ToastContainer position="top-right" autoClose={3000} closeOnClick />
+        <div className="hp-page-wrapper">
+            <ToastContainer position="top-right" autoClose={3000} closeOnClick />
 
-                <div
-                    className="hp-hero"
-                    style={isImageError ? { backgroundColor: "#1f2937" } : {}}
-                >
-                    {!isImageError && (
-                        <>
-                            <div
-                                className="hp-hero-bg-blurred"
-                                style={{ backgroundImage: `url(${heroImage})` }}
-                            ></div>
-                            <div
-                                className="hp-hero-bg-clear"
-                                style={{ backgroundImage: `url(${heroImage})` }}
-                            ></div>
-                        </>
-                    )}
+            {/* Hero Magazine Banner */}
+            <header className="hp-hero-banner">
+                <div className="hp-hero-backdrop-glow" />
+                <div className="hp-hero-content-inner">
+                    <div className="hero-pill-tag">
+                        <span className="dot-pulse" />
+                        Kho Truyện Audio & Tin Tức Chọn Lọc
+                    </div>
 
-                    <div className="hp-hero-content">
-                        <p className="hp-hero-sub">🎧 Kho truyện audio ngôn tình, giang hồ, học đường</p>
-                        <h1 className="hp-hero-title">Nghe Truyện <span className="hp-hero-accent">Mọi Lúc</span>, Mọi Nơi</h1>
-                        <div className="hp-hero-btns">
-                            <Link to="/truyen" className="hp-btn-primary"><FaHeadphones /> Nghe ngay</Link>
-                            {!isUserVip ? (
-                                <Link to="/membership" className="hp-btn-outline"><FaCrown /> Đăng ký miễn phí</Link>
-                            ) : (
-                                <label className="hp-btn-outline"><FaCrown /> Bạn đã là thành viên </label>
-                            )}
-                        </div>
+                    <h1 className="hero-main-title">
+                        Lắng Nghe Thế Giới Truyện <br className="hero-br" />
+                        <span className="accent-gradient">Đậm Chất Cảm Xúc</span>
+                    </h1>
+
+                    <p className="hero-main-desc">
+                        Hàng ngàn câu chuyện ngôn tình, tiên hiệp, trinh thám được truyền tải qua giọng đọc AI sống động cùng các bài viết văn học sâu sắc mỗi ngày.
+                    </p>
+
+                    <div className="hero-action-buttons">
+                        <Link to="/truyen" className="btn-hero primary">
+                            <FaHeadphones /> Khám phá kho truyện
+                        </Link>
+                        {!isUserVip ? (
+                            <Link to="/membership" className="btn-hero vip">
+                                <FaCrown /> Nâng cấp VIP Hội viên
+                            </Link>
+                        ) : (
+                            <span className="btn-hero vip-active">
+                                <FaCrown /> Bạn đã là Hội viên VIP
+                            </span>
+                        )}
+                    </div>
+
+                    {/* Feature badges bar */}
+                    <div className="hero-features-strip">
+                        <span className="feature-item">🎙 Giọng đọc Piper AI chất lượng cao</span>
+                        <span className="feature-item">⚡ Cập nhật chương mới mỗi ngày</span>
+                        <span className="feature-item">🎧 Hỗ trợ nghe trực tuyến tiện lợi</span>
                     </div>
                 </div>
+            </header>
 
-                <div className="hp-container">
-                    <TrendingSection stories={trendingStories} />
-                    <div className="hp-divider" />
+            {/* Main Content Container */}
+            <main className="hp-main-container">
+                {/* Dải thể loại truyện */}
+                <GenreRibbon />
 
-                    {/* Truyền thêm hàm handleChapterAccess vào Section danh sách chương mới */}
-                    <NewChaptersSection chapters={chapters} handleChapterAccess={handleChapterAccess} />
+                {/* Bảng xếp hạng thịnh hành */}
+                <TrendingSection stories={trendingStories} />
 
-                    <div className="hp-divider" />
-                    <PostsSection posts={recentPosts} />
-                </div>
-            </div>
+                {/* Banner quảng cáo từ Brand (Nếu có thì hiện, không có thì ẩn) */}
+                <BrandAdBanner position="home_banner" />
 
-            <style jsx="true">{`
-                .hp-hero {
-                    position: relative;
-                    padding: 80px 20px;
-                    text-align: center;
-                    color: #fff;
-                    overflow: hidden;
-                    min-height: 350px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    transition: background-color 0.3s ease;
-                }
+                {/* Tập mới cập nhật */}
+                <NewChaptersSection
+                    chapters={chapters}
+                    handleChapterAccess={handleChapterAccess}
+                />
 
-                .hp-hero-bg-blurred {
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background-size: cover;
-                    background-position: center;
-                    filter: blur(15px) brightness(0.35);
-                    z-index: 1;
-                }
-
-                .hp-hero-bg-clear {
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background-size: cover;
-                    background-position: center;
-                    z-index: 2;
-                    filter: brightness(0.65);
-                    -webkit-mask-image: linear-gradient(to right, transparent 2%, #000 35%, #000 65%, transparent 98%);
-                    mask-image: linear-gradient(to right, transparent 2%, #000 35%, #000 65%, transparent 98%);
-                }
-
-                .hp-hero-content {
-                    position: relative;
-                    z-index: 3;
-                }
-            `}</style>
-        </>
+                {/* Bài viết & Tin tức mới */}
+                <PostsSection posts={recentPosts} />
+            </main>
+        </div>
     );
 };
 
-export default HomePage;
+export default memo(HomePage);

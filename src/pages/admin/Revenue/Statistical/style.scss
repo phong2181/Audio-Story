@@ -226,3 +226,114 @@ $border-color: #e2e8f0;
         color: $danger-color;
     }
 }
+
+// ─── Revenue Statistics Dark Mode ───────────────────────
+[data-theme="dark"] {
+    .revenue-stats {
+        background-color: transparent;
+        color: var(--text-color, #cbd5e1);
+
+        &__header {
+            .header-title {
+                h2 {
+                    color: var(--text-title, #f1f5f9);
+                }
+                p {
+                    color: var(--text-muted, #94a3b8);
+                }
+            }
+        }
+
+        &__overview {
+            .stat-card {
+                background: var(--bg-card, #1a202c);
+                border-color: var(--border-color, #2d3648);
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+
+                &__icon {
+                    &--year {
+                        background: rgba(99, 102, 241, 0.15);
+                        color: #818cf8;
+                    }
+                    &--month {
+                        background: rgba(6, 182, 212, 0.15);
+                        color: #22d3ee;
+                    }
+                    &--growth {
+                        background: #151a24;
+                        border-color: var(--border-color, #2d3648);
+                    }
+                }
+
+                &__info {
+                    span {
+                        color: var(--text-muted, #94a3b8);
+                    }
+                    h3 {
+                        color: var(--text-title, #f1f5f9);
+                    }
+                }
+            }
+        }
+
+        &__filter-bar {
+            background: var(--bg-card, #1a202c);
+            border-color: var(--border-color, #2d3648);
+
+            .filter-title {
+                color: var(--text-title, #f1f5f9);
+                svg {
+                    color: var(--text-muted, #94a3b8);
+                }
+            }
+
+            .filter-controls .filter-select {
+                background-color: #12161f;
+                border-color: var(--border-color, #2d3648);
+                color: var(--text-title, #f1f5f9);
+
+                &:focus {
+                    border-color: #818cf8;
+                }
+            }
+        }
+
+        &__table-wrapper {
+            background: var(--bg-card, #1a202c);
+            border-color: var(--border-color, #2d3648);
+        }
+    }
+
+    .revenue-table {
+        thead {
+            background-color: #151a24;
+            tr {
+                border-bottom-color: var(--border-color, #2d3648);
+            }
+            th {
+                color: var(--text-muted, #94a3b8);
+            }
+        }
+
+        tbody {
+            tr {
+                border-bottom-color: #232b3a;
+
+                &:hover {
+                    background-color: rgba(102, 126, 234, 0.08);
+                }
+            }
+            td {
+                color: var(--text-color, #cbd5e1);
+            }
+        }
+
+        .month-label {
+            color: var(--text-title, #f1f5f9);
+        }
+
+        .revenue-amount {
+            color: var(--text-title, #f1f5f9);
+        }
+    }
+}

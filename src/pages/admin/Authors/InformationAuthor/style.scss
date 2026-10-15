@@ -1,252 +1,501 @@
-.modern-profile-container {
-  // Ép cứng chiều rộng tổng thể, không cho co giãn bừa bãi
-  width: 1200px;
-  max-width: 1200px;
-  min-width: 1200px;
-  margin: 20px auto;
-  background: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-  overflow: hidden;
-  font-family: 'Inter', sans-serif;
+.wp-profile-wrap {
+  padding: 24px 32px;
+  background-color: #f0f0f1;
+  min-height: calc(100vh - 65px);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  color: #1e293b;
 
-  // ── Cover & Avatar Header ──
-  .profile-media-header {
+  .wp-profile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #ffffff;
+    padding: 20px 24px;
+    border-radius: 8px;
+    border: 1px solid #ccd0d4;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+
+      .header-icon {
+        font-size: 28px;
+        color: #2271b1;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 700;
+        color: #1d2327;
+      }
+
+      .subtitle {
+        margin: 4px 0 0 0;
+        font-size: 13px;
+        color: #64748b;
+      }
+    }
+
+    .header-badge {
+      .role-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        background: #eff6ff;
+        color: #1d4ed8;
+        border: 1px solid #bfdbfe;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+      }
+    }
+  }
+
+  .wp-section-box {
+    background: #ffffff;
+    border: 1px solid #ccd0d4;
+    border-radius: 6px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+
+    .section-title {
+      margin: 0 0 16px 0;
+      padding-bottom: 12px;
+      font-size: 17px;
+      font-weight: 600;
+      color: #1d2327;
+      border-bottom: 1px solid #f1f5f9;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .title-icon {
+        color: #2271b1;
+      }
+    }
+
+    .form-table {
+      width: 100%;
+      border-collapse: collapse;
+
+      tr {
+        border-bottom: 1px solid #f8fafc;
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        th {
+          width: 240px;
+          padding: 16px 16px 16px 0;
+          vertical-align: top;
+          text-align: left;
+          font-size: 13.5px;
+          font-weight: 600;
+          color: #1e293b;
+          line-height: 1.5;
+
+          .required {
+            color: #ef4444;
+          }
+        }
+
+        td {
+          padding: 14px 0;
+          vertical-align: middle;
+
+          .regular-text {
+            width: 100%;
+            max-width: 440px;
+            padding: 9px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #0f172a;
+            outline: none;
+            transition: all 0.2s ease;
+            background: #ffffff;
+
+            &:focus {
+              border-color: #2271b1;
+              box-shadow: 0 0 0 1px #2271b1;
+            }
+
+            &.disabled-input {
+              background: #f1f5f9;
+              color: #64748b;
+              cursor: not-allowed;
+            }
+          }
+
+          .input-with-icon {
+            display: flex;
+            align-items: center;
+            max-width: 440px;
+            position: relative;
+
+            .field-icon {
+              position: absolute;
+              left: 12px;
+              font-size: 16px;
+              color: #64748b;
+
+              &.zalo-icon {
+                color: #0068ff;
+              }
+              &.fb-icon {
+                color: #1877f2;
+              }
+              &.tiktok-icon {
+                color: #000000;
+              }
+            }
+
+            .regular-text {
+              padding-left: 38px;
+            }
+          }
+
+          .description {
+            margin: 6px 0 0 0;
+            font-size: 12.5px;
+            color: #64748b;
+          }
+
+          .wp-role-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+          }
+        }
+      }
+    }
+  }
+
+  /* Avatar & Cover Upload Rows */
+  .avatar-upload-row {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+
+    .wp-avatar-preview {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #e2e8f0;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+  }
+
+  .cover-upload-box {
     position: relative;
-    height: 260px; // Cố định chiều cao vùng header
-    
-    .cover-wrapper {
-      height: 260px;
-      position: relative;
-      background: #e2e8f0;
+    max-width: 600px;
+    height: 140px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #cbd5e1;
+    background: #0f172a;
 
-      .cover-img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-
-      .upload-cover-btn {
-        position: absolute; right: 20px; bottom: 20px;
-        background: rgba(0, 0, 0, 0.6); color: #fff;
-        padding: 8px 14px; border-radius: 20px; font-size: 0.85rem;
-        cursor: pointer; display: flex; align-items: center; gap: 6px;
-        backdrop-filter: blur(4px); transition: background 0.2s;
-        &:hover { background: rgba(0, 0, 0, 0.8); }
-      }
+    .wp-cover-preview {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
 
-    .avatar-position-box {
-      position: absolute; left: 40px; bottom: -50px; z-index: 5;
+    .upload-cover-btn {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(4px);
+      color: #ffffff;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: background 0.2s ease;
 
-      .avatar-container {
-        position: relative; 
-        width: 120px; 
-        height: 120px;
-        min-width: 120px; // Cố định kích thước Avatar
-        min-height: 120px;
-        border-radius: 50%; border: 4px solid #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        background: #fff;
-
-        .main-avatar { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
-        
-        .upload-avatar-badge {
-          position: absolute; right: 0; bottom: 4px;
-          background: #4a6cf7; color: white; width: 32px; height: 32px;
-          border-radius: 50%; display: flex; align-items: center; justify-content: center;
-          cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-          &:hover { background: #3554d1; }
-        }
+      &:hover {
+        background: rgba(15, 23, 42, 0.95);
       }
     }
   }
 
-  // ── Hero Title section ──
-  .profile-meta-hero {
-    padding: 65px 40px 20px 40px;
-    display: flex; justify-content: space-between; align-items: center;
-    border-bottom: 1px solid #f1f5f9;
+  /* QR Code Upload Row */
+  .qr-upload-row {
+    display: flex;
+    align-items: center;
+    gap: 18px;
 
-    .user-title {
-      h2 { margin: 0 0 4px 0; font-size: 1.6rem; color: #1e293b; font-weight: 700; }
-      p { margin: 0; color: #64748b; font-size: 0.95rem; }
-      .badge-role {
-        background: #edf2ff; color: #4a6cf7; padding: 2px 10px; border-radius: 12px;
-        font-weight: 600; font-size: 0.8rem;
-      }
+    .wp-qr-preview {
+      width: 100px;
+      height: 100px;
+      object-fit: contain;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      background: #ffffff;
+      padding: 4px;
     }
 
-    .btn-edit-toggle {
-      background: #f1f5f9; border: none; color: #475569; padding: 10px 18px;
-      border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer;
-      display: flex; align-items: center; gap: 8px; transition: all 0.2s;
-      white-space: nowrap; // Chống vỡ chữ trong nút
-      &:hover { background: #e2e8f0; color: #1e293b; }
+    .no-qr-placeholder {
+      width: 100px;
+      height: 100px;
+      border: 2px dashed #cbd5e1;
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #94a3b8;
+      font-size: 11px;
+      gap: 6px;
+
+      svg {
+        font-size: 24px;
+      }
     }
   }
 
-  // ── Layout Grid 2 Cột ──
-  .profile-grid-layout {
-    display: grid; 
-    grid-template-columns: 320px 780px; // Thay 1fr thành 780px cố định để phân rõ tỷ lệ chuẩn 1200px
-    gap: 20px; 
-    padding: 30px 40px;
-    background: #f8fafc;
+  /* Buttons */
+  .upload-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
 
-    .profile-sidebar {
-      display: flex; flex-direction: column; gap: 20px;
-      width: 320px;
-      min-width: 320px; // Ép cứng sidebar trái
-      max-width: 320px;
+  .btn-wp-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: #2271b1;
+    color: #ffffff;
+    border: 1px solid #2271b1;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
 
-      .sidebar-card {
-        background: #fff; padding: 20px; border-radius: 12px;
-        border: 1px solid #e2e8f0;
-        box-sizing: border-box;
-        
-        .card-title { margin: 0 0 15px 0; font-size: 1.05rem; color: #0f172a; font-weight: 600; }
-        
-        .info-list-links {
-          list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px;
-          li {
-            display: flex; align-items: center; gap: 10px; font-size: 0.9rem;
-            a { color: #475569; text-decoration: none; &:hover { color: #4a6cf7; text-shadow: 0 0 1px #4a6cf7;} }
-            .icon { font-size: 1.1rem; &.fb { color: #1877f2; } &.gh { color: #24292e; } &.web { color: #10b981; } }
-          }
-          .phone-item { border-top: 1px dashed #e2e8f0; padding-top: 10px; margin-top: 5px; color: #64748b; }
+    &:hover:not(:disabled) {
+      background: #135e96;
+      border-color: #135e96;
+    }
+
+    &:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+  }
+
+  .btn-wp-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    background: #f6f7f7;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #2271b1;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    width: fit-content;
+
+    &:hover {
+      background: #f0f0f1;
+      border-color: #2271b1;
+      color: #135e96;
+    }
+  }
+
+  .wp-submit-box {
+    margin-top: 16px;
+  }
+
+  /* Author Content Stats */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+
+    .stat-card {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 20px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+
+      .stat-icon {
+        font-size: 28px;
+
+        &.post-icon {
+          color: #3b82f6;
         }
-
-        .edit-social-form {
-          display: flex; flex-direction: column; gap: 8px;
-          label { font-size: 0.8rem; font-weight: 500; color: #64748b; }
-          input { padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem; width: 100%; box-sizing: border-box; }
+        &.story-icon {
+          color: #8b5cf6;
         }
       }
 
-      .qr-donate-card {
-        text-align: center;
-        .qr-hint { font-size: 0.8rem; color: #64748b; margin-bottom: 15px; line-height: 1.4; }
-        
-        .qr-image-wrapper {
-          position: relative;
-          background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0;
-          display: inline-block;
-          width: 180px; height: 180px; // Cố định khung bọc QR Code
-          overflow: hidden;
+      .stat-info {
+        display: flex;
+        flex-direction: column;
 
-          .qr-code-img { width: 160px; height: 160px; object-fit: contain; transition: all 0.3s; }
+        .stat-value {
+          font-size: 22px;
+          font-weight: 700;
+          color: #0f172a;
+        }
 
-          &.editable {
-            &:hover {
-              .qr-code-img { filter: blur(2px) brightness(0.7); }
-              .change-qr-overlay { opacity: 1; }
-            }
-          }
+        .stat-label {
+          font-size: 12px;
+          color: #64748b;
+        }
+      }
+    }
+  }
+}
 
-          .change-qr-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(74, 108, 247, 0.75); color: #fff;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            gap: 6px; font-size: 0.85rem; font-weight: 500;
-            cursor: pointer; opacity: 0; transition: opacity 0.3s;
-            
-            svg { font-size: 1.2rem; }
-          }
+// ─── Author Information Dark Mode ───────────────────────
+[data-theme="dark"] {
+  .wp-profile-wrap {
+    background-color: transparent;
+    color: var(--text-color, #cbd5e1);
+
+    .wp-profile-header {
+      background: var(--bg-card, #1a202c);
+      border-color: var(--border-color, #2d3648);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+
+      .header-left {
+        .header-icon {
+          color: #818cf8;
+        }
+        h1 {
+          color: var(--text-title, #f1f5f9);
+        }
+        .subtitle {
+          color: var(--text-muted, #94a3b8);
         }
       }
 
-      .btn-edit-toggle.active-editing {
-        background: #10b981 !important;
-        color: #ffffff !important;
+      .header-badge .role-tag {
+        background: #1e2430;
+        color: #818cf8;
+        border-color: var(--border-color, #2d3648);
       }
     }
 
-    // ── Main Content Phải ──
-    .profile-main-content {
-      background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden;
-      display: flex; flex-direction: column;
-      width: 780px;
-      min-width: 780px; // Ép cứng vùng hiển thị nội dung bên phải
-      max-width: 780px;
+    .wp-section-box {
+      background: var(--bg-card, #1a202c);
+      border-color: var(--border-color, #2d3648);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
 
-      .profile-tabs-nav {
-        display: flex; background: #f1f5f9; border-bottom: 1px solid #e2e8f0;
-        
-        .tab-btn {
-          flex: 1; padding: 15px 20px; border: none; background: transparent;
-          font-size: 0.95rem; font-weight: 600; color: #64748b; cursor: pointer;
-          display: flex; align-items: center; justify-content: center; gap: 8px;
-          transition: all 0.2s;
-          white-space: nowrap;
-          
-          &:hover { color: #1e293b; background: rgba(0,0,0,0.02); }
-          &.active { color: #4a6cf7; background: #fff; border-bottom: 2px solid #4a6cf7; }
+      .section-title {
+        color: var(--text-title, #f1f5f9);
+        border-bottom-color: var(--border-color, #2d3648);
+
+        .title-icon {
+          color: #818cf8;
         }
       }
 
-      .tab-body-container {
-        padding: 25px; flex: 1;
-        box-sizing: border-box;
-
-        // Định dạng list item chung (Bài viết / Bộ truyện)
-        .data-item-card {
-          display: flex; 
-          justify-content: space-between; 
-          align-items: center;
-          padding: 16px; border-radius: 8px; border: 1px solid #e2e8f0;
-          margin-bottom: 12px; transition: transform 0.2s, box-shadow 0.2s;
-          box-sizing: border-box;
-          width: 100%;
-          
-          &:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
-
-          .item-details {
-            flex: 1; // Chiếm trọn không gian còn lại
-            padding-right: 20px; // Tạo khoảng cách an toàn với nút bấm
-            min-width: 0; // Kích hoạt thuộc tính truncate cho flex item
-
-            h5 { 
-              margin: 0 0 6px 0; 
-              font-size: 1rem; 
-              color: #1e293b; 
-              font-weight: 600;
-              // 🔥 CHỐNG TRÀN CHỮ: Nếu tiêu đề quá dài sẽ tự động biến thành dấu ba chấm (...) thay vì đẩy khung
-              white-space: nowrap;
-              overflow: hidden;
-              text-overflow: ellipsis;
-            }
-            span { font-size: 0.8rem; color: #64748b; white-space: nowrap; }
-            .status-badge { background: #e6fffa; color: #047481; padding: 2px 6px; border-radius: 4px; font-style: normal; font-weight: 500; }
-          }
-
-          .btn-view-link {
-            background: #fff; border: 1px solid #cbd5e1; color: #475569;
-            padding: 8px 14px; border-radius: 6px; font-size: 0.85rem; font-weight: 500;
-            cursor: pointer; 
-            white-space: nowrap; // Không cho chữ trong nút bị rớt dòng
-            min-width: 110px;    // Cố định kích thước nút bấm
-            text-align: center;
-            transition: all 0.2s;
-            &:hover { background: #4a6cf7; color: #fff; border-color: #4a6cf7; }
-          }
+      .form-table {
+        tr {
+          border-bottom-color: #232b3a;
         }
 
-        // Form bảo mật đổi mk
-        .password-form-wrapper {
-          max-width: 500px; display: flex; flex-direction: column; gap: 16px;
-          
-          .form-group {
-            display: flex; flex-direction: column; gap: 6px;
-            label { font-size: 0.85rem; font-weight: 500; color: #344155; }
-            input { padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem; width: 100%; box-sizing: border-box; }
+        th {
+          color: var(--text-title, #f1f5f9);
+        }
+
+        td {
+          .regular-text {
+            background-color: #12161f;
+            border-color: var(--border-color, #2d3648);
+            color: var(--text-title, #f1f5f9);
+
+            &:focus {
+              border-color: #818cf8;
+              box-shadow: 0 0 0 1px #818cf8;
+            }
+
+            &.disabled-input {
+              background: #151a24;
+              color: var(--text-muted, #94a3b8);
+              border-color: #232b3a;
+            }
           }
 
-          .btn-update-password {
-            margin-top: 10px; background: #4a6cf7; color: white; padding: 12px;
-            border: none; border-radius: 6px; font-weight: 600; cursor: pointer;
-            white-space: nowrap;
-            &:hover { background: #3554d1; }
+          .description {
+            color: var(--text-muted, #94a3b8);
           }
+
+          .wp-role-pill {
+            background: #151a24;
+            border-color: var(--border-color, #2d3648);
+            color: var(--text-title, #f1f5f9);
+          }
+        }
+      }
+    }
+
+    .cover-upload-box {
+      border-color: var(--border-color, #2d3648);
+    }
+
+    .qr-upload-row {
+      .no-qr-placeholder {
+        border-color: var(--border-color, #2d3648);
+        color: var(--text-muted, #94a3b8);
+      }
+    }
+
+    .btn-wp-secondary {
+      background: #1e2430;
+      border-color: var(--border-color, #2d3648);
+      color: #818cf8;
+
+      &:hover {
+        background: #283142;
+        border-color: #818cf8;
+        color: #a5b4fc;
+      }
+    }
+
+    .stats-grid .stat-card {
+      background: #151a24;
+      border-color: var(--border-color, #2d3648);
+
+      .stat-info {
+        .stat-value {
+          color: var(--text-title, #f1f5f9);
+        }
+        .stat-label {
+          color: var(--text-muted, #94a3b8);
         }
       }
     }

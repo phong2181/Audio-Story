@@ -1,282 +1,979 @@
-$primary-color: #6366f1;
-$bg-body: #f8fafc;
-$text-main: #1e293b;
-$text-muted: #64748b;
-$border-color: #e2e8f0;
+// =============================================================================
+// WordPress-Inspired Refined Styles for ManageAudioAdd (Quản lý chương Audio)
+// =============================================================================
 
-.chapter-management-container {
-    padding: 24px;
-    background: $bg-body;
-    min-height: 100vh;
+.wp-chapters-page {
+  padding: 20px 24px 60px;
+  max-width: 1440px;
+  margin: 0 auto;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  color: var(--text-color, #2c3338);
 
-    .page-header {
+  // WordPress Page Header
+  .wp-page-header {
+    margin-bottom: 16px;
+
+    .wp-header-title-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+
+      .wp-page-title {
+        font-size: 1.55rem;
+        font-weight: 600;
+        color: var(--text-title, #1d2327);
+        margin: 0;
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        margin-bottom: 30px;
+        gap: 10px;
 
-        .header-title {
-            display: flex;
-            align-items: center;
-            gap: 15px;
+        .title-icon {
+          color: #2271b1;
+          font-size: 1.4rem;
+        }
+      }
 
-            .icon-circle {
-                width: 48px;
-                height: 48px;
-                background: white;
-                border-radius: 12px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: $primary-color;
-                font-size: 20px;
-                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      .header-action-buttons {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+
+        .wp-button-action {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 14px;
+          font-size: 13px;
+          font-weight: 500;
+          border-radius: 4px;
+          cursor: pointer;
+          text-decoration: none;
+          transition: all 0.15s ease-in-out;
+          border: 1px solid transparent;
+
+          &.primary {
+            background: #2271b1;
+            color: #ffffff;
+            border-color: #2271b1;
+
+            &:hover:not(:disabled) {
+              background: #135e96;
+              border-color: #135e96;
             }
 
-            h2 { font-size: 24px; color: $text-main; margin: 0; }
-            p { color: $text-muted; margin: 0; font-size: 14px; }
+            &:disabled {
+              opacity: 0.5;
+              cursor: not-allowed;
+            }
+          }
+
+          &.studio {
+            background: #fdf2f8;
+            color: #db2777;
+            border-color: #fbcfe8;
+
+            &:hover {
+              background: #db2777;
+              color: #ffffff;
+              border-color: #db2777;
+            }
+          }
+
+          &.secondary {
+            background: #f0f0f1;
+            color: #2c3338;
+            border-color: #dcdcde;
+
+            &:hover {
+              background: #e2e8f0;
+              color: #1d2327;
+            }
+          }
+
+          svg {
+            font-size: 12px;
+          }
+        }
+      }
+
+      .wp-refreshing-badge {
+        font-size: 12px;
+        color: var(--text-muted, #64748b);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+
+        .spin {
+          animation: spin 1s linear infinite;
+        }
+      }
+    }
+  }
+
+  // Story Selector Card
+  .wp-story-selector-card {
+    background: var(--bg-card, #ffffff);
+    border: 1px solid var(--border-color, #c3c4c7);
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+
+    .selector-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+
+      .story-dropdown-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        min-width: 320px;
+        flex: 1;
+
+        .group-label {
+          font-size: 13px;
+          font-weight: 600;
+          color: var(--text-title, #2c3338);
+          display: flex;
+          align-items: center;
+          gap: 6px;
+
+          .label-icon {
+            color: #2271b1;
+          }
         }
 
-        .btn-add-chapter {
-            background: $primary-color;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
+        .wp-story-select {
+          height: 38px;
+          padding: 0 12px;
+          font-size: 14px;
+          font-weight: 500;
+          color: var(--text-title, #1d2327);
+          background: var(--bg-card, #ffffff);
+          border: 1px solid var(--border-color, #8c8f94);
+          border-radius: 4px;
+          outline: none;
+          cursor: pointer;
+          transition: border-color 0.15s ease;
+
+          &:focus {
+            border-color: #2271b1;
+            box-shadow: 0 0 0 1px #2271b1;
+          }
+        }
+      }
+
+      // Meta info of currently selected story
+      .current-story-badge-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: var(--bg-light, #f8fafc);
+        border: 1px solid var(--border-color, #e2e8f0);
+        padding: 8px 14px;
+        border-radius: 6px;
+
+        .story-mini-cover {
+          width: 36px;
+          height: 48px;
+          object-fit: cover;
+          border-radius: 3px;
+          border: 1px solid #cbd5e1;
+        }
+
+        .story-mini-meta {
+          .story-meta-title {
+            margin: 0 0 4px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-title, #1e293b);
+          }
+
+          .story-meta-tags {
             display: flex;
             align-items: center;
             gap: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            &:hover { opacity: 0.9; transform: translateY(-1px); }
+            flex-wrap: wrap;
+
+            .meta-tag {
+              font-size: 11px;
+              color: var(--text-muted, #64748b);
+              display: inline-flex;
+              align-items: center;
+              gap: 4px;
+
+              &.category {
+                background: #eff6ff;
+                color: #2563eb;
+                padding: 1px 6px;
+                border-radius: 3px;
+                font-weight: 500;
+              }
+
+              &.count {
+                background: #f1f5f9;
+                color: #475569;
+                padding: 1px 6px;
+                border-radius: 3px;
+                font-weight: 500;
+              }
+            }
+          }
         }
+      }
+    }
+  }
+
+  // Filter Bar
+  .wp-tablenav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 10px 0 14px;
+
+    &.top {
+      margin-bottom: 12px;
     }
 
-    .control-bar {
+    &.bottom {
+      margin-top: 14px;
+      padding-top: 8px;
+    }
+
+    .alignleft {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .vip-filter-tabs {
+        display: flex;
+        gap: 4px;
+        background: var(--bg-light, #f1f5f9);
+        padding: 3px;
+        border-radius: 5px;
+
+        .filter-tab {
+          background: none;
+          border: none;
+          padding: 5px 12px;
+          font-size: 12px;
+          font-weight: 500;
+          color: var(--text-color, #475569);
+          border-radius: 4px;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          transition: all 0.15s ease;
+
+          &.active {
+            background: var(--bg-card, #ffffff);
+            color: #2271b1;
+            font-weight: 600;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+          }
+
+          svg {
+            font-size: 11px;
+          }
+        }
+      }
+    }
+
+    .alignright {
+      .wp-search-box {
+        position: relative;
+        display: flex;
+        align-items: center;
+
+        .search-icon {
+          position: absolute;
+          left: 10px;
+          color: var(--text-muted, #8c8f94);
+          font-size: 12px;
+          pointer-events: none;
+        }
+
+        .wp-search-input {
+          height: 32px;
+          width: 220px;
+          padding: 0 28px 0 28px;
+          font-size: 13px;
+          color: var(--text-title, #2c3338);
+          background: var(--bg-card, #ffffff);
+          border: 1px solid var(--border-color, #8c8f94);
+          border-radius: 4px;
+          outline: none;
+          transition: all 0.15s ease;
+
+          &:focus {
+            border-color: #2271b1;
+            box-shadow: 0 0 0 1px #2271b1;
+            width: 260px;
+          }
+        }
+
+        .clear-btn {
+          position: absolute;
+          right: 6px;
+          background: none;
+          border: none;
+          color: #8c8f94;
+          cursor: pointer;
+          font-size: 11px;
+          padding: 4px;
+
+          &:hover {
+            color: #d63638;
+          }
+        }
+      }
+    }
+
+    .tablenav-pages {
+      font-size: 13px;
+      color: var(--text-muted, #64748b);
+      font-weight: 500;
+    }
+  }
+
+  // Chapters Table
+  .wp-table-container {
+    background: var(--bg-card, #ffffff);
+    border: 1px solid var(--border-color, #c3c4c7);
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    overflow-x: auto;
+
+    .wp-list-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      text-align: left;
+
+      thead th,
+      tfoot th {
+        background: var(--bg-light, #f6f7f7);
+        color: var(--text-title, #2c3338);
+        font-size: 13px;
+        font-weight: 600;
+        padding: 10px 12px;
+        border-top: 1px solid var(--border-color, #c3c4c7);
+        border-bottom: 1px solid var(--border-color, #c3c4c7);
+        white-space: nowrap;
+
+        &.text-right {
+          text-align: right;
+        }
+      }
+
+      thead th:first-child {
+        border-top: none;
+      }
+
+      tbody td {
+        padding: 10px 12px;
+        vertical-align: middle;
+        border-bottom: 1px solid var(--border-light, #f0f0f1);
+
+        &.text-right {
+          text-align: right;
+        }
+      }
+
+      tbody tr {
+        transition: background-color 0.15s ease;
+
+        &:nth-child(even) {
+          background-color: var(--bg-hover, #fcfcfc);
+        }
+
+        &:hover {
+          background-color: var(--bg-light, #f0f6fc);
+        }
+      }
+
+      // Column Number
+      .column-number {
+        width: 100px;
+
+        .chapter-num-badge {
+          display: inline-block;
+          font-weight: 600;
+          font-size: 12px;
+          color: #334155;
+          background: #f1f5f9;
+          border: 1px solid #e2e8f0;
+          padding: 2px 8px;
+          border-radius: 4px;
+        }
+      }
+
+      // Column Title
+      .column-title {
+        min-width: 220px;
+
+        .row-title {
+          font-size: 14px;
+          font-weight: 600;
+          color: var(--text-title, #1e293b);
+        }
+      }
+
+      // Column VIP
+      .column-vip {
+        width: 130px;
+
+        .badge-vip-status {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          font-size: 11px;
+          font-weight: 600;
+          padding: 3px 8px;
+          border-radius: 4px;
+
+          &.free {
+            background: #ecfdf5;
+            color: #059669;
+            border: 1px solid #a7f3d0;
+          }
+
+          &.vip {
+            background: #fefce8;
+            color: #ca8a04;
+            border: 1px solid #fde047;
+          }
+        }
+      }
+
+      // Column Audio Player
+      .column-audio {
+        width: 260px;
+
+        .wp-audio-player-wrapper {
+          .wp-audio-element {
+            width: 100%;
+            height: 32px;
+            outline: none;
+          }
+        }
+      }
+
+      // Column Author
+      .column-author {
+        width: 120px;
+        color: var(--text-muted, #64748b);
+        font-size: 12px;
+      }
+
+      // Column Date
+      .column-date {
+        width: 120px;
+
+        .date-text {
+          font-size: 12px;
+          color: var(--text-muted, #64748b);
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+
+          .date-icon {
+            font-size: 10px;
+          }
+        }
+      }
+
+      // Column Actions
+      .column-actions {
+        width: 80px;
+
+        .button-delete-chapter {
+          background: #fef2f2;
+          color: #b91c1c;
+          border: 1px solid #fecaca;
+          padding: 5px 10px;
+          border-radius: 4px;
+          font-size: 12px;
+          font-weight: 500;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          transition: all 0.15s ease;
+
+          &:hover:not(:disabled) {
+            background: #ef4444;
+            color: #ffffff;
+            border-color: #ef4444;
+          }
+
+          &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+          }
+        }
+      }
+
+      .wp-loading-cell {
+        padding: 50px 20px;
+        text-align: center;
+
+        .wp-spinner-wrap {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 10px;
+          color: var(--text-muted, #64748b);
+
+          .wp-spinner {
+            width: 28px;
+            height: 28px;
+            border: 3px solid #e2e8f0;
+            border-top-color: #2271b1;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+          }
+        }
+      }
+
+      .wp-no-items {
+        padding: 50px 20px;
+        text-align: center;
+
+        .empty-box {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
+
+          .empty-icon {
+            font-size: 32px;
+            color: #cbd5e1;
+          }
+
+          .empty-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-title, #1e293b);
+            margin: 0;
+          }
+
+          .empty-sub {
+            font-size: 12px;
+            color: var(--text-muted, #64748b);
+          }
+        }
+      }
+    }
+  }
+
+  // Modal Upload Chapter
+  .wp-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(2px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+
+    .wp-upload-chapter-modal {
+      background: var(--bg-card, #ffffff);
+      width: 100%;
+      max-width: 580px;
+      border-radius: 6px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+      border: 1px solid var(--border-color, #c3c4c7);
+      overflow: hidden;
+      animation: modalFadeIn 0.2s ease-out;
+
+      .modal-header {
         display: flex;
         justify-content: space-between;
-        background: white;
+        align-items: center;
+        padding: 14px 20px;
+        background: var(--bg-light, #f6f7f7);
+        border-bottom: 1px solid var(--border-color, #dcdcde);
+
+        h3 {
+          margin: 0;
+          font-size: 16px;
+          font-weight: 600;
+          color: var(--text-title, #1d2327);
+          display: flex;
+          align-items: center;
+          gap: 8px;
+
+          svg {
+            color: #2271b1;
+          }
+        }
+
+        .close-btn {
+          background: none;
+          border: none;
+          font-size: 15px;
+          color: var(--text-muted, #64748b);
+          cursor: pointer;
+          padding: 4px;
+
+          &:hover {
+            color: #d63638;
+          }
+        }
+      }
+
+      .modal-body {
         padding: 20px;
-        border-radius: 12px;
-        margin-bottom: 20px;
-        border: 1px solid $border-color;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
 
-        .select-story-group {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            label { font-weight: 600; color: $text-main; }
-            .story-select {
-                padding: 8px 12px;
-                border: 1px solid $border-color;
-                border-radius: 6px;
-                min-width: 250px;
+        .form-field {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+
+          label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-title, #2c3338);
+
+            .req {
+              color: #d63638;
             }
-        }
+          }
 
-        .search-box {
-            position: relative;
-            display: flex;
-            align-items: center;
-            svg { position: absolute; left: 12px; color: $text-muted; }
-            input {
-                padding: 8px 12px 8px 35px;
-                border: 1px solid $border-color;
-                border-radius: 6px;
-                width: 200px;
-            }
-        }
-    }
+          .selected-story-display {
+            padding: 8px 12px;
+            background: var(--bg-light, #f1f5f9);
+            border: 1px solid var(--border-color, #cbd5e1);
+            border-radius: 4px;
+            font-size: 13px;
+            color: #1e293b;
+          }
 
-    .table-card {
-        background: white;
-        border-radius: 12px;
-        border: 1px solid $border-color;
-        overflow: hidden;
-
-        .chapter-table {
+          .wp-input {
             width: 100%;
-            border-collapse: collapse;
-            th {
-                background: #f1f5f9;
-                padding: 15px;
-                text-align: left;
-                font-size: 13px;
-                text-transform: uppercase;
-                color: $text-muted;
+            padding: 8px 10px;
+            font-size: 13px;
+            color: var(--text-title, #2c3338);
+            background: var(--bg-card, #ffffff);
+            border: 1px solid var(--border-color, #8c8f94);
+            border-radius: 4px;
+            outline: none;
+            box-sizing: border-box;
+
+            &:focus {
+              border-color: #2271b1;
+              box-shadow: 0 0 0 1px #2271b1;
             }
-            td {
-                padding: 15px;
-                border-bottom: 1px solid #f1f5f9;
-                vertical-align: middle;
-            }
+          }
 
-            .chapter-badge {
-                background: #eef2ff;
-                color: $primary-color;
-                padding: 4px 10px;
-                border-radius: 20px;
-                font-weight: 600;
-                font-size: 12px;
-            }
+          .description {
+            margin: 2px 0 0;
+            font-size: 12px;
+            color: var(--text-muted, #64748b);
+          }
 
-            .author-tag { color: $text-main; font-weight: 500; }
+          // VIP Toggle Options
+          .vip-toggle-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
 
-            audio {
-                height: 30px;
-                border-radius: 4px;
-                outline: none;
-            }
+            .radio-card {
+              display: flex;
+              align-items: flex-start;
+              gap: 8px;
+              padding: 10px 12px;
+              background: var(--bg-light, #f8fafc);
+              border: 1px solid var(--border-color, #cbd5e1);
+              border-radius: 5px;
+              cursor: pointer;
+              transition: all 0.15s ease;
 
-            .btn-delete {
-                background: #fee2e2;
-                color: #ef4444;
-                border: none;
-                padding: 8px;
-                border-radius: 6px;
-                cursor: pointer;
-                &:hover { background: #fecaca; }
-            }
-        }
-        
-        .empty-state {
-            padding: 40px;
-            text-align: center;
-            color: $text-muted;
-        }
-    }
-}
+              input[type="radio"] {
+                margin-top: 3px;
+                accent-color: #2271b1;
+              }
 
-// Modal Styles
-.modal-overlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
+              .radio-content {
+                display: flex;
+                flex-direction: column;
+                gap: 2px;
 
-    .modal-content {
-        background: white;
-        width: 500px;
-        border-radius: 16px;
-        padding: 24px;
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-            h3 { display: flex; align-items: center; gap: 10px; margin: 0; color: $primary-color; }
-            .close-xs { border: none; background: none; font-size: 24px; cursor: pointer; }
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-            label { display: block; margin-bottom: 8px; font-weight: 600; }
-            input[type="text"] {
-                width: 100%;
-                padding: 10px;
-                border: 1px solid $border-color;
-                border-radius: 8px;
-            }
-            
-            .file-upload-wrapper {
-                .file-label {
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    padding: 30px;
-                    border: 2px dashed $border-color;
-                    border-radius: 12px;
-                    cursor: pointer;
-                    transition: border-color 0.3s;
-                    svg { font-size: 32px; color: $primary-color; margin-bottom: 10px; }
-                    span { font-size: 13px; color: $text-muted; }
-                    &:hover { border-color: $primary-color; }
+                .radio-title {
+                  font-size: 13px;
+                  font-weight: 600;
+                  color: #1e293b;
+                  display: flex;
+                  align-items: center;
+                  gap: 5px;
                 }
+
+                .radio-desc {
+                  font-size: 11px;
+                  color: #64748b;
+                }
+              }
+
+              &.selected {
+                background: #eff6ff;
+                border-color: #3b82f6;
+
+                .radio-title {
+                  color: #1d4ed8;
+                }
+
+                &.vip {
+                  background: #fefce8;
+                  border-color: #eab308;
+
+                  .radio-title {
+                    color: #a16207;
+                  }
+                }
+              }
             }
-        }
+          }
 
-        .modal-footer {
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
-            .btn-cancel { background: #f1f5f9; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; }
-            .btn-submit { background: $primary-color; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; }
+          // Dropzone
+          .audio-upload-dropzone {
+            .dropzone-label {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              padding: 24px 16px;
+              border: 2px dashed #cbd5e1;
+              border-radius: 6px;
+              cursor: pointer;
+              background: #fafafa;
+              transition: all 0.2s ease;
+              text-align: center;
+
+              &:hover {
+                border-color: #2271b1;
+                background: #f0f7ff;
+              }
+
+              .dropzone-icon {
+                font-size: 32px;
+                color: #2271b1;
+                margin-bottom: 6px;
+              }
+
+              .dropzone-title {
+                font-size: 13px;
+                font-weight: 600;
+                color: #1e293b;
+              }
+
+              .dropzone-hint {
+                font-size: 11px;
+                color: #94a3b8;
+                margin-top: 4px;
+              }
+            }
+          }
         }
+      }
+
+      .modal-footer {
+        padding: 12px 20px;
+        background: var(--bg-light, #f6f7f7);
+        border-top: 1px solid var(--border-color, #dcdcde);
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+
+        .button {
+          height: 34px;
+          padding: 0 16px;
+          font-size: 13px;
+          font-weight: 500;
+          border-radius: 4px;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+
+          &.btn-cancel {
+            background: #ffffff;
+            border: 1px solid #dcdcde;
+            color: #2c3338;
+
+            &:hover {
+              background: #f0f0f1;
+            }
+          }
+
+          &.btn-upload {
+            background: #2271b1;
+            border: 1px solid #2271b1;
+            color: #ffffff;
+
+            &:hover:not(:disabled) {
+              background: #135e96;
+            }
+
+            &:disabled {
+              opacity: 0.6;
+              cursor: not-allowed;
+            }
+          }
+        }
+      }
     }
-}
-
-// Badge trạng thái phân biệt VIP ở bảng danh sách
-.badge-vip-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 500;
-
-  &.free {
-    background-color: #f0fdf4;
-    color: #16a34a;
-    border: 1px solid #bbf7d0;
-  }
-
-  &.vip {
-    background-color: #fffbeb;
-    color: #d97706;
-    border: 1px solid #fde68a;
   }
 }
 
-// Group chọn chế độ VIP trong Modal
-.vip-toggle-group {
+// Confirmation Dialog in Toast
+.wp-confirm-dialog {
   display: flex;
-  gap: 15px;
-  margin-top: 8px;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 290px;
+  padding: 4px 0;
 
-  .radio-label {
-    flex: 1;
+  .confirm-icon {
+    font-size: 24px;
+    align-self: center;
+  }
+
+  .confirm-body {
+    text-align: center;
+
+    .confirm-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1e293b;
+      margin: 0 0 4px;
+    }
+
+    .confirm-desc {
+      font-size: 12px;
+      color: #64748b;
+      margin: 0;
+      line-height: 1.4;
+    }
+  }
+
+  .confirm-actions {
     display: flex;
-    align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 12px;
-    border: 2px solid #e2e8f0;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 500;
-    color: #64748b;
-    transition: all 0.2s ease;
+    margin-top: 4px;
 
-    input[type="radio"] {
-      display: none; // Ẩn nút radio tròn mặc định đi
+    button {
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 500;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      transition: background 0.15s ease;
+
+      &.btn-cancel {
+        background: #e2e8f0;
+        color: #475569;
+        &:hover {
+          background: #cbd5e1;
+        }
+      }
+
+      &.btn-confirm-delete {
+        background: #ef4444;
+        color: #ffffff;
+        &:hover {
+          background: #dc2626;
+        }
+      }
+    }
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+// Responsive
+@media (max-width: 900px) {
+  .wp-chapters-page {
+    padding: 16px;
+
+    .wp-story-selector-card .selector-row {
+      flex-direction: column;
+      align-items: stretch;
+
+      .story-dropdown-group {
+        min-width: 100%;
+      }
     }
 
-    svg {
-      font-size: 1.1rem;
+    .wp-tablenav {
+      flex-direction: column;
+      align-items: stretch;
+
+      .alignleft,
+      .alignright {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .wp-search-box {
+        width: 100%;
+
+        .wp-search-input {
+          width: 100%;
+          &:focus {
+            width: 100%;
+          }
+        }
+      }
     }
 
-    &:hover {
-      background-color: #f8fafc;
-      border-color: #cbd5e1;
+    .wp-table-container {
+      .wp-list-table {
+        .column-author,
+        .column-date {
+          display: none;
+        }
+      }
     }
 
-    // Khi chọn nút miễn phí
-    &.active {
-      border-color: #22c55e;
-      background-color: #f0fdf4;
-      color: #15803d;
-    }
-
-    // Khi chọn nút VIP
-    &.active-vip {
-      border-color: #eab308;
-      background-color: #fffbeb;
-      color: #a16207;
+    .wp-modal-backdrop .wp-upload-chapter-modal .modal-body .vip-toggle-options {
+      grid-template-columns: 1fr;
     }
   }
 }

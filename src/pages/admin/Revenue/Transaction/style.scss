@@ -245,3 +245,137 @@
         }
     }
 }
+
+// ─── Transaction Management Dark Mode ───────────────────────
+[data-theme="dark"] {
+    .transaction-stats {
+        background-color: transparent;
+        color: var(--text-color, #cbd5e1);
+
+        &__header {
+            .header-title {
+                h2 {
+                    color: var(--text-title, #f1f5f9);
+                }
+                p {
+                    color: var(--text-muted, #94a3b8);
+                }
+            }
+        }
+
+        &__toolbar {
+            background-color: var(--bg-card, #1a202c);
+            border: 1px solid var(--border-color, #2d3648);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+
+            .search-box {
+                input {
+                    background-color: #12161f;
+                    border-color: var(--border-color, #2d3648);
+                    color: var(--text-title, #f1f5f9);
+
+                    &:focus {
+                        border-color: #818cf8;
+                    }
+                }
+            }
+
+            .filter-box {
+                select {
+                    background-color: #12161f;
+                    border-color: var(--border-color, #2d3648);
+                    color: var(--text-title, #f1f5f9);
+
+                    &:focus {
+                        border-color: #818cf8;
+                    }
+                }
+            }
+        }
+
+        &__table-wrapper {
+            background-color: var(--bg-card, #1a202c);
+            border: 1px solid var(--border-color, #2d3648);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+
+            .transaction-table {
+                th {
+                    background-color: #151a24;
+                    color: var(--text-muted, #94a3b8);
+                    border-bottom-color: var(--border-color, #2d3648);
+                }
+
+                td {
+                    border-bottom-color: #232b3a;
+                    color: var(--text-color, #cbd5e1);
+                }
+
+                tr:hover td {
+                    background-color: rgba(102, 126, 234, 0.08);
+                }
+
+                .empty-row {
+                    color: var(--text-muted, #94a3b8);
+                }
+
+                .tx-code {
+                    color: #818cf8;
+                }
+
+                .user-info {
+                    strong {
+                        color: var(--text-title, #f1f5f9);
+                    }
+                    span {
+                        color: var(--text-muted, #94a3b8);
+                    }
+                }
+
+                .membership-plan {
+                    background-color: rgba(99, 102, 241, 0.15);
+                    color: #818cf8;
+                }
+
+                .tx-amount {
+                    color: var(--text-title, #f1f5f9);
+                }
+
+                .tx-time {
+                    color: var(--text-muted, #94a3b8);
+                }
+
+                .status-badge {
+                    &--success {
+                        background-color: rgba(16, 185, 129, 0.15);
+                        color: #34d399;
+                    }
+                    &--pending {
+                        background-color: rgba(245, 158, 11, 0.15);
+                        color: #fbbf24;
+                    }
+                    &--failed {
+                        background-color: rgba(239, 68, 68, 0.15);
+                        color: #f87171;
+                    }
+                }
+            }
+        }
+
+        &__pagination {
+            span {
+                color: var(--text-muted, #94a3b8);
+            }
+
+            button {
+                background-color: #1e2430;
+                border-color: var(--border-color, #2d3648);
+                color: var(--text-title, #f1f5f9);
+
+                &:hover:not(:disabled) {
+                    background-color: #2a3344;
+                    border-color: #818cf8;
+                }
+            }
+        }
+    }
+}

@@ -50,8 +50,12 @@ const AuthDialog = ({ onClose, isLogin: defaultIsLogin }) => {
             const userRole = response.user?.role || response.role;
             if (userRole === "admin" || userRole === "staff") {
                 localStorage.setItem("ADMIN_TOKEN", response.token);
+                localStorage.setItem("adminToken", response.token);
+                localStorage.setItem("adminInfo", JSON.stringify(response.user));
             } else {
                 localStorage.removeItem("ADMIN_TOKEN");
+                localStorage.removeItem("adminToken");
+                localStorage.removeItem("adminInfo");
             }
 
             toast.success(`Chào mừng bạn quay trở lại, ${response.user?.name || "Thành viên"}!`);

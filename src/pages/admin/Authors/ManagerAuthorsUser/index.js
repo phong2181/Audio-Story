@@ -1,493 +1,714 @@
-import React, { useState } from 'react';
-import { FaSearch, FaUserCheck, FaLock, FaUsers, FaTrash, FaUnlock, FaCrown } from 'react-icons/fa';
-import { useGetActiveUser, useGetMembershipPlansAD, getActiveMember } from 'api/homePage'; 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'react-hot-toast';
-import './style.scss';
-import { getAdminInfo } from 'utils/adminAuth';
+import React, { useState, useMemo, memo, useEffect } from "react";
+import {
+  FaUserSlash,
+  FaSearch,
+  FaLock,
+  FaUnlock,
+  FaExclamationTriangle,
+  FaTrash,
+  FaCheckCircle,
+  FaTimesCircle,
+  FaClock,
+  FaCalendarAlt,
+  FaShieldAlt,
+  FaPaperPlane,
+  FaUsers,
+  FaHistory,
+  FaTimes
+} from "react-icons/fa";
+import {
+  useGetModerationUsers,
+  useBanUserPermanent,
+  useBanUserTemporary,
+  useUnlockUser,
+  useSendWarningUser,
+  useDeleteModerationUser
+} from "api/homePage/queries";
+import { toast } from "react-toastify";
+import Swal from "sweetalert2";
+import { STORAGE_URL } from "config/config";
+import { getAdminInfo } from "utils/adminAuth";
+import "./style.scss";
 
 const ManagerAuthorsUser = () => {
-    const adminInfo = getAdminInfo();
-    const isAdmin = adminInfo?.role === "admin";
-    const { data: userList = [], isLoading, isError } = useGetActiveUser({enabled: isAdmin});
-    
-    // Fetch danh sách các gói VIP phục vụ cho Modal Mở VIP
-    const { data: plans = [] } = useGetMembershipPlansAD();
+  useEffect(() => {
+    document.title = "Kiểm duyệt & Trạng thái người dùng | WordPress Admin";
+  }, []);
 
-    const queryClient = useQueryClient();
+  const adminInfo = getAdminInfo();
+  const isAdmin = adminInfo?.role === "admin";
 
-    const [searchTerm, setSearchTerm] = useState("");
-    const [statusFilter, setStatusFilter] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
 
+  // Fetch dữ liệu người dùng kiểm duyệt
+  const { data: rawData = {}, isLoading, refetch } = useGetModerationUsers({
+    status: statusFilter,
+    search: searchTerm
+  });
 
-    // Phân trang
-    const itemsPerPage = 10;
-    const [currentPage, setCurrentPage] = useState(1);
+  const users = useMemo(() => {
+    if (Array.isArray(rawData)) return rawData;
+    return rawData?.data || [];
+  }, [rawData]);
 
-    // States phục vụ cho Modal Mở VIP
-    const [selectedUser, setSelectedUser] = useState(null);
-    const [isVipModalOpen, setIsVipModalOpen] = useState(false);
-    const [vipPlanId, setVipPlanId] = useState("");
-    const [vipStartDate, setVipStartDate] = useState("");
-    const [vipEndDate, setVipEndDate] = useState("");
-
-    // Mutation thực hiện cập nhật VIP cho User thông qua API updateUserAPI
-    const vipMutation = useMutation({
-        mutationFn: ({ id, data }) => getActiveMember(id, data),
-        onSuccess: () => {
-            toast.success("Mở VIP thành công! 🚀");
-            queryClient.invalidateQueries({ queryKey: ["getActiveUsers"] });
-            setIsVipModalOpen(false);
-            setSelectedUser(null);
-        },
-        onError: (error) => {
-            toast.error("Lỗi: " + (error.response?.data?.message || "Không thể kích hoạt VIP"));
-        }
-    });
-
-    if (isLoading) {
-        return (
-            <div className="membership-manager skeleton-loading">
-                <div className="membership-manager__header">
-                    <div className="skeleton-title"></div>
-                </div>
-
-                <div className="membership-manager__overview">
-                    {[1, 2, 3].map((i) => (
-                        <div key={i} className="overview-card skeleton-card">
-                            <div className="skeleton-icon"></div>
-                            <div className="overview-card__info">
-                                <div className="skeleton-text-sm"></div>
-                                <div className="skeleton-text-lg"></div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-
-                <div className="membership-manager__filter-bar skeleton-filter-bar">
-                    <div className="skeleton-search"></div>
-                    <div className="skeleton-select"></div>
-                </div>
-
-                <div className="membership-manager__table-wrapper">
-                    <table className="membership-table">
-                        <thead>
-                            <tr>
-                                <th style={{ textAlign: 'center' }}>Thông tin</th>
-                                <th style={{ textAlign: 'center' }}>Trạng thái</th>
-                                <th style={{ textAlign: 'center' }}>Vi phạm</th>
-                                <th style={{ textAlign: 'center' }}>Thao tác</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {[1, 2, 3, 4, 5].map((i) => (
-                                <tr key={i}>
-                                    <td>
-                                        <div className="user-info">
-                                            <div className="avatar-wrapper">
-                                                <div className="skeleton-avatar"></div>
-                                            </div>
-                                            <div className="user-details">
-                                                <div className="skeleton-text-md"></div>
-                                                <div className="skeleton-text-sm"></div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div className="skeleton-badge"></div>
-                                    </td>
-                                    <td>
-                                        <div className="skeleton-switch"></div>
-                                    </td>
-                                    <td>
-                                        <div className="skeleton-actions">
-                                            <div className="skeleton-btn-vip"></div>
-                                            <div className="skeleton-btn-delete"></div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        );
-    }
-       
-    if (isError) return <div className="membership-manager" style={{ padding: '24px', color: 'red' }}>Lỗi hệ thống!</div>;
-    
-    // Tính toán thống kê từ danh sách user
-    const statistics = {
-        total_revenue: userList.length, 
-        active_members: userList.filter(u => u.membership_plan_id !== null).length,
-        expiring_soon: userList.filter(u => u.is_banned).length
-    };
-
-    // Logic lọc dữ liệu dựa trên tên/email và trạng thái
-    const filteredUsers = userList.filter((item) => {
-        const matchesSearch = item.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                              item.email?.toLowerCase().includes(searchTerm.toLowerCase());
-        
-        const matchesStatus = statusFilter === "" || 
-                              (statusFilter === "active" && item.membership_plan_id !== null) || 
-                              (statusFilter === "banned" && item.is_banned);
-
-        return matchesSearch && matchesStatus;
-    });
-
-    // Các biến phục vụ phân trang
-    const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
-    const activePage = Math.min(currentPage, totalPages || 1);
-    const startIndex = (activePage - 1) * itemsPerPage;
-    const displayList = filteredUsers.slice(startIndex, startIndex + itemsPerPage);
-
-    const handlePageChange = (pageNumber) => {
-        if (pageNumber >= 1 && pageNumber <= totalPages) {
-            setCurrentPage(pageNumber);
-        }
-    };
-
-    // Tự động tính ngày kết thúc khi chọn gói VIP hoặc thay đổi ngày bắt đầu
-    const handlePlanOrDateChange = (planId, startDateStr) => {
-        setVipPlanId(planId);
-        if (!startDateStr) return;
-        
-        const plan = plans.find(p => String(p.id) === String(planId));
-        if (!plan) return;
-
-        const start = new Date(startDateStr);
-        let end = new Date(start);
-
-        if (plan.type === "monthly") {
-            end.setMonth(end.getMonth() + 1);
-        } else if (plan.type === "yearly") {
-            end.setFullYear(end.getFullYear() + 1);
-        } else {
-            end.setDate(end.getDate() + 30);
-        }
-
-        const yyyy = end.getFullYear();
-        const mm = String(end.getMonth() + 1).padStart(2, '0');
-        const dd = String(end.getDate()).padStart(2, '0');
-        setVipEndDate(`${yyyy}-${mm}-${dd}`);
-    };
-
-    const renderPageNumbers = () => {
-        const pageNumbers = [];
-        const maxVisiblePages = 5;
-        
-        let startPage = Math.max(1, activePage - Math.floor(maxVisiblePages / 2));
-        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-        
-        if (endPage - startPage + 1 < maxVisiblePages) {
-            startPage = Math.max(1, endPage - maxVisiblePages + 1);
-        }
-
-        for (let i = startPage; i <= endPage; i++) {
-            pageNumbers.push(
-                <button
-                    key={i}
-                    className={`pagination-btn ${activePage === i ? 'active' : ''}`}
-                    onClick={() => handlePageChange(i)}
-                >
-                    {i}
-                </button>
-            );
-        }
-        return pageNumbers;
-    };
-
-    const handleToggleBan = (id) => { console.log("Toggle user:", id); };
-
-    if (adminInfo?.role === "staff") {
-        return (
-            <div
-                style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    minHeight: "60vh",
-                    textAlign: "center"
-                }}
-            >
-                <h2>🚫 Truy cập bị từ chối</h2>
-                <p>Bạn không có quyền truy cập.</p>
-            </div>
-        );
-    }
-
+  const metrics = useMemo(() => {
     return (
-        <div className="membership-manager">
-            <div className="membership-manager__header">
-                <h2>Quản lý Người Dùng</h2>
-            </div>
-
-            <div className="membership-manager__overview">
-                <div className="overview-card overview-card--banned">
-                    <div className="overview-card__icon"><FaLock /></div>
-                    <div className="overview-card__info">
-                        <span>Đã khoá</span>
-                        <h3>{statistics.expiring_soon}</h3>
-                    </div>
-                </div>
-                <div className="overview-card overview-card--active">
-                    <div className="overview-card__icon"><FaUserCheck /></div>
-                    <div className="overview-card__info">
-                        <span>Đang hoạt động</span>
-                        <h3>{statistics.active_members}</h3>
-                    </div>
-                </div>
-                <div className="overview-card overview-card--total">
-                    <div className="overview-card__icon"><FaUsers /></div>
-                    <div className="overview-card__info">
-                        <span>Tổng số</span>
-                        <h3>{statistics.total_revenue}</h3>
-                    </div>
-                </div>
-            </div>
-
-            <div className="membership-manager__filter-bar">
-                <div className="filter-search">
-                    <FaSearch className="filter-search__icon"/>
-                    <input 
-                        type="text" 
-                        placeholder="Tìm tên, email..." 
-                        value={searchTerm} 
-                        onChange={(e) => {
-                            setSearchTerm(e.target.value);
-                            setCurrentPage(1);
-                        }} 
-                    />
-                </div>
-                <select 
-                    className="filter-select" 
-                    value={statusFilter} 
-                    onChange={(e) => {
-                        setStatusFilter(e.target.value);
-                        setCurrentPage(1);
-                    }}
-                >
-                    <option value="">Tất cả trạng thái</option>
-                    <option value="active">Đang hoạt động</option>
-                    <option value="banned">Đã khoá</option>
-                </select>
-            </div>
-
-            <div className="membership-manager__table-wrapper">
-                <table className="membership-table">
-                    <thead>
-                        <tr>
-                            <th style={{ textAlign: 'center' }}>Thông tin</th>
-                            <th style={{ textAlign: 'center' }}>Trạng thái</th>
-                            <th style={{ textAlign: 'center' }}>Vi phạm</th>
-                            <th style={{ textAlign: 'center' }}>Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                      {displayList.length > 0 ? (
-                          displayList.map((item) => (
-                              <tr key={item.id}>
-                                  <td>
-                                    <div className="user-info">
-                                        <div className="avatar-wrapper">
-                                            {item.avatar ? (
-                                                <img
-                                                    src={item.avatar}
-                                                    alt={item.name}
-                                                    className="user-avatar"
-                                                />
-                                            ) : (
-                                                <div className="user-avatar avatar-fallback" style={{ background: 'linear-gradient(135deg, #667eea, #764ba2)', borderRadius: '40px'}}>
-                                                    {item.name?.charAt(0)?.toUpperCase()}
-                                                </div>
-                                            )}
-
-                                            <span className="status-dot"></span>
-                                        </div>
-
-                                        <div className="user-details">
-                                            <span>{item.name || "N/A"}</span>
-                                            <small>{item.email || "N/A"}</small>
-                                        </div>
-                                    </div>
-                                  </td>
-                                  <td>
-                                      <span className={`status-badge ${item.is_banned ? 'status-badge--expired' : 'status-badge--active'}`}>
-                                          {item.is_banned ? 'Đã khoá' : 'Bình Thường'}
-                                      </span>
-                                  </td>
-                                 <td> 
-                                  <div className="status-switch-wrapper"> 
-                                    <label className="switch"> 
-                                      <input 
-                                        type="checkbox" checked={!item.is_banned} 
-                                        onChange={() => handleToggleBan(item.id)} 
-                                        /> 
-                                        <span className="slider"></span> 
-                                    </label> 
-                                    <span className={`switch-label ${item.is_banned ? "banned" : "active"}`}> {item.is_banned ? "Đã khóa" : "Hoạt động"} </span> 
-                                  </div> 
-                                  </td> 
-                                  <td> 
-                                    <div className="action-group"> 
-                                      <button 
-                                        className="btn-action btn-vip"
-                                        onClick={() => {
-                                            setSelectedUser(item);
-                                            setVipPlanId(item.membership_plan_id || "");
-                                            
-                                            // Set mặc định ngày bắt đầu là ngày hiện tại dạng yyyy-MM-dd
-                                            const today = new Date();
-                                            const yyyy = today.getFullYear();
-                                            const mm = String(today.getMonth() + 1).padStart(2, '0');
-                                            const dd = String(today.getDate()).padStart(2, '0');
-                                            const todayStr = `${yyyy}-${mm}-${dd}`;
-                                            setVipStartDate(todayStr);
-                                            
-                                            // Lấy hạn dùng cũ nếu có, nếu chưa thì để trống hoặc tự tính
-                                            if (item.vip_expires_at) {
-                                                const expiryDate = new Date(item.vip_expires_at);
-                                                const ey = expiryDate.getFullYear();
-                                                const em = String(expiryDate.getMonth() + 1).padStart(2, '0');
-                                                const ed = String(expiryDate.getDate()).padStart(2, '0');
-                                                setVipEndDate(`${ey}-${em}-${ed}`);
-                                            } else {
-                                                setVipEndDate("");
-                                            }
-                                            setIsVipModalOpen(true);
-                                        }}
-                                      > 
-                                        <FaCrown /> <span>Mở VIP</span> 
-                                      </button> 
-                                      <button className="btn-action btn-delete"> 
-                                        <FaTrash /> 
-                                      </button> 
-                                    </div> 
-                                  </td>
-                              </tr>
-                          ))
-                      ) : (
-                          <tr><td colSpan="4" style={{textAlign:'center', padding: '20px'}}>Không tìm thấy người dùng phù hợp.</td></tr>
-                      )}
-                  </tbody>
-                </table>
-            </div>
-
-            {totalPages > 1 && (
-                <div className="membership-manager__pagination">
-                    <div className="pagination-info">
-                        Hiển thị <strong>{startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredUsers.length)}</strong> trong tổng số <strong>{filteredUsers.length}</strong> người dùng
-                    </div>
-                    <div className="pagination-controls">
-                        <button 
-                            className="pagination-btn" 
-                            disabled={activePage === 1}
-                            onClick={() => handlePageChange(activePage - 1)}
-                        >
-                            Trước
-                        </button>
-                        {renderPageNumbers()}
-                        <button 
-                            className="pagination-btn" 
-                            disabled={activePage === totalPages}
-                            onClick={() => handlePageChange(activePage + 1)}
-                        >
-                            Sau
-                        </button>
-                    </div>
-                </div>
-            )}
-
-            {/* Modal Kích hoạt quyền VIP cho tài khoản */}
-            {isVipModalOpen && selectedUser && (
-                <div className="vip-modal-overlay">
-                    <div className="vip-modal-card">
-                        <div className="vip-modal-card__header">
-                            <h3><FaCrown /> Kích Hoạt Quyền VIP</h3>
-                            <button className="close-btn" onClick={() => setIsVipModalOpen(false)}>&times;</button>
-                        </div>
-                        <div className="vip-modal-card__body">
-                            <div className="target-user-info">
-                                <div className="avatar-wrapper">
-                                    <img 
-                                        src={
-                                            selectedUser.avatar 
-                                                ? `http://bloger.test/storage/${selectedUser.avatar}` 
-                                                : "https://via.placeholder.com/40"
-                                        } 
-                                        alt={selectedUser.name} 
-                                    />
-                                </div>
-                                <div className="user-text">
-                                    <strong>{selectedUser.name || "N/A"}</strong>
-                                    <span>{selectedUser.email || "N/A"}</span>
-                                </div>
-                            </div>
-
-                            <form onSubmit={(e) => {
-                                e.preventDefault();
-                                vipMutation.mutate({
-                                    id: selectedUser.id,
-                                    data: {
-                                        membership_plan_id: vipPlanId,
-                                        vip_expires_at: vipEndDate
-                                    }
-                                });
-                            }}>
-                                <div className="form-group">
-                                    <label>Chọn Gói Thành Viên VIP</label>
-                                    <select 
-                                        required 
-                                        value={vipPlanId} 
-                                        onChange={(e) => handlePlanOrDateChange(e.target.value, vipStartDate)}
-                                    >
-                                        <option value="">-- Chọn gói thành viên --</option>
-                                        {plans.map(plan => (
-                                            <option key={plan.id} value={plan.id}>
-                                                {plan.name} ({Number(plan.price).toLocaleString('vi-VN')}đ / {plan.type === 'monthly' ? 'Tháng' : 'Năm'})
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                <div className="date-row">
-                                    <div className="form-group">
-                                        <label>Ngày Bắt Đầu</label>
-                                        <input 
-                                            type="date" 
-                                            required 
-                                            value={vipStartDate} 
-                                            onChange={(e) => {
-                                                setVipStartDate(e.target.value);
-                                                handlePlanOrDateChange(vipPlanId, e.target.value);
-                                            }}
-                                        />
-                                    </div>
-                                    <div className="form-group">
-                                        <label>Ngày Kết Thúc</label>
-                                        <input 
-                                            type="date" 
-                                            required 
-                                            value={vipEndDate} 
-                                            onChange={(e) => setVipEndDate(e.target.value)}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="action-buttons">
-                                    <button type="button" className="btn-cancel" onClick={() => setIsVipModalOpen(false)}>Hủy</button>
-                                    <button type="submit" className="btn-confirm" disabled={vipMutation.isPending}>
-                                        {vipMutation.isPending ? "Đang xử lý..." : "Xác nhận Mở VIP"}
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            )}
-        </div>
+      rawData?.metrics || {
+        total: users.length,
+        pending: 0,
+        banned_temporary: 0,
+        banned_permanent: 0,
+        warned: 0
+      }
     );
+  }, [rawData, users]);
+
+  // Mutations
+  const banPermanentMutation = useBanUserPermanent();
+  const banTemporaryMutation = useBanUserTemporary();
+  const unlockMutation = useUnlockUser();
+  const sendWarningMutation = useSendWarningUser();
+  const deleteMutation = useDeleteModerationUser();
+
+  // Modal States
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [modalType, setModalType] = useState(null); // 'ban_perm' | 'ban_temp' | 'warning'
+
+  const [banReason, setBanReason] = useState("");
+  const [banDays, setBanDays] = useState(7);
+  const [warningMessage, setWarningMessage] = useState("");
+
+  if (adminInfo?.role === "staff") {
+    return (
+      <div className="wp-moderation-wrap">
+        <div className="wp-permission-denied">
+          <h2>🚫 Truy cập bị từ chối</h2>
+          <p>Chỉ Quản trị viên (Admin) mới có quyền kiểm duyệt và xử lý tài khoản người dùng.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const handleOpenModal = (user, type) => {
+    setSelectedUser(user);
+    setModalType(type);
+    setBanReason("");
+    setBanDays(7);
+    setWarningMessage("");
+  };
+
+  const closeModal = () => {
+    setSelectedUser(null);
+    setModalType(null);
+  };
+
+  // 1. Khóa vĩnh viễn
+  const handleConfirmBanPermanent = (e) => {
+    e.preventDefault();
+    if (!banReason.trim()) {
+      toast.warn("Vui lòng nhập lý do khóa vĩnh viễn!");
+      return;
+    }
+
+    banPermanentMutation.mutate(
+      { id: selectedUser.id, reason: banReason.trim() },
+      {
+        onSuccess: (res) => {
+          toast.success(res?.message || "Đã khóa vĩnh viễn tài khoản!");
+          closeModal();
+          refetch();
+        },
+        onError: (err) => {
+          toast.error(err.response?.data?.message || "Lỗi khi khóa tài khoản!");
+        }
+      }
+    );
+  };
+
+  // 2. Khóa tạm thời có thời hạn
+  const handleConfirmBanTemporary = (e) => {
+    e.preventDefault();
+    if (!banReason.trim()) {
+      toast.warn("Vui lòng nhập lý do khóa tạm thời!");
+      return;
+    }
+
+    banTemporaryMutation.mutate(
+      { id: selectedUser.id, days: Number(banDays), reason: banReason.trim() },
+      {
+        onSuccess: (res) => {
+          toast.success(res?.message || "Đã khóa tạm thời tài khoản!");
+          closeModal();
+          refetch();
+        },
+        onError: (err) => {
+          toast.error(err.response?.data?.message || "Lỗi khi khóa tạm thời!");
+        }
+      }
+    );
+  };
+
+  // 3. Mở khóa / Kích hoạt
+  const handleUnlock = (user) => {
+    Swal.fire({
+      title: "Mở khóa tài khoản?",
+      html: `Bạn có muốn gỡ bỏ lệnh cấm và kích hoạt tài khoản <b>${user.name}</b> (${user.email})?`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#2271b1",
+      cancelButtonColor: "#64748b",
+      confirmButtonText: "Mở khóa ngay",
+      cancelButtonText: "Hủy bỏ"
+    }).then((result) => {
+      if (result.isConfirmed) {
+        unlockMutation.mutate(user.id, {
+          onSuccess: (res) => {
+            toast.success(res?.message || "Đã mở khóa tài khoản thành công!");
+            refetch();
+          },
+          onError: (err) => {
+            toast.error(err.response?.data?.message || "Lỗi khi mở khóa!");
+          }
+        });
+      }
+    });
+  };
+
+  // 4. Gửi cảnh báo vi phạm
+  const handleConfirmSendWarning = (e) => {
+    e.preventDefault();
+    if (!warningMessage.trim()) {
+      toast.warn("Vui lòng nhập nội dung cảnh báo vi phạm!");
+      return;
+    }
+
+    sendWarningMutation.mutate(
+      { id: selectedUser.id, warning_message: warningMessage.trim() },
+      {
+        onSuccess: (res) => {
+          toast.success(res?.message || "Đã gửi cảnh báo vi phạm thành công!");
+          closeModal();
+          refetch();
+        },
+        onError: (err) => {
+          toast.error(err.response?.data?.message || "Lỗi khi gửi cảnh báo!");
+        }
+      }
+    );
+  };
+
+  // 5. Xóa tài khoản
+  const handleDeleteUser = (user) => {
+    Swal.fire({
+      title: "Xóa vĩnh viễn tài khoản?",
+      html: `Hành động này sẽ xóa hoàn toàn tài khoản <b>${user.name}</b> (${user.email}) khỏi cơ sở dữ liệu và không thể hoàn tác!`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#64748b",
+      confirmButtonText: "Xóa vĩnh viễn",
+      cancelButtonText: "Hủy bỏ"
+    }).then((result) => {
+      if (result.isConfirmed) {
+        deleteMutation.mutate(user.id, {
+          onSuccess: (res) => {
+            toast.success(res?.message || "Đã xóa tài khoản người dùng thành công!");
+            refetch();
+          },
+          onError: (err) => {
+            toast.error(err.response?.data?.message || "Không thể xóa tài khoản!");
+          }
+        });
+      }
+    });
+  };
+
+  return (
+    <div className="wp-moderation-wrap">
+      {/* WordPress Page Header */}
+      <div className="wp-header-bar">
+        <div className="header-left">
+          <FaUserSlash className="header-icon" />
+          <div>
+            <h1>Kiểm Duyệt & Trạng Thái Người Dùng</h1>
+            <p className="subtitle">
+              Quản lý tài khoản chưa kích hoạt, khóa vĩnh viễn, khóa có thời hạn, mở khóa, cảnh báo vi phạm và xóa tài khoản vi phạm.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Metric Cards Summary */}
+      <div className="wp-metric-cards">
+        <div className={`metric-card ${statusFilter === "all" ? "active" : ""}`} onClick={() => setStatusFilter("all")}>
+          <div className="card-icon total-icon">
+            <FaUsers />
+          </div>
+          <div className="card-info">
+            <span className="card-value">{metrics.total}</span>
+            <span className="card-label">Tổng người dùng</span>
+          </div>
+        </div>
+
+        <div className={`metric-card ${statusFilter === "pending" ? "active" : ""}`} onClick={() => setStatusFilter("pending")}>
+          <div className="card-icon pending-icon">
+            <FaClock />
+          </div>
+          <div className="card-info">
+            <span className="card-value">{metrics.pending}</span>
+            <span className="card-label">Chưa kích hoạt</span>
+          </div>
+        </div>
+
+        <div className={`metric-card ${statusFilter === "banned_temporary" ? "active" : ""}`} onClick={() => setStatusFilter("banned_temporary")}>
+          <div className="card-icon temp-icon">
+            <FaLock />
+          </div>
+          <div className="card-info">
+            <span className="card-value">{metrics.banned_temporary}</span>
+            <span className="card-label">Khóa có thời hạn</span>
+          </div>
+        </div>
+
+        <div className={`metric-card ${statusFilter === "banned_permanent" ? "active" : ""}`} onClick={() => setStatusFilter("banned_permanent")}>
+          <div className="card-icon perm-icon">
+            <FaTimesCircle />
+          </div>
+          <div className="card-info">
+            <span className="card-value">{metrics.banned_permanent}</span>
+            <span className="card-label">Khóa vĩnh viễn</span>
+          </div>
+        </div>
+
+        <div className={`metric-card ${statusFilter === "warned" ? "active" : ""}`} onClick={() => setStatusFilter("warned")}>
+          <div className="card-icon warn-icon">
+            <FaExclamationTriangle />
+          </div>
+          <div className="card-info">
+            <span className="card-value">{metrics.warned}</span>
+            <span className="card-label">Đã bị cảnh báo</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Subsubsub Navigation */}
+      <div className="wp-views-nav">
+        <button
+          type="button"
+          className={`view-link ${statusFilter === "all" ? "current" : ""}`}
+          onClick={() => setStatusFilter("all")}
+        >
+          Tất cả <span className="count">({metrics.total})</span>
+        </button>
+        <span className="separator">|</span>
+        <button
+          type="button"
+          className={`view-link ${statusFilter === "pending" ? "current" : ""}`}
+          onClick={() => setStatusFilter("pending")}
+        >
+          Chưa kích hoạt <span className="count">({metrics.pending})</span>
+        </button>
+        <span className="separator">|</span>
+        <button
+          type="button"
+          className={`view-link ${statusFilter === "banned_temporary" ? "current" : ""}`}
+          onClick={() => setStatusFilter("banned_temporary")}
+        >
+          Khóa có thời hạn <span className="count">({metrics.banned_temporary})</span>
+        </button>
+        <span className="separator">|</span>
+        <button
+          type="button"
+          className={`view-link ${statusFilter === "banned_permanent" ? "current" : ""}`}
+          onClick={() => setStatusFilter("banned_permanent")}
+        >
+          Khóa vĩnh viễn <span className="count">({metrics.banned_permanent})</span>
+        </button>
+        <span className="separator">|</span>
+        <button
+          type="button"
+          className={`view-link ${statusFilter === "warned" ? "current" : ""}`}
+          onClick={() => setStatusFilter("warned")}
+        >
+          Có cảnh báo vi phạm <span className="count">({metrics.warned})</span>
+        </button>
+      </div>
+
+      {/* Search & Actions Bar */}
+      <div className="wp-tablenav top">
+        <div className="tablenav-left">
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="wp-select-filter"
+          >
+            <option value="all">Lọc theo trạng thái tài khoản...</option>
+            <option value="pending">Chưa kích hoạt / Chờ duyệt</option>
+            <option value="banned_temporary">Đang bị khóa có thời hạn</option>
+            <option value="banned_permanent">Bị khóa vĩnh viễn</option>
+            <option value="active">Đang hoạt động bình thường</option>
+            <option value="warned">Người dùng có cảnh báo</option>
+          </select>
+        </div>
+
+        <div className="tablenav-right">
+          <div className="wp-search-box">
+            <FaSearch className="search-icon" />
+            <input
+              type="search"
+              placeholder="Tìm theo tên hoặc email user..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* WP-List-Table */}
+      <div className="wp-table-container">
+        <table className="wp-list-table widefat striped users">
+          <thead>
+            <tr>
+              <th scope="col" className="col-avatar">Ảnh</th>
+              <th scope="col" className="col-user">Người dùng & Email</th>
+              <th scope="col" className="col-status">Trạng thái tài khoản</th>
+              <th scope="col" className="col-warnings">Cảnh báo vi phạm</th>
+              <th scope="col" className="col-date">Ngày tạo</th>
+              <th scope="col" className="col-actions">Tuỳ chọn xử lý</th>
+            </tr>
+          </thead>
+          <tbody>
+            {isLoading ? (
+              <tr>
+                <td colSpan="6" className="text-center py-4">
+                  <div className="wp-spinner"></div>
+                  <span>Đang tải danh sách người dùng...</span>
+                </td>
+              </tr>
+            ) : users.length > 0 ? (
+              users.map((user) => {
+                const avatarUrl = user.avatar
+                  ? user.avatar.startsWith("http")
+                    ? user.avatar
+                    : `${STORAGE_URL}/${user.avatar}`
+                  : null;
+
+                const isTempBanned =
+                  user.status === "banned_temporary" &&
+                  user.banned_until &&
+                  new Date(user.banned_until) > new Date();
+
+                const isPermBanned = user.status === "banned_permanent";
+                const isPending = user.status === "pending";
+                const isRestricted = isTempBanned || isPermBanned;
+
+                return (
+                  <tr key={user.id} className={`user-row ${isRestricted ? "row-restricted" : ""}`}>
+                    <td className="col-avatar">
+                      {avatarUrl ? (
+                        <img src={avatarUrl} alt={user.name} className="user-avatar-img" />
+                      ) : (
+                        <div className="avatar-placeholder">
+                          {user.name ? user.name.charAt(0).toUpperCase() : "U"}
+                        </div>
+                      )}
+                    </td>
+
+                    <td className="col-user">
+                      <div className="user-primary-info">
+                        <strong>{user.name}</strong>
+                        <span className="user-email">{user.email}</span>
+                      </div>
+                      {user.ban_reason && (
+                        <div className="ban-reason-hint">
+                          <strong>Lý do cấm:</strong> {user.ban_reason}
+                        </div>
+                      )}
+                    </td>
+
+                    <td className="col-status">
+                      {isPermBanned ? (
+                        <span className="status-badge badge-perm">
+                          <FaTimesCircle /> Khóa vĩnh viễn
+                        </span>
+                      ) : isTempBanned ? (
+                        <span className="status-badge badge-temp">
+                          <FaClock /> Tạm khóa đến {new Date(user.banned_until).toLocaleString("vi-VN")}
+                        </span>
+                      ) : isPending ? (
+                        <span className="status-badge badge-pending">
+                          <FaClock /> Chưa kích hoạt
+                        </span>
+                      ) : (
+                        <span className="status-badge badge-active">
+                          <FaCheckCircle /> Hoạt động
+                        </span>
+                      )}
+                    </td>
+
+                    <td className="col-warnings">
+                      {user.warning_count > 0 ? (
+                        <div className="warning-info">
+                          <span className="warning-pill">
+                            <FaExclamationTriangle /> {user.warning_count} lần
+                          </span>
+                          {user.warning_notice && (
+                            <span className="notice-preview" title={user.warning_notice}>
+                              &ldquo;{user.warning_notice}&rdquo;
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-muted">Không có</span>
+                      )}
+                    </td>
+
+                    <td className="col-date">
+                      <span className="date-text">
+                        <FaCalendarAlt />{" "}
+                        {user.created_at ? new Date(user.created_at).toLocaleDateString("vi-VN") : "Hệ thống"}
+                      </span>
+                    </td>
+
+                    <td className="col-actions">
+                      <div className="action-buttons-wrap">
+                        {/* Nếu đang bị cấm -> Nút Mở khóa */}
+                        {isRestricted || isPending ? (
+                          <button
+                            type="button"
+                            className="btn-op btn-unlock"
+                            title="Mở khóa và kích hoạt tài khoản"
+                            onClick={() => handleUnlock(user)}
+                          >
+                            <FaUnlock /> Mở khóa
+                          </button>
+                        ) : null}
+
+                        {/* Nút Khóa có thời hạn */}
+                        {!isPermBanned && (
+                          <button
+                            type="button"
+                            className="btn-op btn-temp-ban"
+                            title="Khóa tài khoản có thời hạn"
+                            onClick={() => handleOpenModal(user, "ban_temp")}
+                          >
+                            <FaClock /> Khóa có hạn
+                          </button>
+                        )}
+
+                        {/* Nút Khóa vĩnh viễn */}
+                        {!isPermBanned && (
+                          <button
+                            type="button"
+                            className="btn-op btn-perm-ban"
+                            title="Khóa tài khoản vĩnh viễn"
+                            onClick={() => handleOpenModal(user, "ban_perm")}
+                          >
+                            <FaLock /> Khóa vĩnh viễn
+                          </button>
+                        )}
+
+                        {/* Nút Gửi cảnh báo vi phạm */}
+                        <button
+                          type="button"
+                          className="btn-op btn-warn"
+                          title="Gửi thông báo cảnh báo vi phạm tới user"
+                          onClick={() => handleOpenModal(user, "warning")}
+                        >
+                          <FaPaperPlane /> Cảnh báo
+                        </button>
+
+                        {/* Nút Xóa tài khoản */}
+                        <button
+                          type="button"
+                          className="btn-op btn-delete"
+                          title="Xóa vĩnh viễn tài khoản"
+                          onClick={() => handleDeleteUser(user)}
+                        >
+                          <FaTrash />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+            ) : (
+              <tr>
+                <td colSpan="6" className="text-center py-4 text-muted">
+                  Không tìm thấy người dùng nào phù hợp với bộ lọc.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Modal 1: Khóa vĩnh viễn */}
+      {modalType === "ban_perm" && selectedUser && (
+        <div className="wp-modal-backdrop">
+          <div className="wp-modal-card">
+            <div className="wp-modal-header header-danger">
+              <h3>
+                <FaLock /> Khóa tài khoản vĩnh viễn
+              </h3>
+              <button type="button" className="close-btn" onClick={closeModal}>
+                <FaTimes />
+              </button>
+            </div>
+            <form onSubmit={handleConfirmBanPermanent} className="wp-modal-body">
+              <div className="user-target-summary">
+                <strong>Người dùng:</strong> {selectedUser.name} ({selectedUser.email})
+              </div>
+
+              <div className="form-group">
+                <label>
+                  Lý do khóa vĩnh viễn <span className="required">*</span>
+                </label>
+                <textarea
+                  rows="4"
+                  placeholder="Nhập lý do cụ thể (Spam, vi phạm bản quyền truyện, ngôn từ tiêu cực...)"
+                  value={banReason}
+                  onChange={(e) => setBanReason(e.target.value)}
+                  required
+                />
+                <p className="description">
+                  Tài khoản sẽ bị đăng xuất ngay lập tức và bị chặn đăng nhập vĩnh viễn.
+                </p>
+              </div>
+
+              <div className="wp-modal-footer">
+                <button type="button" className="btn-cancel" onClick={closeModal}>
+                  Hủy bỏ
+                </button>
+                <button
+                  type="submit"
+                  className="btn-danger-primary"
+                  disabled={banPermanentMutation.isPending}
+                >
+                  <FaLock /> {banPermanentMutation.isPending ? "Đang xử lý..." : "Xác nhận khóa vĩnh viễn"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal 2: Khóa có thời hạn */}
+      {modalType === "ban_temp" && selectedUser && (
+        <div className="wp-modal-backdrop">
+          <div className="wp-modal-card">
+            <div className="wp-modal-header header-warning">
+              <h3>
+                <FaClock /> Khóa tài khoản có thời hạn
+              </h3>
+              <button type="button" className="close-btn" onClick={closeModal}>
+                <FaTimes />
+              </button>
+            </div>
+            <form onSubmit={handleConfirmBanTemporary} className="wp-modal-body">
+              <div className="user-target-summary">
+                <strong>Người dùng:</strong> {selectedUser.name} ({selectedUser.email})
+              </div>
+
+              <div className="form-group">
+                <label>Thời gian khóa tạm thời</label>
+                <select value={banDays} onChange={(e) => setBanDays(e.target.value)}>
+                  <option value={1}>1 ngày (24 giờ)</option>
+                  <option value={3}>3 ngày</option>
+                  <option value={7}>7 ngày (1 tuần)</option>
+                  <option value={14}>14 ngày (2 tuần)</option>
+                  <option value={30}>30 ngày (1 tháng)</option>
+                  <option value={90}>90 ngày (3 tháng)</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>
+                  Lý do tạm khóa <span className="required">*</span>
+                </label>
+                <textarea
+                  rows="3"
+                  placeholder="Nhập lý do tạm khóa..."
+                  value={banReason}
+                  onChange={(e) => setBanReason(e.target.value)}
+                  required
+                />
+                <p className="description">
+                  Sau khi hết thời hạn, hệ thống sẽ tự động gỡ bỏ lệnh khóa khi người dùng đăng nhập lại.
+                </p>
+              </div>
+
+              <div className="wp-modal-footer">
+                <button type="button" className="btn-cancel" onClick={closeModal}>
+                  Hủy bỏ
+                </button>
+                <button
+                  type="submit"
+                  className="btn-warning-primary"
+                  disabled={banTemporaryMutation.isPending}
+                >
+                  <FaClock /> {banTemporaryMutation.isPending ? "Đang xử lý..." : "Khóa tài khoản"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal 3: Gửi cảnh báo vi phạm */}
+      {modalType === "warning" && selectedUser && (
+        <div className="wp-modal-backdrop">
+          <div className="wp-modal-card">
+            <div className="wp-modal-header header-info">
+              <h3>
+                <FaPaperPlane /> Gửi cảnh báo vi phạm
+              </h3>
+              <button type="button" className="close-btn" onClick={closeModal}>
+                <FaTimes />
+              </button>
+            </div>
+            <form onSubmit={handleConfirmSendWarning} className="wp-modal-body">
+              <div className="user-target-summary">
+                <strong>Gửi tới:</strong> {selectedUser.name} ({selectedUser.email})
+                <br />
+                <strong>Số lần đã bị cảnh báo trước đây:</strong> {selectedUser.warning_count || 0} lần
+              </div>
+
+              <div className="form-group">
+                <label>
+                  Nội dung cảnh báo vi phạm <span className="required">*</span>
+                </label>
+                <textarea
+                  rows="4"
+                  placeholder="Ví dụ: Bạn đã bình luận ngôn từ khiếm nhã trong truyện... Vui lòng tuân thủ nội quy cộng đồng, nếu tái phạm tài khoản sẽ bị tạm khóa."
+                  value={warningMessage}
+                  onChange={(e) => setWarningMessage(e.target.value)}
+                  required
+                />
+                <p className="description">
+                  Thông điệp này sẽ được lưu và thông báo trực tiếp khi người dùng truy cập.
+                </p>
+              </div>
+
+              <div className="wp-modal-footer">
+                <button type="button" className="btn-cancel" onClick={closeModal}>
+                  Hủy bỏ
+                </button>
+                <button
+                  type="submit"
+                  className="btn-info-primary"
+                  disabled={sendWarningMutation.isPending}
+                >
+                  <FaPaperPlane /> {sendWarningMutation.isPending ? "Đang gửi..." : "Gửi cảnh báo ngay"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
-export default ManagerAuthorsUser;
+export default memo(ManagerAuthorsUser);

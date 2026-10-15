@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 
 const END_POINT = {
     ADDNEWPOST: "/admin/addnewposts",
+    ALL_POSTS: "/admin/all-posts",
     CATEGORY: "/admin/category",
     SLIDER: "/admin/sliders",
     FOOTER: "/admin/footer",
@@ -49,32 +50,26 @@ export const postForgotPasswordResetAPI = async (data) => {
 };
 
 export const deleteChapterAPI = async (id) => {
-    const token = localStorage.getItem("ADMIN_TOKEN"); // Hoặc ACCESS_TOKEN tùy dự án của bạn
     return await axiosinstance({
         method: "DELETE",
-        url: `/admin/chapters/delete/${id}`, // Căn chỉnh url chính xác theo route của bạn
-        headers: { "Authorization": `Bearer ${token}` }
+        url: `/admin/chapters/delete/${id}`,
     });
 };
 
 // 🚀 Thêm API lấy chi tiết 1 thông báo hệ thống để sửa (Admin)
-export const getAdminNotificationDetailAPI = async (id) => {
-    const token = localStorage.getItem("ADMIN_TOKEN"); // hoặc adminToken tùy dự án của Dũng
+export const getAdminNotificationDetailAPI = async () => {
     return await axiosinstance({
         method: "GET",
-        url: `/system-notification`,
-        headers: { "Authorization": `Bearer ${token}` }
+        url: `/admin/system-notification`,
     });
 };
 
 // 🚀 Thêm API cập nhật nội dung thông báo hệ thống (Admin)
 export const updateAdminNotificationAPI = async ({ id, data }) => {
-    const token = localStorage.getItem("ADMIN_TOKEN");
     return await axiosinstance({
         method: "PUT",
         url: `/admin/system-notification/${id}`,
         data: data,
-        headers: { "Authorization": `Bearer ${token}` }
     });
 };
 
@@ -87,33 +82,25 @@ export const getActiveNotificationAPI = async () => {
 };
 
 export const exportTransactionExcelAPI = async (status) => {
-    const token = localStorage.getItem("ADMIN_TOKEN");
     return await axiosinstance({
         method: "GET",
-        url: `/admin/transactions-export?status=${status}`, // 🚀 Đường dẫn endpoint backend tí nữa mình viết
-        responseType: 'blob', // Ép kiểu nhận file nhị phân
-        headers: { "Authorization": `Bearer ${token}` }
+        url: `/admin/transactions-export?status=${status}`,
+        responseType: 'blob',
     });
 };
 // Sửa lại hàm này trong file api/homePage.js của Dũng:
 export const exportRevenueExcelAPI = async (year, month) => {
-    const token = localStorage.getItem("ADMIN_TOKEN");
     return await axiosinstance({
         method: "GET",
         url: `/admin/revenue-export?year=${year}&month=${month}`,
-        responseType: 'blob', // 🚀 BẮT BUỘC nằm ở đây để Axios hiểu cần nhận Stream File nhị phân
-        headers: { 
-            "Authorization": `Bearer ${token}` 
-        }
+        responseType: 'blob',
     });
 };
 
 export const getAdminRevenueStatsAPI = async (year) => {
-    const token = localStorage.getItem("ADMIN_TOKEN");
     return await axiosinstance({
         method: "GET",
-        url: `/admin/revenue-statistics?year=${year}`, // Truyền Year lên Query String
-        headers: { "Authorization": `Bearer ${token}` }
+        url: `/admin/revenue-statistics?year=${year}`,
     });
 };
 
@@ -186,16 +173,16 @@ export const deleteMembershipPlanAPI = async (id) => {
     });
 };
 
-// Nếu hàm cũ của bạn chưa hỗ trợ params, hãy sửa lại dạng này:
+// Lấy danh sách toàn bộ bài viết (Admin)
 export const getAddNewPostsADAPI = async (params) => {
-    const token = localStorage.getItem("adminToken");
     return await axiosinstance({
         method: "GET",
-        url: "/admin/addnewposts", // Khớp với END_POINT.ADDNEWPOST của bạn
-        params: params, // Giúp truyền ?status=draft hoặc ?search=... lên Laravel
-        headers: { Authorization: `Bearer ${token}` }
+        url: END_POINT.ALL_POSTS,
+        params: params,
     });
 };
+
+export const getAllPostsADAPI = getAddNewPostsADAPI;
 
 // 1. Sửa hàm lấy chi tiết bài viết
 export const getPostDetailAPI = async (id) => {
@@ -228,11 +215,12 @@ export const getdeletePostAPI = async (id) => {
     });
 };
 
-// Lấy comments theo story
-export const getCommentsAPI = async (storyId) => {
+// Lấy comments theo story hoặc post
+export const getCommentsAPI = async (id, params = {}) => {
     return await axiosinstance({
         method: "GET",
-        url: `/comments/${storyId}`,
+        url: `/comments/${id}`,
+        params,
     });
 };
  
@@ -250,10 +238,11 @@ export const addCommentAPI = async (data) => {
 // Sửa comment
 export const updateCommentAPI = async (id, content) => {
     const token = localStorage.getItem("ACCESS_TOKEN");
+    const data = typeof content === "object" ? content : { content };
     return await axiosinstance({
         method: "PUT",
         url: `/comments/${id}`,
-        data: { content },
+        data,
         headers: { "Authorization": `Bearer ${token}` }
     });
 };
@@ -275,11 +264,11 @@ export const likeCommentAPI = async (id) => {
 };
 
 // Hooks
-export const useGetComments = (storyId) => {
+export const useGetComments = (id, isPost = false) => {
     return useQuery({
-        queryKey: ["comments", storyId],
-        queryFn: () => getCommentsAPI(storyId),
-        enabled: !!storyId,
+        queryKey: ["comments", id, isPost ? "post" : "story"],
+        queryFn: () => getCommentsAPI(id, isPost ? { type: "post" } : {}),
+        enabled: !!id,
     });
 };
 
@@ -403,11 +392,19 @@ export const postAddnewPostAPI = async (data) => {
     });
 }
 
-// API Lấy danh sách footer
+// API Lấy danh sách footer (Admin)
 export const getFootersAPI = async () => {
     return await axiosinstance({
         method: "GET",
         url: END_POINT.FOOTER,
+    });
+};
+
+// API Lấy cấu hình footer công khai (Client)
+export const getPublicFooterAPI = async () => {
+    return await axiosinstance({
+        method: "GET",
+        url: "/footer",
     });
 };
 
@@ -430,10 +427,11 @@ export const updateFooterAPI = async (id, data) => {
 };
 
 // API Xóa footer
-export const deleteFooterAPI = async (id) => {
+export const deleteFooterAPI = async (id, type) => {
     return await axiosinstance({
         method: "DELETE",
         url: `${END_POINT.FOOTER}/${id}`,
+        params: type ? { type } : {},
     });
 };
 
@@ -637,7 +635,7 @@ if (background_music_id) {
 export const addChapterAPI = async (formData) => {
     return await axiosinstance({
         method: "POST",
-        url: "chapters/add",
+        url: "/admin/chapters/add",
         data: formData,
         headers: { "Content-Type": "multipart/form-data" },
     });
@@ -907,3 +905,327 @@ export const getActiveMember = async (id, data) => {
         data: data,
     });
 }
+
+// =========================================================================
+// Admin Notifications
+// =========================================================================
+
+export const getAdminNotificationsAPI = async () => {
+    return await axiosinstance({
+        method: "GET",
+        url: "/admin/notifications",
+    });
+};
+
+export const getAdminUnreadCountAPI = async () => {
+    return await axiosinstance({
+        method: "GET",
+        url: "/admin/notifications/unread-count",
+    });
+};
+
+export const markNotificationReadAPI = async (id) => {
+    return await axiosinstance({
+        method: "PUT",
+        url: `/admin/notifications/${id}/read`,
+    });
+};
+
+export const markAllNotificationsReadAPI = async () => {
+    return await axiosinstance({
+        method: "PUT",
+        url: "/admin/notifications/read-all",
+    });
+};
+
+// =========================================================================
+// Brand Advertisements (Quảng Cáo Từ Brand)
+// =========================================================================
+
+export const getAdvertisementsADAPI = async (params = {}) => {
+    return await axiosinstance({
+        method: "GET",
+        url: "/admin/advertisements",
+        params,
+    });
+};
+
+export const storeAdvertisementADAPI = async (data) => {
+    return await axiosinstance({
+        method: "POST",
+        url: "/admin/advertisements",
+        data,
+    });
+};
+
+export const updateAdvertisementADAPI = async (id, data) => {
+    return await axiosinstance({
+        method: "POST",
+        url: `/admin/advertisements/${id}`,
+        data,
+    });
+};
+
+export const deleteAdvertisementADAPI = async (id) => {
+    return await axiosinstance({
+        method: "DELETE",
+        url: `/admin/advertisements/${id}`,
+    });
+};
+
+export const getActiveAdvertisementsClientAPI = async (position = "all") => {
+    return await axiosinstance({
+        method: "GET",
+        url: "/advertisements/active",
+        params: { position },
+    });
+};
+
+export const recordAdClickAPI = async (id) => {
+    return await axiosinstance({
+        method: "POST",
+        url: `/advertisements/${id}/click`,
+    });
+};
+
+export const deleteUserADAPI = async (id) => {
+    return await axiosinstance({
+        method: "DELETE",
+        url: `/admin/users/${id}`
+    });
+};
+
+export const getModerationUsersAPI = async ({ status = "all", search = "" } = {}) => {
+    return await axiosinstance({
+        method: "GET",
+        url: "/admin/moderation/users",
+        params: { status, search }
+    });
+};
+
+export const banUserPermanentAPI = async ({ id, reason }) => {
+    return await axiosinstance({
+        method: "POST",
+        url: `/admin/moderation/users/${id}/ban-permanent`,
+        data: { reason }
+    });
+};
+
+export const banUserTemporaryAPI = async ({ id, days, reason }) => {
+    return await axiosinstance({
+        method: "POST",
+        url: `/admin/moderation/users/${id}/ban-temporary`,
+        data: { days, reason }
+    });
+};
+
+export const unlockUserAPI = async (id) => {
+    return await axiosinstance({
+        method: "POST",
+        url: `/admin/moderation/users/${id}/unlock`
+    });
+};
+
+export const sendWarningUserAPI = async ({ id, warning_message }) => {
+    return await axiosinstance({
+        method: "POST",
+        url: `/admin/moderation/users/${id}/warn`,
+        data: { warning_message }
+    });
+};
+
+export const deleteModerationUserAPI = async (id) => {
+    return await axiosinstance({
+        method: "DELETE",
+        url: `/admin/moderation/users/${id}`
+    });
+};
+
+// ==========================================
+// DASHBOARD ANALYTICS & CHARTS
+// ==========================================
+export const getDashboardAnalyticsAPI = async (params = {}) => {
+    return await axiosinstance({
+        method: "GET",
+        url: "/admin/dashboard/analytics",
+        params,
+    });
+};
+
+// ==========================================
+// QUẢN LÝ GIAO DIỆN HEADER & MÙA LỄ TẾT
+// ==========================================
+export const getHeaderSettingsAPI = async () => {
+    return await axiosinstance({
+        method: "GET",
+        url: "/admin/header-settings",
+    });
+};
+
+export const updateHeaderSettingsAPI = async (data) => {
+    const isFormData = data instanceof FormData;
+    return await axiosinstance({
+        method: "POST",
+        url: "/admin/header-settings",
+        data,
+        headers: isFormData ? { "Content-Type": "multipart/form-data" } : {},
+    });
+};
+
+export const getPublicHeaderSettingsAPI = async () => {
+    return await axiosinstance({
+        method: "GET",
+        url: "/public/header-settings",
+    });
+};
+
+// ==========================================
+// QUẢN LÝ LIÊN KẾT NGÂN HÀNG VIETQR (ADMIN)
+// ==========================================
+export const getVietQRSettingAPI = async () => {
+    return await axiosinstance({
+        method: "GET",
+        url: "/admin/membership/vietqr-setting",
+    });
+};
+
+export const updateVietQRSettingAPI = async (data) => {
+    return await axiosinstance({
+        method: "POST",
+        url: "/admin/membership/vietqr-setting",
+        data,
+    });
+};
+
+// ==========================================
+// 🚩 QUẢN LÝ BÁO CÁO & TỐ CÁO BÌNH LUẬN (REPORT)
+// ==========================================
+
+// Client: Gửi tố cáo bình luận
+export const postReportCommentAPI = async ({ commentId, data }) => {
+    return await axiosinstance({
+        method: "POST",
+        url: `/comments/${commentId}/report`,
+        data,
+    });
+};
+
+// Admin: Lấy danh sách tố cáo
+export const getAdminReportsAPI = async (params = {}) => {
+    return await axiosinstance({
+        method: "GET",
+        url: "/admin/reports",
+        params,
+    });
+};
+
+// Admin: Duyệt tố cáo và xử lý
+export const postResolveAdminReportAPI = async ({ id, data = {} }) => {
+    return await axiosinstance({
+        method: "POST",
+        url: `/admin/reports/${id}/resolve`,
+        data,
+    });
+};
+
+// Admin: Bác bỏ tố cáo
+export const postDismissAdminReportAPI = async ({ id, data = {} }) => {
+    return await axiosinstance({
+        method: "POST",
+        url: `/admin/reports/${id}/dismiss`,
+        data,
+    });
+};
+
+// Admin: Xóa hồ sơ tố cáo
+export const deleteAdminReportAPI = async (id) => {
+    return await axiosinstance({
+        method: "DELETE",
+        url: `/admin/reports/${id}`,
+    });
+};
+
+// Admin: Xử phạt người dùng bị tố cáo (cấm bình luận & đánh giá)
+export const postPunishAdminReportAPI = async ({ id, data = {} }) => {
+    return await axiosinstance({
+        method: "POST",
+        url: `/admin/reports/${id}/punish`,
+        data,
+    });
+};
+
+// ==========================================
+// 🔔 USER NOTIFICATIONS (THÔNG BÁO NGƯỜI DÙNG)
+// ==========================================
+
+// Lấy danh sách thông báo người dùng
+export const getUserNotificationsAPI = async (params = {}) => {
+    return await axiosinstance({
+        method: "GET",
+        url: "/user/notifications",
+        params,
+    });
+};
+
+// Đánh dấu 1 thông báo đã đọc
+export const markUserNotificationReadAPI = async (id) => {
+    return await axiosinstance({
+        method: "PUT",
+        url: `/user/notifications/${id}/read`,
+    });
+};
+
+// Đánh dấu tất cả thông báo đã đọc
+export const markAllUserNotificationsReadAPI = async () => {
+    return await axiosinstance({
+        method: "PUT",
+        url: "/user/notifications/read-all",
+    });
+};
+
+// Xóa 1 thông báo
+export const deleteUserNotificationAPI = async (id) => {
+    return await axiosinstance({
+        method: "DELETE",
+        url: `/user/notifications/${id}`,
+    });
+};
+
+// ==========================================
+// 🛠️ MAINTENANCE (BẢO TRÌ & CẬP NHẬT HỆ THỐNG)
+// ==========================================
+
+// Lấy trạng thái bảo trì hệ thống (Public - Client & User)
+export const getMaintenanceStatusAPI = async () => {
+    return await axiosinstance({
+        method: "GET",
+        url: "/maintenance/status",
+    });
+};
+
+// Lấy toàn bộ cấu hình bảo trì (Admin)
+export const getAdminMaintenanceSettingsAPI = async () => {
+    return await axiosinstance({
+        method: "GET",
+        url: "/admin/maintenance/settings",
+    });
+};
+
+// Cập nhật cấu hình bảo trì (Admin)
+export const updateAdminMaintenanceSettingsAPI = async (data) => {
+    return await axiosinstance({
+        method: "POST",
+        url: "/admin/maintenance/settings",
+        data,
+    });
+};
+
+// Gửi thông báo bảo trì đến hòm thư tất cả người dùng (Admin)
+export const sendMaintenanceNotificationAPI = async (data = {}) => {
+    return await axiosinstance({
+        method: "POST",
+        url: "/admin/maintenance/notify-users",
+        data,
+    });
+};
+

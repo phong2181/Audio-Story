@@ -7,12 +7,12 @@ import { ToastContainer } from 'react-toastify';
 import "./style.scss";
 
 
-const MasterADLayout = ({ children, ...porps }) => {
+const MasterADLayout = ({ children, className = '', ...props }) => {
 
     const location = useLocation();
     const isLogin = location.pathname.startsWith(ROUTES.ADMIN.LOGIN);
     return (
-        <div {...porps}>
+        <div className={`admin-layout-root ${className}`.trim()} {...props}>
             {!isLogin && <HeaderAD />}
             <ToastContainer position="top-right" autoClose={3000} />
             {!isLogin && <Sidebar />}

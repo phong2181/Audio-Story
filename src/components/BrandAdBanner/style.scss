@@ -1,0 +1,126 @@
+// =============================================================================
+// Polished Brand Ad Banner Styles (Responsive & Discrete)
+// =============================================================================
+
+.brand-ad-container {
+  width: 100%;
+  margin: 32px auto;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+
+    .brand-ad-overlay {
+      background: linear-gradient(to top, rgba(15, 23, 42, 0.85) 0%, rgba(15, 23, 42, 0.2) 60%, transparent 100%);
+    }
+
+    .btn-visit {
+      background: #ea580c;
+      color: #ffffff;
+    }
+  }
+
+  .brand-ad-badge-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 14px;
+    background: #f8fafc;
+    border-bottom: 1px solid var(--border-color, #e2e8f0);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+
+    .sponsored-tag {
+      color: #ea580c;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .ad-notice {
+      color: #94a3b8;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+  }
+
+  .brand-ad-link {
+    display: block;
+    text-decoration: none;
+    position: relative;
+  }
+
+  .brand-ad-image-wrap {
+    position: relative;
+    width: 100%;
+    max-height: 220px;
+    min-height: 120px;
+    overflow: hidden;
+    background: #0f172a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    img {
+      width: 100%;
+      height: 100%;
+      max-height: 220px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .brand-ad-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(15, 23, 42, 0.75) 0%, rgba(15, 23, 42, 0.1) 60%, transparent 100%);
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 16px 20px;
+      gap: 16px;
+      transition: background 0.25s ease;
+
+      .ad-info {
+        display: flex;
+        flex-direction: column;
+
+        .brand-title {
+          color: #ffffff;
+          font-size: 16px;
+          font-weight: 700;
+          text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+          margin-bottom: 2px;
+        }
+
+        .brand-sub {
+          color: #e2e8f0;
+          font-size: 12.5px;
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+      }
+
+      .btn-visit {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(8px);
+        color: #ffffff;
+        font-size: 12px;
+        font-weight: 600;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        transition: all 0.2s ease;
+        white-space: nowrap;
+      }
+    }
+  }
+}

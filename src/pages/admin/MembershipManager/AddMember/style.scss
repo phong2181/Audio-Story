@@ -1,294 +1,443 @@
-// 1. Khai báo biến màu sắc (Theo phong cách Audio Management)
-$primary-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-$bg-body: #f4f7fe;
-$white: #ffffff;
-$text-main: #1b2559;
-$text-muted: #a37fbb; // Màu tím nhạt cho sub-text
-$success: #10b981;
-$danger: #ef4444;
-$border-color: #e2e8f0;
+// =============================================================================
+// WordPress Styles for AddMember (Membership Plans Configuration)
+// =============================================================================
 
-.admin-member-page {
-  background-color: $bg-body;
-  min-height: 100vh;
-  padding-bottom: 50px;
-  font-family: 'Inter', sans-serif;
+.wp-membership-plans-page {
+  padding: 20px 24px 80px;
+  max-width: 1400px;
+  margin: 0 auto;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  color: var(--text-color, #2c3338);
 
-  // Header dải màu tím xanh (Page Banner)
-  .admin-header-sticky {
-    background: $primary-gradient;
-    padding: 60px 0 140px;
-    color: $white;
-    margin-bottom: -100px; // Hiệu ứng đè lớp cực quan trọng
+  // WordPress Page Header
+  .wp-page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
 
-    .header-content {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 30px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    .wp-header-left {
+      .wp-page-title {
+        font-size: 1.55rem;
+        font-weight: 600;
+        color: var(--text-title, #1d2327);
+        margin: 0 0 4px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
 
-      .header-text {
-        h2 {
-          font-size: 2.2rem;
-          margin: 0;
-          font-weight: 800;
-          display: flex;
-          align-items: center;
-          gap: 15px;
-          letter-spacing: -1px;
-        }
-        p {
-          margin: 10px 0 0;
-          opacity: 0.85;
-          font-size: 1.1rem;
+        .title-icon {
+          color: #eab308;
+          font-size: 1.4rem;
         }
       }
 
-      .header-stats {
-        background: rgba(255, 255, 255, 0.2);
-        padding: 12px 25px;
-        border-radius: 50px;
-        backdrop-filter: blur(10px);
-        font-weight: 600;
-        border: 1px solid rgba(255, 255, 255, 0.3);
+      .wp-page-subtitle {
+        font-size: 13px;
+        color: var(--text-muted, #64748b);
+        margin: 0;
+      }
+    }
+
+    .wp-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+
+      .wp-btn-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #2271b1;
+        background: #f0f0f1;
+        border: 1px solid #2271b1;
+        border-radius: 4px;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.15s ease-in-out;
+
+        &:hover {
+          background: #2271b1;
+          color: #ffffff;
+        }
+
+        svg {
+          font-size: 12px;
+        }
       }
     }
   }
 
-  // Layout 2 cột chính
-  .admin-content-layout {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 30px;
-    position: relative;
-    z-index: 10;
+  // 2-Column Layout (#col-container)
+  .wp-col-container {
     display: grid;
-    grid-template-columns: 450px 1fr; // Cột form rộng hơn chút để dễ nhập
-    gap: 30px;
+    grid-template-columns: 420px 1fr;
+    gap: 24px;
+    align-items: start;
 
-    @media (max-width: 1024px) {
+    @media (max-width: 992px) {
       grid-template-columns: 1fr;
     }
   }
 
-  // Thẻ Card chung
-  .form-section-card {
-    background: $white;
-    border-radius: 24px;
-    padding: 35px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
-    border: none;
+  // Card Wrap
+  .wp-card {
+    background: var(--bg-card, #ffffff);
+    border: 1px solid var(--border-color, #c3c4c7);
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
 
-    h3 {
-      color: $text-main;
-      font-size: 1.4rem;
-      font-weight: 700;
-      margin-bottom: 25px;
+    .wp-card-header {
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--border-color, #c3c4c7);
+      background: var(--bg-card, #f6f7f7);
       display: flex;
       align-items: center;
-      gap: 12px;
-      border-bottom: 1px solid #f1f5f9;
-      padding-bottom: 15px;
+      justify-content: space-between;
 
-      svg { color: #6366f1; }
-    }
-  }
-
-  // Form nhập liệu hiện đại
-  form {
-    .form-group {
-      margin-bottom: 22px;
-
-      label {
-        display: block;
-        font-size: 0.9rem;
-        font-weight: 700;
-        color: #4a5568;
-        margin-bottom: 8px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-      }
-
-      input, textarea {
-        width: 100%;
-        padding: 14px 18px;
-        background: #f8fafc;
-        border: 2px solid #f1f5f9;
-        border-radius: 14px;
-        font-size: 1rem;
-        transition: all 0.3s ease;
-
-        &:focus {
-          background: $white;
-          border-color: #6366f1;
-          box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
-          outline: none;
-        }
-      }
-    }
-
-    // Radio Group (Theo chu kỳ Tháng/Năm)
-    .radio-group {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 15px;
-
-      .radio-option {
+      h3 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-title, #1d2327);
         display: flex;
         align-items: center;
-        justify-content: center;
-        gap: 10px;
-        padding: 12px;
-        background: #f8fafc;
-        border: 2px solid #f1f5f9;
-        border-radius: 12px;
-        cursor: pointer;
-        transition: 0.2s;
+        gap: 8px;
+      }
 
-        input { width: auto; margin: 0; display: none; }
-        span { font-weight: 600; color: #64748b; }
+      .count-badge {
+        font-size: 12px;
+        color: var(--text-muted, #64748b);
+        background: rgba(0, 0, 0, 0.05);
+        padding: 2px 8px;
+        border-radius: 10px;
+      }
+    }
+  }
 
-        &.active {
-          border-color: #6366f1;
-          background: rgba(99, 102, 241, 0.05);
-          span { color: #6366f1; }
+  // Form Wrap
+  .wp-form-wrap {
+    .wp-tax-form {
+      padding: 18px;
+
+      .form-field {
+        margin-bottom: 16px;
+
+        label {
+          display: block;
+          font-size: 13px;
+          font-weight: 600;
+          color: var(--text-title, #1d2327);
+          margin-bottom: 6px;
+
+          .required {
+            color: #d63638;
+          }
+        }
+
+        .wp-input,
+        .wp-textarea {
+          width: 100%;
+          padding: 8px 12px;
+          font-size: 13px;
+          border: 1px solid var(--border-color, #8c8f94);
+          border-radius: 4px;
+          background: var(--bg-card, #ffffff);
+          color: var(--text-color, #2c3338);
+          outline: none;
+          box-sizing: border-box;
+
+          &:focus {
+            border-color: #2271b1;
+            box-shadow: 0 0 0 1px #2271b1;
+          }
+        }
+
+        .wp-textarea {
+          resize: vertical;
+          min-height: 100px;
+          line-height: 1.5;
+        }
+
+        .input-with-suffix {
+          position: relative;
+          display: flex;
+          align-items: center;
+
+          .wp-input {
+            padding-right: 30px;
+          }
+
+          .suffix {
+            position: absolute;
+            right: 12px;
+            color: #64748b;
+            font-weight: 600;
+            font-size: 13px;
+            pointer-events: none;
+          }
+        }
+
+        .description {
+          margin: 6px 0 0;
+          font-size: 12px;
+          color: var(--text-muted, #64748b);
+          font-style: italic;
+        }
+
+        .wp-radio-group {
+          display: flex;
+          gap: 10px;
+
+          .wp-radio-pill {
+            flex: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background: #f8fafc;
+            border: 1px solid var(--border-color, #cbd5e1);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-color, #334155);
+            transition: all 0.15s ease;
+
+            input[type="radio"] {
+              display: none;
+            }
+
+            &.active {
+              background: #f0f7ff;
+              border-color: #2271b1;
+              color: #2271b1;
+              font-weight: 600;
+            }
+          }
+        }
+      }
+
+      .form-submit-wrap {
+        margin-top: 20px;
+        padding-top: 14px;
+        border-top: 1px solid var(--border-color, #e2e8f0);
+
+        .wp-button {
+          width: 100%;
         }
       }
     }
   }
 
-  // Nút bấm Gradient
-  .btn-submit-main {
-    width: 100%;
-    padding: 16px;
-    background: $primary-gradient;
-    border: none;
-    border-radius: 14px;
-    color: white;
-    font-weight: 700;
-    font-size: 1.1rem;
-    cursor: pointer;
-    box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);
-    transition: 0.3s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 15px 25px rgba(99, 102, 241, 0.3);
-    }
-
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-  }
-
-  // Bảng danh sách bên phải
-  .table-card {
+  // Table Wrap
+  .wp-table-wrap {
     .table-responsive {
       overflow-x: auto;
     }
 
-    table {
+    .wp-list-table {
       width: 100%;
       border-collapse: collapse;
+      font-size: 13px;
 
-      th {
+      thead th {
+        background: var(--bg-card, #f6f7f7);
+        border-bottom: 1px solid var(--border-color, #c3c4c7);
+        padding: 10px 14px;
+        font-weight: 600;
         text-align: left;
-        padding: 15px;
-        color: #94a3b8;
-        font-size: 0.85rem;
-        text-transform: uppercase;
-        border-bottom: 1px solid #f1f5f9;
+        color: var(--text-title, #1d2327);
       }
 
-      td {
-        padding: 20px 15px;
-        border-bottom: 1px solid #f8fafc;
+      tbody td {
+        padding: 12px 14px;
+        border-top: 1px solid var(--border-color, #f0f0f1);
+        vertical-align: middle;
+      }
+
+      tbody tr {
+        transition: background-color 0.15s ease;
+
+        &:nth-child(even) {
+          background-color: var(--table-stripe, #fbfbfb);
+        }
+
+        &:hover {
+          background-color: var(--table-hover, #f0f6fc);
+
+          .row-actions {
+            opacity: 1;
+            visibility: visible;
+          }
+        }
+      }
+
+      .plan-title {
+        font-size: 14px;
+        color: var(--text-title, #1d2327);
+        display: block;
+        margin-bottom: 4px;
+      }
+
+      .plan-cycle-badge {
+        .cycle-tag {
+          display: inline-block;
+          font-size: 11px;
+          font-weight: 600;
+          padding: 2px 8px;
+          border-radius: 10px;
+
+          &.monthly {
+            background: #e0f2fe;
+            color: #0369a1;
+          }
+
+          &.yearly {
+            background: #fef3c7;
+            color: #92400e;
+          }
+        }
+      }
+
+      .plan-price-text {
+        font-size: 15px;
+        font-weight: 700;
+        color: #059669;
+      }
+
+      .plan-period {
+        font-size: 12px;
+        color: var(--text-muted, #64748b);
+        margin-left: 2px;
+      }
+
+      .wp-feature-bullets {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+
+        li {
+          font-size: 12px;
+          color: var(--text-color, #334155);
+          display: flex;
+          align-items: center;
+          gap: 6px;
+
+          .check-icon {
+            color: #10b981;
+            font-size: 10px;
+            flex-shrink: 0;
+          }
+
+          &.more-count {
+            color: var(--text-muted, #94a3b8);
+            font-size: 11px;
+            margin-top: 2px;
+          }
+        }
+      }
+
+      .no-feature-hint {
+        font-size: 12px;
+        color: var(--text-muted, #94a3b8);
+        font-style: italic;
+      }
+
+      .row-actions {
+        font-size: 12px;
+        color: #8c8f94;
+        margin-top: 6px;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.15s ease;
+
+        .button-link {
+          background: none;
+          border: none;
+          padding: 0;
+          color: #b32d2e;
+          font-size: 12px;
+          cursor: pointer;
+
+          &:hover {
+            color: #a00;
+            text-decoration: underline;
+          }
+        }
+      }
+
+      .no-items {
+        text-align: center;
+        padding: 30px;
+        color: var(--text-muted, #64748b);
       }
     }
   }
 
-  // Chi tiết từng dòng trong bảng
-  .plan-info-cell {
+  // Buttons Common
+  .wp-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.15s ease;
+
+    &.wp-button-primary {
+      background: #2271b1;
+      color: #ffffff;
+      border-color: #2271b1;
+
+      &:hover {
+        background: #135e96;
+        border-color: #135e96;
+      }
+    }
+  }
+
+  .wp-table-loading,
+  .wp-permission-denied {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    color: var(--text-muted, #64748b);
 
-    .plan-name {
-      font-weight: 700;
-      color: $text-main;
-      font-size: 1.1rem;
-    }
-
-    .badge {
-      display: inline-block;
-      padding: 4px 12px;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      font-weight: 800;
-      width: fit-content;
-
-      &.monthly { background: #e0e7ff; color: #4338ca; }
-      &.yearly { background: #f3e8ff; color: #7e22ce; }
-    }
-  }
-
-  .price-cell {
-    .amount {
-      font-size: 1.2rem;
-      font-weight: 800;
-      color: $text-main;
-    }
-  }
-
-  // Nút hành động (Sửa/Xóa)
-  .action-buttons {
-    display: flex;
-    gap: 8px;
-
-    .btn-action {
-      width: 38px;
-      height: 38px;
-      border-radius: 10px;
-      border: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: 0.2s;
-
-      &.edit { background: #f0f9ff; color: #0ea5e9; &:hover { background: #0ea5e9; color: white; } }
-      &.delete { background: #fef2f2; color: #ef4444; &:hover { background: #ef4444; color: white; } }
+    .spinner {
+      width: 28px;
+      height: 28px;
+      border: 3px solid rgba(34, 113, 177, 0.2);
+      border-top-color: #2271b1;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 10px;
     }
   }
 }
 
-.swal2-modern-round {
-  font-family: 'Inter', sans-serif !important;
-  padding: 2rem !important;
-  
-  .swal2-title {
-    color: #1e293b !important;
-    font-weight: 700 !important;
-  }
-  
-  .swal2-html-container {
-    color: #64748b !important;
-  }
-  
-  .swal2-actions {
-    gap: 10px;
-  }
+.wp-swal-popup {
+  font-family: inherit !important;
+  border-radius: 6px !important;
+}
 
-  button {
-    border-radius: 10px !important;
-    font-weight: 600 !important;
-    padding: 10px 25px !important;
-  }
+.wp-swal-title {
+  font-size: 18px !important;
+  color: #1d2327 !important;
 }

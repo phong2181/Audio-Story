@@ -1,0 +1,787 @@
+@use 'sass:map';
+@import 'style/pages/theme';
+
+.wp-vietqr-page {
+  padding: 10px 20px 40px 20px;
+  background-color: #f0f0f1;
+  min-height: calc(100vh - 60px);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  color: #3c434a;
+
+  // Header
+  .wp-header-section {
+    margin-bottom: 16px;
+
+    .header-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+
+      .wp-heading-inline {
+        font-size: 22px;
+        font-weight: 600;
+        color: #1d2327;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        .header-icon {
+          color: #2271b1;
+          font-size: 20px;
+        }
+      }
+
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+
+        &.active {
+          background-color: #d1fae5;
+          color: #065f46;
+          border: 1px solid #a7f3d0;
+        }
+
+        &.inactive {
+          background-color: #fee2e2;
+          color: #991b1b;
+          border: 1px solid #fecaca;
+        }
+      }
+    }
+
+    .wp-subtitle {
+      color: #646970;
+      font-size: 13px;
+      margin: 6px 0 0 0;
+    }
+  }
+
+  // Navigation Tabs
+  .nav-tab-wrapper {
+    border-bottom: 1px solid #c3c4c7;
+    margin: 16px 0 20px 0;
+    padding-top: 9px;
+    padding-bottom: 0;
+    line-height: inherit;
+
+    .nav-tab {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      float: left;
+      border: 1px solid #c3c4c7;
+      border-bottom: none;
+      margin-left: 0.5em;
+      padding: 7px 14px;
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 1.71428571;
+      color: #50575e;
+      background: #dcdcde;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+
+      &:first-child {
+        margin-left: 0;
+      }
+
+      &:hover {
+        background-color: #fff;
+        color: #1d2327;
+      }
+
+      &.nav-tab-active {
+        margin-bottom: -1px;
+        color: #1d2327;
+        background: #f0f0f1;
+        border-bottom: 1px solid #f0f0f1;
+        font-weight: 600;
+        cursor: default;
+      }
+    }
+
+    &::after {
+      content: "";
+      display: table;
+      clear: both;
+    }
+  }
+
+  // Notices
+  .wp-role-warning {
+    background: #fff;
+    border-left: 4px solid #d63638;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+    margin: 15px 0;
+    padding: 12px 16px;
+
+    p {
+      margin: 0;
+      font-size: 13px;
+      color: #1d2327;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      svg {
+        color: #d63638;
+      }
+    }
+  }
+
+  // Loading
+  .wp-loading-spinner {
+    padding: 60px;
+    text-align: center;
+    font-size: 15px;
+    color: #646970;
+
+    .spin {
+      animation: spin 1s linear infinite;
+      margin-right: 8px;
+    }
+  }
+
+  // WordPress Poststuff Columns
+  #poststuff {
+    padding-top: 10px;
+
+    #post-body.columns-2 {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 24px;
+      align-items: start;
+
+      @media (max-width: 1080px) {
+        grid-template-columns: 1fr;
+      }
+    }
+  }
+
+  // Postbox
+  .wp-metabox {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+    margin-bottom: 20px;
+
+    .postbox-header {
+      border-bottom: 1px solid #c3c4c7;
+      padding: 10px 16px;
+      background: #fafafa;
+
+      h2 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: #1d2327;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        svg {
+          color: #2271b1;
+        }
+      }
+    }
+
+    .inside {
+      padding: 16px 20px;
+    }
+  }
+
+  // Form Table
+  .form-table {
+    width: 100%;
+    border-collapse: collapse;
+
+    tr {
+      border-bottom: 1px solid #f0f0f1;
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+
+    th {
+      width: 220px;
+      padding: 18px 10px 18px 0;
+      vertical-align: top;
+      text-align: left;
+      font-size: 14px;
+      font-weight: 600;
+      color: #1d2327;
+      line-height: 1.3;
+
+      .required {
+        color: #d63638;
+      }
+    }
+
+    td {
+      padding: 14px 0;
+      vertical-align: middle;
+
+      .regular-text {
+        width: 100%;
+        max-width: 450px;
+        padding: 7px 10px;
+        font-size: 14px;
+        line-height: 1.4;
+        border: 1px solid #8c8f94;
+        border-radius: 4px;
+        background-color: #fff;
+        color: #2c3338;
+
+        &:focus {
+          border-color: #2271b1;
+          box-shadow: 0 0 0 1px #2271b1;
+          outline: 2px solid transparent;
+        }
+
+        &.uppercase {
+          text-transform: uppercase;
+        }
+      }
+
+      select.regular-text {
+        max-width: 450px;
+      }
+
+      .large-text {
+        width: 100%;
+        max-width: 580px;
+        padding: 8px 10px;
+        font-size: 14px;
+        line-height: 1.5;
+        border: 1px solid #8c8f94;
+        border-radius: 4px;
+        background-color: #fff;
+        color: #2c3338;
+
+        &:focus {
+          border-color: #2271b1;
+          box-shadow: 0 0 0 1px #2271b1;
+          outline: 2px solid transparent;
+        }
+      }
+
+      .checkbox-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        color: #1d2327;
+
+        input[type="checkbox"] {
+          width: 18px;
+          height: 18px;
+          border: 1px solid #8c8f94;
+          border-radius: 3px;
+          cursor: pointer;
+        }
+      }
+
+      .description {
+        margin: 6px 0 0 0;
+        font-size: 12px;
+        color: #646970;
+        line-height: 1.4;
+      }
+    }
+  }
+
+  // Submit Bar
+  .wp-submit-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 20px;
+    padding-top: 15px;
+
+    .button-hero {
+      font-size: 14px;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .button-primary {
+      background: #2271b1;
+      border-color: #2271b1;
+      color: #fff;
+
+      &:hover {
+        background: #135e96;
+        border-color: #135e96;
+      }
+
+      &:disabled {
+        background: #a7aaad;
+        border-color: #a7aaad;
+        cursor: not-allowed;
+      }
+    }
+
+    .button-secondary {
+      background: #f6f7f7;
+      border: 1px solid #dcdcde;
+      color: #2c3338;
+
+      &:hover {
+        background: #f0f0f1;
+        border-color: #8c8f94;
+        color: #1d2327;
+      }
+    }
+  }
+
+  // QR Preview Box
+  .qr-preview-postbox {
+    .qr-preview-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      overflow: hidden;
+
+      .qr-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 14px;
+        background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+
+        .qr-bank-tag {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+
+          .bank-badge {
+            background: #2271b1;
+            color: #fff;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+          }
+
+          .bank-name-text {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1e293b;
+          }
+        }
+
+        .template-pill {
+          font-size: 11px;
+          color: #64748b;
+          background: #e2e8f0;
+          padding: 2px 6px;
+          border-radius: 3px;
+          font-family: monospace;
+        }
+      }
+
+      .qr-image-wrapper {
+        padding: 16px;
+        background: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        .live-qr-img {
+          width: 220px;
+          height: auto;
+          border-radius: 6px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+          border: 1px solid #e2e8f0;
+          transition: transform 0.2s ease;
+
+          &:hover {
+            transform: scale(1.02);
+          }
+        }
+      }
+
+      .qr-meta-info {
+        padding: 12px 16px;
+        background: #f8fafc;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        font-size: 13px;
+
+        .meta-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 8px;
+
+          .meta-label {
+            color: #64748b;
+            font-size: 12px;
+          }
+
+          .meta-value {
+            color: #0f172a;
+            font-size: 13px;
+
+            &.mono {
+              font-family: monospace;
+              font-size: 14px;
+              color: #2271b1;
+            }
+
+            &.desc-preview {
+              font-size: 12px;
+              color: #475569;
+              max-width: 180px;
+              text-overflow: ellipsis;
+              overflow: hidden;
+              white-space: nowrap;
+            }
+          }
+        }
+
+        .test-amount-picker {
+          display: flex;
+          gap: 4px;
+
+          .amt-btn {
+            background: #fff;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: 11px;
+            font-weight: 500;
+            color: #475569;
+            cursor: pointer;
+
+            &:hover {
+              border-color: #2271b1;
+              color: #2271b1;
+            }
+
+            &.active {
+              background: #2271b1;
+              border-color: #2271b1;
+              color: #fff;
+            }
+          }
+        }
+      }
+
+      .qr-actions-bar {
+        padding: 10px 16px;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        gap: 8px;
+        background: #fff;
+
+        .button {
+          flex: 1;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          font-size: 12px;
+          padding: 6px 10px;
+          text-decoration: none;
+          color: #2c3338;
+          background: #f6f7f7;
+          border: 1px solid #dcdcde;
+          border-radius: 4px;
+          cursor: pointer;
+
+          &:hover {
+            background: #f0f0f1;
+            border-color: #8c8f94;
+          }
+        }
+      }
+    }
+  }
+
+  // Security Postbox
+  .security-postbox {
+    .security-specs-list {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 14px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      font-size: 13px;
+
+      li {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        color: #334155;
+
+        .check-icon {
+          color: #10b981;
+          font-size: 14px;
+          margin-top: 2px;
+          flex-shrink: 0;
+        }
+      }
+    }
+
+    .api-health-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: #f1f5f9;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #475569;
+
+      .health-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+
+        &.online {
+          background-color: #10b981;
+          box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+        }
+      }
+    }
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// ─── VietQR Settings Dark Mode ───────────────────────
+[data-theme="dark"] {
+  .wp-vietqr-page {
+    background-color: transparent;
+    color: var(--text-color, #cbd5e1);
+
+    .wp-header-section {
+      .header-title-wrap {
+        .wp-heading-inline {
+          color: var(--text-title, #f1f5f9);
+
+          .header-icon {
+            color: #818cf8;
+          }
+        }
+      }
+
+      .wp-subtitle {
+        color: var(--text-muted, #94a3b8);
+      }
+    }
+
+    .nav-tab-wrapper {
+      border-bottom-color: var(--border-color, #2d3648);
+
+      .nav-tab {
+        background: #1e2430;
+        border-color: var(--border-color, #2d3648);
+        color: var(--text-muted, #94a3b8);
+
+        &:hover {
+          background-color: #283142;
+          color: #818cf8;
+        }
+
+        &.nav-tab-active {
+          background: var(--bg-card, #1a202c);
+          color: var(--text-title, #f1f5f9);
+          border-color: var(--border-color, #2d3648);
+          border-bottom-color: var(--bg-card, #1a202c);
+        }
+      }
+    }
+
+    .wp-role-warning {
+      background: #1f1515;
+      border-left-color: #ef4444;
+
+      p {
+        color: #fca5a5;
+      }
+    }
+
+    .wp-metabox {
+      background: var(--bg-card, #1a202c);
+      border-color: var(--border-color, #2d3648);
+
+      .postbox-header {
+        background: #151a24;
+        border-bottom-color: var(--border-color, #2d3648);
+
+        h2 {
+          color: var(--text-title, #f1f5f9);
+
+          svg {
+            color: #818cf8;
+          }
+        }
+      }
+    }
+
+    .form-table {
+      tr {
+        border-bottom-color: #232b3a;
+      }
+
+      th {
+        color: var(--text-title, #f1f5f9);
+      }
+
+      td {
+        .regular-text,
+        .large-text,
+        select.regular-text {
+          background-color: #12161f;
+          border-color: var(--border-color, #2d3648);
+          color: var(--text-title, #f1f5f9);
+
+          &:focus {
+            border-color: #818cf8;
+            box-shadow: 0 0 0 1px #818cf8;
+          }
+        }
+
+        .checkbox-label {
+          color: var(--text-title, #f1f5f9);
+        }
+
+        .description {
+          color: var(--text-muted, #94a3b8);
+        }
+      }
+    }
+
+    .wp-submit-bar {
+      .button-secondary {
+        background: #1e2430;
+        border-color: var(--border-color, #2d3648);
+        color: var(--text-title, #f1f5f9);
+
+        &:hover {
+          background: #283142;
+          color: #818cf8;
+        }
+      }
+    }
+
+    .qr-preview-postbox .qr-preview-card {
+      background: var(--bg-card, #1a202c);
+      border-color: var(--border-color, #2d3648);
+
+      .qr-card-header {
+        background: #151a24;
+        border-bottom-color: var(--border-color, #2d3648);
+
+        .qr-bank-tag .bank-name-text {
+          color: var(--text-title, #f1f5f9);
+        }
+
+        .template-pill {
+          background: #1e2430;
+          color: var(--text-muted, #94a3b8);
+        }
+      }
+
+      .qr-image-wrapper {
+        background: #ffffff;
+      }
+
+      .qr-meta-info {
+        background: #151a24;
+        border-top-color: var(--border-color, #2d3648);
+
+        .meta-row {
+          .meta-label {
+            color: var(--text-muted, #94a3b8);
+          }
+
+          .meta-value {
+            color: var(--text-title, #f1f5f9);
+
+            &.mono {
+              color: #818cf8;
+            }
+
+            &.desc-preview {
+              color: var(--text-color, #cbd5e1);
+            }
+          }
+        }
+
+        .test-amount-picker .amt-btn {
+          background: #1e2430;
+          border-color: var(--border-color, #2d3648);
+          color: var(--text-title, #f1f5f9);
+
+          &:hover {
+            border-color: #818cf8;
+            color: #818cf8;
+          }
+
+          &.active {
+            background: #4f46e5;
+            border-color: #4f46e5;
+            color: #fff;
+          }
+        }
+      }
+
+      .qr-actions-bar {
+        background: #151a24;
+        border-top-color: var(--border-color, #2d3648);
+
+        .button {
+          background: #1e2430;
+          border-color: var(--border-color, #2d3648);
+          color: var(--text-title, #f1f5f9);
+
+          &:hover {
+            background: #283142;
+            color: #818cf8;
+          }
+        }
+      }
+    }
+
+    .security-postbox {
+      .security-specs-list li {
+        color: var(--text-color, #cbd5e1);
+      }
+
+      .api-health-box {
+        background: #151a24;
+        color: var(--text-muted, #94a3b8);
+      }
+    }
+  }
+}
+

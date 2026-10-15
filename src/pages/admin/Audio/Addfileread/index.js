@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
+import { NavLink } from "react-router-dom";
 import {
     FaMicrophone,
     FaUserEdit,
@@ -16,12 +17,24 @@ import {
     FaMapMarkerAlt,
     FaHeadphones,
     FaRedo,
+    FaMusic,
+    FaVolumeDown,
+    FaArrowLeft,
+    FaListUl,
+    FaBook,
+    FaTimes,
+    FaUnlock,
+    FaCheck,
+    FaClock,
+    FaFileAlt,
+    FaSlidersH,
 } from "react-icons/fa";
 import { useGetStoriesAD, useGetChaptersByStoryAD, useAddChapterAD, useGetTTSVoicesAD, generateTTSAudioAPI, useGetBackgroundMusicsPublic } from "api/homePage";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { VI_VOICES, TTS_VOICE_STORAGE_KEY, TTS_SPEED_STORAGE_KEY } from "../../../../config.js";
-import { FaMusic, FaVolumeDown } from "react-icons/fa";
+import { STORAGE_URL } from "config/config";
+import { ROUTES } from "utils/route";
 import "./style.scss";
 
 const DEMO_TEXT = "Chào mừng bạn đến với Audio Story. Tôi là giọng đọc AI tự động, mang đến những giờ phút thư giãn tuyệt vời.";
@@ -48,6 +61,8 @@ return saved ? parseFloat(saved) : 1.0;
     const [audioUrl, setAudioUrl] = useState(null);
     const [audioBlob, setAudioBlob] = useState(null);
     const [demoPlayingVoice, setDemoPlayingVoice] = useState(null);
+    const [progress, setProgress] = useState(0);
+    const progressTimerRef = useRef(null);
 
     // Nhạc nền (background music) - tùy chọn
     const [selectedBgMusicId, setSelectedBgMusicId] = useState("");
@@ -66,7 +81,26 @@ return saved ? parseFloat(saved) : 1.0;
     // Lấy danh sách truyện từ API
     const { data: allStories } = useGetStoriesAD();
 
-// Danh sách giọng đọc lấy từ backend (quét model trong storage/app/tts/models)
+    const storiesList = useMemo(() => {
+        if (!allStories) return [];
+        if (Array.isArray(allStories)) return allStories;
+        if (Array.isArray(allStories.data)) return allStories.data;
+        return [];
+    }, [allStories]);
+
+    const currentStory = useMemo(() => {
+        return storiesList.find((s) => String(s.id) === String(selectedStoryId));
+    }, [storiesList, selectedStoryId]);
+
+    const getThumbnailUrl = (thumbnail) => {
+        if (!thumbnail) return "/placeholder.png";
+        if (thumbnail.startsWith("http://") || thumbnail.startsWith("https://")) {
+            return thumbnail;
+        }
+        return `${STORAGE_URL}${thumbnail}`;
+    };
+
+    // Danh sách giọng đọc lấy từ backend (quét model trong storage/app/tts/models)
     const { data: backendVoices } = useGetTTSVoicesAD();
 
     // Danh sách nhạc nền (công khai - chỉ admin đăng lên được)
@@ -78,7 +112,7 @@ return saved ? parseFloat(saved) : 1.0;
     // Hook thêm mới chương
     const addMutation = useAddChapterAD();
 
-    const updatingStories = allStories?.filter(story => story.status === "updating") || [];
+    const updatingStories = storiesList;
 
     // Voice list: ưu tiên dữ liệu từ backend, fallback về metadata tĩnh (VI_VOICES)
     const voices = useMemo(() => {
@@ -122,6 +156,9 @@ return saved ? parseFloat(saved) : 1.0;
             }
             if (previewAudioRef.current) {
                 previewAudioRef.current.pause();
+            }
+            if (progressTimerRef.current) {
+                clearInterval(progressTimerRef.current);
             }
         };
     }, []);
@@ -177,6 +214,55 @@ return saved ? parseFloat(saved) : 1.0;
         }
     };
 
+    // Bắt đầu chạy tiến trình phần trăm giả lập thông minh
+    const startProgress = (isShort = false, textLength = 0) => {
+        if (progressTimerRef.current) {
+            clearInterval(progressTimerRef.current);
+        }
+        setProgress(5);
+
+        // Ước tính thời lượng: nghe thử 3-4s, văn bản dài dựa theo số ký tự
+        const length = isShort ? 300 : (textLength || content.length || 1000);
+        const targetDuration = isShort 
+            ? 3500 
+            : Math.min(60000, Math.max(8000, (length / 200) * 1200));
+
+        const stepInterval = 100;
+        const totalSteps = targetDuration / stepInterval;
+
+        let currentStep = 0;
+        progressTimerRef.current = setInterval(() => {
+            currentStep++;
+            // Tăng mượt từ 5% đến tối đa 95% trong khi chờ backend phản hồi
+            const calculatedPercent = Math.min(95, Math.round((currentStep / totalSteps) * 90) + 5);
+            setProgress((prev) => (calculatedPercent > prev ? calculatedPercent : prev));
+        }, stepInterval);
+    };
+
+    // Khi backend trả về kết quả thành công -> nhảy tới 100% rồi đóng modal
+    const completeProgress = (onFinish) => {
+        if (progressTimerRef.current) {
+            clearInterval(progressTimerRef.current);
+            progressTimerRef.current = null;
+        }
+        setProgress(100);
+        setTimeout(() => {
+            setTtsStatus("idle");
+            setProgress(0);
+            if (onFinish) onFinish();
+        }, 350);
+    };
+
+    // Dừng tiến trình khi có lỗi
+    const stopProgress = () => {
+        if (progressTimerRef.current) {
+            clearInterval(progressTimerRef.current);
+            progressTimerRef.current = null;
+        }
+        setTtsStatus("idle");
+        setProgress(0);
+    };
+
     // Tạo bản nghe thử cho 300 ký tự đầu tiên
     const handlePreview = async () => {
         if (!content.trim()) {
@@ -193,6 +279,7 @@ return saved ? parseFloat(saved) : 1.0;
             }
 
             setTtsStatus("generating");
+            startProgress(true, 300);
 
             const previewText = content.substring(0, 300);
             const blob = await generateAudio(previewText, true);
@@ -200,15 +287,17 @@ return saved ? parseFloat(saved) : 1.0;
             const url = URL.createObjectURL(blob);
             setAudioUrl(url);
             setAudioBlob(blob);
-            setTtsStatus("idle");
-            toast.success("🎵 Đã tạo nghe thử thành công!");
 
-            const player = new Audio(url);
-            player.volume = volume / 100;
-            audioPlayerRef.current = player;
-            player.play().catch(err => console.warn("Auto-play failed:", err));
+            completeProgress(() => {
+                toast.success("🎵 Đã tạo nghe thử thành công!");
+                const player = new Audio(url);
+                player.volume = volume / 100;
+                audioPlayerRef.current = player;
+                player.play().catch(err => console.warn("Auto-play failed:", err));
+            });
         } catch (err) {
             console.error(err);
+            stopProgress();
             // Khi responseType=blob, error response cũng là Blob → phải đọc text
             let errMsg = "Lỗi tạo giọng đọc nghe thử.";
             if (err?.response?.data instanceof Blob) {
@@ -221,7 +310,6 @@ return saved ? parseFloat(saved) : 1.0;
                 errMsg = err.response.data.message;
             }
             toast.error(errMsg);
-            setTtsStatus("idle");
         }
     };
 
@@ -319,6 +407,7 @@ return saved ? parseFloat(saved) : 1.0;
             }
 
             setTtsStatus("generating");
+            startProgress(false, content.length);
 
             const blob = await generateAudio(content, false);
 
@@ -326,10 +415,13 @@ return saved ? parseFloat(saved) : 1.0;
             setAudioUrl(url);
             setAudioBlob(blob);
 
-            // Tiến hành tải lên file audio đã sinh ra
-            uploadAudioFile(blob);
+            completeProgress(() => {
+                // Tiến hành tải lên file audio đã sinh ra
+                uploadAudioFile(blob);
+            });
         } catch (err) {
             console.error(err);
+            stopProgress();
             // Khi responseType=blob, error response cũng là Blob → phải đọc text
             let errMsg = "Lỗi tạo audio.";
             if (err?.response?.data instanceof Blob) {
@@ -342,7 +434,6 @@ return saved ? parseFloat(saved) : 1.0;
                 errMsg = err.response.data.message;
             }
             toast.error(errMsg);
-            setTtsStatus("idle");
         }
     };
 
@@ -375,475 +466,605 @@ return saved ? parseFloat(saved) : 1.0;
         });
     };
 
+
     // Get unique regions for filter
     const regions = ["all", ...new Set(voices.map(v => v.region))];
 
+    const wordCount = useMemo(() => {
+        return content.trim() ? content.trim().split(/\s+/).filter(Boolean).length : 0;
+    }, [content]);
+
+    const estDuration = useMemo(() => {
+        if (!content.trim()) return "0s";
+        const seconds = Math.ceil((wordCount / (140 * speed)) * 60);
+        if (seconds < 60) return `~${seconds} giây`;
+        const mins = Math.floor(seconds / 60);
+        const remSecs = seconds % 60;
+        return `~${mins} phút ${remSecs > 0 ? remSecs + "s" : ""}`;
+    }, [wordCount, speed, content]);
+
     return (
-        <div className="addChapter">
+        <div className="wp-add-chapter-page">
             <ToastContainer position="top-right" autoClose={3000} closeOnClick pauseOnHover />
 
-            <div className="pageHeader">
-                <h2>📚 Thêm chương mới</h2>
-                <p>Thêm tập truyện mới với tính năng chuyển đổi văn bản thành giọng nói AI (Piper-TTS chạy tại máy chủ)</p>
-            </div>
-
-            {/* Current Voice Banner */}
-            <div className="currentVoiceBanner">
-                <div className="currentVoiceInfo">
-                    <FaHeadphones className="bannerIcon" />
-                    <div>
-                        <span className="bannerLabel">Giọng đọc đang dùng:</span>
-                        <span className="bannerVoiceName">
-                            {selectedVoiceInfo?.gender === "Nữ" ? <FaFemale /> : <FaMale />}
-                            {" "}{selectedVoiceInfo?.name}
-                        </span>
-                        <span className="bannerRegion">{selectedVoiceInfo?.region}</span>
-                    </div>
-                </div>
-                <div className="bannerSpeed">
-                    <FaVolumeUp />
-                    <span>Tốc độ: {speed}x</span>
-                </div>
-            </div>
-
-            <form className="chapterForm" onSubmit={handleSubmit}>
-                {/* Chapter Info */}
-                <div className="card">
-                    <h3>Thông tin tập</h3>
-                    <div className="grid">
-                        <div className="formGroup">
-                            <label>Chọn bộ truyện</label>
-                            <select
-                                value={selectedStoryId}
-                                onChange={(e) => setSelectedStoryId(e.target.value)}
-                                required
-                            >
-                                <option value="">-- Chọn bộ truyện --</option>
-                                {updatingStories.map((story) => (
-                                    <option key={story.id} value={story.id}>
-                                        {story.title}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <div className="formGroup">
-                            <label>Tên tập</label>
-                            <input
-                                type="text"
-                                placeholder="Nhập tên tập..."
-                                value={chapterName}
-                                onChange={(e) => setChapterName(e.target.value)}
-                                required
-                            />
-                        </div>
-                    </div>
-
-                    <div className="chapterTable">
-                        <div className="tableHeader">
-                            <h4>📚 Danh sách tập đã có</h4>
-                            {chapters && chapters.length > 0 && (
-                                <span>{chapters.length} tập</span>
-                            )}
-                        </div>
-
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Tên tập</th>
-                                    <th width="120">Trạng thái</th>
-                                    <th width="140">Tác giả</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {!selectedStoryId ? (
-                                    <tr>
-                                        <td colSpan="3" className="text-center">
-                                            <div className="empty-state" style={{ padding: "20px", color: "#64748b" }}>
-                                                <p>Vui lòng chọn một bộ truyện để hiển thị danh sách tập</p>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ) : loadingChapters ? (
-                                    <tr>
-                                        <td colSpan="3" className="text-center" style={{ padding: "20px" }}>
-                                            Đang tải danh sách tập...
-                                        </td>
-                                    </tr>
-                                ) : chapters && chapters.length > 0 ? (
-                                    chapters.map((ch) => (
-                                        <tr key={ch.id}>
-                                            <td>{ch.chapter_name}</td>
-                                            <td>
-                                                {parseInt(ch.is_vip) === 1 ? (
-                                                    <span className="badge vip">VIP</span>
-                                                ) : (
-                                                    <span className="badge free">FREE</span>
-                                                )}
-                                            </td>
-                                            <td>{ch.author_post}</td>
-                                        </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan="3" className="text-center">
-                                            <div className="empty-state" style={{ padding: "20px", color: "#64748b" }}>
-                                                <p>Bộ truyện này hiện chưa có tập nào.</p>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                {/* TTS Configuration */}
-                <div className="card">
-                    <h3>
-                        <FaMicrophone />
-                        Cấu hình giọng đọc AI
-                    </h3>
-
-                    <div className="grid">
-                        <div className="formGroup">
-                            <label>Giọng đọc đang chọn</label>
-                            <div className="selectedVoiceDisplay">
-                                <span className="voiceBadge">
-                                    {selectedVoiceInfo?.gender === "Nữ" ? <FaFemale /> : <FaMale />}
-                                    {" "}{selectedVoiceInfo?.name}
-                                </span>
-                                <span className="regionTag">{selectedVoiceInfo?.region}</span>
-                                <p className="voiceDesc">{selectedVoiceInfo?.desc}</p>
-                            </div>
-                        </div>
-
-                        <div className="formGroup">
-                            <label>Tốc độ đọc</label>
-                            <select value={speed} onChange={(e) => handleSpeedChange(parseFloat(e.target.value))}>
-                                <option value={0.7}>0.7x (Rất chậm)</option>
-                                <option value={0.8}>0.8x (Chậm)</option>
-                                <option value={0.9}>0.9x (Hơi chậm)</option>
-                                <option value={1.0}>1.0x (Bình thường)</option>
-                                <option value={1.1}>1.1x (Hơi nhanh)</option>
-                                <option value={1.2}>1.2x (Nhanh)</option>
-                                <option value={1.5}>1.5x (Rất nhanh)</option>
-                            </select>
-                        </div>
-
-                        <div className="formGroup">
-                            <label>Âm lượng nghe thử ({volume}%)</label>
-                            <div className="volumeControl">
-                                <input
-                                    type="range"
-                                    min="0"
-                                    max="100"
-                                    value={volume}
-                                    onChange={(e) => setVolume(parseInt(e.target.value))}
-                                />
-                                <span>{volume}%</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Background Music - Nhạc nền */}
-                <div className="card">
-                    <h3>
-                        <FaMusic />
-                        Nhạc nền (Tùy chọn)
-                    </h3>
-                    <p style={{ color: "#64748b", fontSize: "13px", marginBottom: "18px", marginTop: "-10px" }}>
-                        Chọn nhạc nền để trộn vào giọng đọc. Âm lượng nhạc nền sẽ được đặt thấp hơn giọng đọc.
-                        Bạn cần upload nhạc nền trước ở trang <strong>"Quản lý nhạc nền"</strong>.
+            {/* Header kiểu WordPress Admin */}
+            <div className="wp-page-header">
+                <div className="wp-header-left">
+                    <h1 className="wp-page-title">
+                        <FaMicrophone className="title-icon" />
+                        Thêm chương mới (AI Studio)
+                    </h1>
+                    <p className="wp-page-subtitle">
+                        Chuyển đổi văn bản thành giọng đọc truyền cảm tự động bằng công nghệ AI chạy trực tiếp tại máy chủ
                     </p>
+                </div>
 
-                    <div className="grid">
-                        <div className="formGroup">
-                            <label>
-                                <FaMusic /> Chọn nhạc nền
-                            </label>
-                            <select value={selectedBgMusicId} onChange={handleBgMusicSelect}>
-                                <option value="">-- Không dùng nhạc nền --</option>
-                                {publicBgMusics && publicBgMusics.length > 0 ? (
-                                    publicBgMusics.map((m) => (
-                                        <option key={m.id} value={m.id}>
-                                            {m.title}
-                                        </option>
-                                    ))
-                                ) : (
-                                    <option value="" disabled>Chưa có nhạc nền nào</option>
-                                )}
-                            </select>
-                        </div>
+                <div className="wp-header-actions">
+                    <NavLink
+                        to={ROUTES.ADMIN.AUDIO_ADD}
+                        className="wp-btn-action"
+                        title="Về trang danh sách quản lý chương"
+                    >
+                        <FaListUl /> Quản lý chương
+                    </NavLink>
+                    <NavLink
+                        to={ROUTES.ADMIN.MANAGE_COMMENTS_AUDIO}
+                        className="wp-btn-action"
+                        title="Về trang danh sách bộ truyện"
+                    >
+                        <FaBook /> Danh sách bộ truyện
+                    </NavLink>
+                </div>
+            </div>
 
-                        <div className="formGroup">
-                            <label>
-                                <FaVolumeDown /> Âm lượng nhạc nền ({bgVolume}%)
-                            </label>
-                            <div className="volumeControl">
-                                <input
-                                    type="range"
-                                    min="0"
-                                    max="50"
-                                    step="1"
-                                    value={bgVolume}
-                                    onChange={(e) => setBgVolume(parseInt(e.target.value))}
-                                />
-                                <span>{bgVolume}%</span>
+            {/* Form & WordPress 2-Column Metabox Layout */}
+            <form onSubmit={handleSubmit} className="wp-editor-form">
+                <div className="wp-editor-columns">
+                    {/* CỘT CHÍNH (BÊN TRÁI - 67%) */}
+                    <div className="wp-main-column">
+                        {/* Metabox 1: Thông tin bộ truyện & Tên chương */}
+                        <div className="wp-metabox">
+                            <div className="metabox-header">
+                                <h3>
+                                    <FaBook className="metabox-icon" /> Thông tin bộ truyện & Tên tập
+                                </h3>
                             </div>
-                            <p style={{ fontSize: "11px", color: "#94a3b8", marginTop: "4px" }}>
-                                Giá trị thấp (0-50%) giúp nhạc nền không át giọng đọc.
-                            </p>
+                            <div className="metabox-body">
+                                <div className="wp-form-grid">
+                                    <div className="wp-form-group">
+                                        <label className="wp-label">
+                                            Chọn bộ truyện <span className="req">*</span>
+                                        </label>
+                                        <select
+                                            className="wp-select"
+                                            value={selectedStoryId}
+                                            onChange={(e) => setSelectedStoryId(e.target.value)}
+                                            required
+                                        >
+                                            <option value="">-- Chọn bộ truyện --</option>
+                                            {updatingStories.map((story) => (
+                                                <option key={story.id} value={story.id}>
+                                                    {story.title} {story.status === "updating" ? "(Đang cập nhật)" : "(Hoàn thành)"}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div className="wp-form-group">
+                                        <label className="wp-label">
+                                            Tên chương truyện <span className="req">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            className="wp-input"
+                                            placeholder="Ví dụ: Chương 1: Tiết tử / Chương 1: Khởi đầu..."
+                                            value={chapterName}
+                                            onChange={(e) => setChapterName(e.target.value)}
+                                            required
+                                        />
+                                    </div>
+                                </div>
+
+                                {currentStory && (
+                                    <div className="wp-story-preview-card">
+                                        <img
+                                            src={getThumbnailUrl(currentStory.thumbnail)}
+                                            alt={currentStory.title}
+                                            className="story-mini-cover"
+                                            onError={(e) => { e.target.src = "/placeholder.png"; }}
+                                        />
+                                        <div className="story-mini-info">
+                                            <h4 className="story-title">{currentStory.title}</h4>
+                                            <div className="story-meta-tags">
+                                                <span className="tag author">Tác giả: {currentStory.author || "Chưa rõ"}</span>
+                                                <span className="tag category">{currentStory.category?.name || "Chưa phân loại"}</span>
+                                                <span className="tag count">
+                                                    <FaHeadphones /> {chapters?.length || 0} chương đã đăng
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
-{bgPreviewUrl && (
-                            <div className="formGroup" style={{ gridColumn: "1 / -1" }}>
-                                <label>Nghe thử nhạc nền (âm lượng thực tế: {bgVolume}%)</label>
-                                <audio
-                                    ref={bgAudioRef}
-                                    controls
-                                    src={bgPreviewUrl}
-                                    style={{ width: "100%" }}
-                                    onPlay={(e) => { e.currentTarget.volume = bgVolume / 100; }}
+                        {/* Metabox 2: Trình soạn thảo văn bản chương (Editor Box) */}
+                        <div className="wp-metabox">
+                            <div className="metabox-header flex-between">
+                                <h3>
+                                    <FaFileAlt className="metabox-icon" /> Nội dung văn bản tập truyện
+                                </h3>
+                                <div className="content-stats">
+                                    <span className="stat-badge chars">{content.length} ký tự</span>
+                                    <span className="stat-badge words">{wordCount} từ</span>
+                                    <span className="stat-badge duration">
+                                        <FaClock /> {estDuration}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="metabox-body">
+                                <textarea
+                                    className="wp-chapter-textarea"
+                                    rows={13}
+                                    placeholder="Dán hoặc nhập nội dung văn bản tập truyện vào đây. AI sẽ tự động đọc diễn cảm theo từng câu..."
+                                    value={content}
+                                    onChange={(e) => setContent(e.target.value)}
+                                    required
                                 />
-                                <p style={{ fontSize: "12px", color: "#94a3b8", marginTop: "6px" }}>
-                                    💡 Kéo thanh "Âm lượng nhạc nền" bên trên để nghe trước mức độ trộn thực tế trước khi tải lên.
+
+                                <div className="textarea-footer-hint">
+                                    <span>💡 Bấm nút <strong>"Nghe thử AI"</strong> ở cột bên phải để kiểm tra trước 300 ký tự đầu.</span>
+                                </div>
+
+                                {/* Audio vừa sinh nếu có */}
+                                {audioUrl && (
+                                    <div className="wp-generated-audio-box">
+                                        <div className="audio-box-header">
+                                            <span className="audio-box-title">
+                                                <FaHeadphones /> Âm thanh AI vừa sinh (Sẵn sàng xuất bản)
+                                            </span>
+                                            <span className="audio-box-badge">Tập tin WAV</span>
+                                        </div>
+                                        <audio controls src={audioUrl} className="wp-audio-player" />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Metabox 3: Phối nhạc nền (Tùy chọn) */}
+                        <div className="wp-metabox">
+                            <div className="metabox-header">
+                                <h3>
+                                    <FaMusic className="metabox-icon" /> Phối nhạc nền (Tùy chọn)
+                                </h3>
+                            </div>
+                            <div className="metabox-body">
+                                <p className="metabox-desc">
+                                    Chọn bài nhạc nền nhẹ nhàng để tự động hòa âm cùng giọng đọc AI. Âm lượng nhạc nền nên để từ 10% - 20% để không át tiếng đọc.
                                 </p>
+
+                                <div className="wp-form-grid">
+                                    <div className="wp-form-group">
+                                        <label className="wp-label">Chọn nhạc nền</label>
+                                        <select
+                                            className="wp-select"
+                                            value={selectedBgMusicId}
+                                            onChange={handleBgMusicSelect}
+                                        >
+                                            <option value="">-- Không sử dụng nhạc nền --</option>
+                                            {publicBgMusics && publicBgMusics.length > 0 ? (
+                                                publicBgMusics.map((m) => (
+                                                    <option key={m.id} value={m.id}>
+                                                        {m.title}
+                                                    </option>
+                                                ))
+                                            ) : (
+                                                <option value="" disabled>Chưa có nhạc nền trong thư viện</option>
+                                            )}
+                                        </select>
+                                    </div>
+
+                                    <div className="wp-form-group">
+                                        <label className="wp-label">
+                                            Âm lượng nhạc nền ({bgVolume}%)
+                                        </label>
+                                        <div className="wp-range-slider-wrap">
+                                            <input
+                                                type="range"
+                                                min="0"
+                                                max="50"
+                                                step="1"
+                                                value={bgVolume}
+                                                onChange={(e) => setBgVolume(parseInt(e.target.value))}
+                                                className="wp-range"
+                                            />
+                                            <span className="range-val">{bgVolume}%</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {bgPreviewUrl && (
+                                    <div className="wp-bg-preview-box">
+                                        <label className="sub-label">Nghe thử nhạc nền (Âm lượng áp dụng: {bgVolume}%):</label>
+                                        <audio
+                                            ref={bgAudioRef}
+                                            controls
+                                            src={bgPreviewUrl}
+                                            className="wp-audio-player mini"
+                                            onPlay={(e) => { e.currentTarget.volume = bgVolume / 100; }}
+                                        />
+                                    </div>
+                                )}
                             </div>
-                        )}
-                    </div>
-                </div>
+                        </div>
 
-                {/* Access Control */}
-                <div className="card">
-                    <h3>
-                        <FaUserEdit />
-                        Tuỳ chỉnh quyền truy cập
-                    </h3>
+                        {/* Metabox 4: Danh sách các chương đã đăng */}
+                        <div className="wp-metabox">
+                            <div className="metabox-header flex-between">
+                                <h3>
+                                    <FaListUl className="metabox-icon" /> Danh sách các chương đã có của bộ truyện
+                                </h3>
+                                {chapters && chapters.length > 0 && (
+                                    <span className="wp-count-pill">{chapters.length} chương</span>
+                                )}
+                            </div>
 
-                    <div className="grid">
-                        <div className="formGroup">
-                            <label>
-                                <FaCrown />
-                                <span> Quyền truy cập</span>
-                            </label>
-                            <select value={isVip} onChange={(e) => setIsVip(parseInt(e.target.value))}>
-                                <option value={0}>FREE (Miễn phí)</option>
-                                <option value={1}>VIP (Hội viên)</option>
-                            </select>
+                            <div className="metabox-body nopadding">
+                                <table className="wp-chapters-table">
+                                    <thead>
+                                        <tr>
+                                            <th>STT</th>
+                                            <th>Tên tập</th>
+                                            <th width="120">Quyền truy cập</th>
+                                            <th width="140">Người đăng</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {!selectedStoryId ? (
+                                            <tr>
+                                                <td colSpan="4" className="empty-cell">
+                                                    Vui lòng chọn một bộ truyện ở trên để xem các chương đã đăng.
+                                                </td>
+                                            </tr>
+                                        ) : loadingChapters ? (
+                                            <tr>
+                                                <td colSpan="4" className="empty-cell">
+                                                    Đang tải danh sách chương...
+                                                </td>
+                                            </tr>
+                                        ) : chapters && chapters.length > 0 ? (
+                                            chapters.map((ch, idx) => (
+                                                <tr key={ch.id}>
+                                                    <td className="num-cell">#{ch.chapter_number || idx + 1}</td>
+                                                    <td className="title-cell">
+                                                        <strong>{ch.chapter_name}</strong>
+                                                    </td>
+                                                    <td>
+                                                        {parseInt(ch.is_vip) === 1 ? (
+                                                            <span className="pill-vip"><FaCrown /> VIP</span>
+                                                        ) : (
+                                                            <span className="pill-free"><FaUnlock /> Miễn phí</span>
+                                                        )}
+                                                    </td>
+                                                    <td className="author-cell">{ch.author_post || "Admin"}</td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan="4" className="empty-cell">
+                                                    Bộ truyện này hiện chưa có chương nào.
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                {/* Generated Audio Player */}
-                {audioUrl && (
-                    <div className="card generatedAudioCard">
-                        <h3>🎙 Âm thanh vừa sinh</h3>
-                        <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
-                            <audio controls src={audioUrl} style={{ flex: 1 }} />
+                    {/* CỘT PHỤ (BÊN PHẢI - 33% - WordPress Sidebar Metaboxes) */}
+                    <div className="wp-sidebar-column">
+                        {/* Metabox 1: Đăng tải & Xuất bản (Publish Box) */}
+                        <div className="wp-metabox publish-metabox">
+                            <div className="metabox-header">
+                                <h3>Xuất bản & Hành động</h3>
+                            </div>
+                            <div className="metabox-body">
+                                <div className="publish-status-row">
+                                    <span className="status-label">Trạng thái xử lý:</span>
+                                    <span className={`status-badge ${ttsStatus === "generating" ? "processing" : "ready"}`}>
+                                        {ttsStatus === "generating" ? (
+                                            <>
+                                                <FaSpinner className="spin" /> Đang tạo âm thanh...
+                                            </>
+                                        ) : (
+                                            "Sẵn sàng xuất bản"
+                                        )}
+                                    </span>
+                                </div>
+
+                                <div className="publish-access-group">
+                                    <label className="wp-label">Quyền truy cập của người nghe:</label>
+                                    <div className="access-radio-options">
+                                        <label className={`access-card ${isVip === 0 ? "selected" : ""}`}>
+                                            <input
+                                                type="radio"
+                                                name="is_vip"
+                                                value="0"
+                                                checked={isVip === 0}
+                                                onChange={() => setIsVip(0)}
+                                            />
+                                            <div className="access-info">
+                                                <span className="access-title"><FaUnlock /> Miễn phí (Free)</span>
+                                                <span className="access-desc">Tất cả người nghe đều có thể thưởng thức</span>
+                                            </div>
+                                        </label>
+
+                                        <label className={`access-card ${isVip === 1 ? "selected vip" : ""}`}>
+                                            <input
+                                                type="radio"
+                                                name="is_vip"
+                                                value="1"
+                                                checked={isVip === 1}
+                                                onChange={() => setIsVip(1)}
+                                            />
+                                            <div className="access-info">
+                                                <span className="access-title"><FaCrown /> Gói Hội viên VIP</span>
+                                                <span className="access-desc">Chỉ thính giả có gói VIP mới được nghe</span>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="metabox-footer">
+                                <button
+                                    type="button"
+                                    className="wp-btn-preview"
+                                    onClick={handlePreview}
+                                    disabled={ttsStatus !== "idle" || addMutation.isPending}
+                                    title="Nghe thử 300 ký tự đầu tiên"
+                                >
+                                    {ttsStatus === "generating" ? (
+                                        <>
+                                            <FaSpinner className="spin" /> Đang chuyển đổi...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <FaPlay /> Nghe thử AI
+                                        </>
+                                    )}
+                                </button>
+
+                                <button
+                                    type="submit"
+                                    className="wp-btn-publish"
+                                    disabled={ttsStatus !== "idle" || addMutation.isPending}
+                                >
+                                    {addMutation.isPending ? (
+                                        <>
+                                            <FaSpinner className="spin" /> Đang đăng tải...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <FaCloudUploadAlt /> Đăng tải audio
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Metabox 2: Giọng đọc AI đang chọn (Active Voice Box) */}
+                        <div className="wp-metabox">
+                            <div className="metabox-header">
+                                <h3>
+                                    <FaHeadphones className="metabox-icon" /> Giọng đọc AI đang chọn
+                                </h3>
+                            </div>
+                            <div className="metabox-body">
+                                <div className="active-voice-card">
+                                    <div className="active-voice-top">
+                                        <div className="voice-icon-box">
+                                            {selectedVoiceInfo?.gender === "Nữ" ? <FaFemale className="gender-fem" /> : <FaMale className="gender-mal" />}
+                                        </div>
+                                        <div className="voice-name-box">
+                                            <h4 className="voice-name">{selectedVoiceInfo?.name}</h4>
+                                            <span className="voice-region-tag">{selectedVoiceInfo?.region}</span>
+                                        </div>
+                                    </div>
+                                    <p className="voice-desc-text">{selectedVoiceInfo?.desc}</p>
+                                </div>
+
+                                <div className="wp-sidebar-settings">
+                                    <div className="setting-row">
+                                        <label className="setting-label">Tốc độ đọc giọng AI:</label>
+                                        <select
+                                            className="wp-select"
+                                            value={speed}
+                                            onChange={(e) => handleSpeedChange(parseFloat(e.target.value))}
+                                        >
+                                            <option value={0.7}>0.7x (Rất chậm)</option>
+                                            <option value={0.8}>0.8x (Chậm vừa)</option>
+                                            <option value={0.9}>0.9x (Hơi chậm)</option>
+                                            <option value={1.0}>1.0x (Tốc độ chuẩn)</option>
+                                            <option value={1.1}>1.1x (Hơi nhanh)</option>
+                                            <option value={1.2}>1.2x (Nhanh)</option>
+                                            <option value={1.5}>1.5x (Rất nhanh)</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="setting-row">
+                                        <label className="setting-label">Âm lượng nghe thử ({volume}%):</label>
+                                        <div className="wp-range-slider-wrap">
+                                            <input
+                                                type="range"
+                                                min="0"
+                                                max="100"
+                                                value={volume}
+                                                onChange={(e) => setVolume(parseInt(e.target.value))}
+                                                className="wp-range"
+                                            />
+                                            <span className="range-val">{volume}%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Metabox 3: Thư viện giọng đọc AI (Voice Library Box) */}
+                        <div className="wp-metabox">
+                            <div className="metabox-header flex-between">
+                                <h3>
+                                    <FaSlidersH className="metabox-icon" /> Thư viện giọng AI ({voices.length})
+                                </h3>
+                            </div>
+                            <div className="metabox-body">
+                                <div className="voice-search-bar">
+                                    <FaSearch className="search-icon" />
+                                    <input
+                                        type="search"
+                                        placeholder="Tìm tên hoặc mô tả giọng..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        className="wp-search-input"
+                                    />
+                                    {searchQuery && (
+                                        <button type="button" className="clear-search-btn" onClick={() => setSearchQuery("")}>
+                                            <FaTimes />
+                                        </button>
+                                    )}
+                                </div>
+
+                                <div className="voice-filters-row">
+                                    <select
+                                        className="wp-select mini"
+                                        value={filterGender}
+                                        onChange={(e) => setFilterGender(e.target.value)}
+                                    >
+                                        <option value="all">Tất cả giới tính</option>
+                                        <option value="Nữ">Giọng Nữ</option>
+                                        <option value="Nam">Giọng Nam</option>
+                                    </select>
+
+                                    <select
+                                        className="wp-select mini"
+                                        value={filterRegion}
+                                        onChange={(e) => setFilterRegion(e.target.value)}
+                                    >
+                                        <option value="all">Tất cả vùng miền</option>
+                                        {regions.filter(r => r !== "all").map(r => (
+                                            <option key={r} value={r}>{r}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Danh sách cuộn các giọng đọc */}
+                                <div className="wp-voices-scroll-list">
+                                    {filteredVoices.length === 0 ? (
+                                        <div className="empty-voices">
+                                            Không có giọng nào phù hợp với bộ lọc.
+                                        </div>
+                                    ) : (
+                                        filteredVoices.map((v) => {
+                                            const isSelected = selectedVoice === v.id;
+                                            const isDemoPlaying = demoPlayingVoice === v.id;
+
+                                            return (
+                                                <div
+                                                    key={v.id}
+                                                    className={`wp-voice-card-item ${isSelected ? "is-selected" : ""} ${isDemoPlaying ? "is-playing" : ""}`}
+                                                >
+                                                    <div className="voice-item-top">
+                                                        <div className="voice-item-name-group">
+                                                            <span className="gender-tag-icon">
+                                                                {v.gender === "Nữ" ? <FaFemale className="fem" /> : <FaMale className="mal" />}
+                                                            </span>
+                                                            <strong className="item-name">{v.name}</strong>
+                                                            {isSelected && (
+                                                                <span className="badge-active-mark">
+                                                                    <FaCheckCircle /> Đang chọn
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <span className="item-region">{v.region}</span>
+                                                    </div>
+
+                                                    <p className="item-desc">{v.desc}</p>
+
+                                                    <div className="voice-item-actions">
+                                                        <button
+                                                            type="button"
+                                                            className={`wp-btn-demo ${isDemoPlaying ? "playing" : ""}`}
+                                                            onClick={() => handlePlayDemoVoice(v.id)}
+                                                            disabled={ttsStatus !== "idle" && !isDemoPlaying}
+                                                            title="Nghe thử mẫu giọng này"
+                                                        >
+                                                            {isDemoPlaying ? (
+                                                                <>
+                                                                    <FaStop /> Dừng nghe
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <FaPlay /> Nghe thử
+                                                                </>
+                                                            )}
+                                                        </button>
+
+                                                        <button
+                                                            type="button"
+                                                            className={`wp-btn-select ${isSelected ? "selected" : ""}`}
+                                                            onClick={() => handleVoiceSelect(v.id)}
+                                                        >
+                                                            {isSelected ? (
+                                                                <>
+                                                                    <FaCheck /> Đang dùng
+                                                                </>
+                                                            ) : (
+                                                                "Chọn giọng này"
+                                                            )}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     </div>
-                )}
-
-                {/* Content */}
-                <div className="card">
-                    <h3>Nội dung tập</h3>
-                    <textarea
-                        className="chapterContent"
-                        rows="14"
-                        placeholder="Nhập hoặc dán nội dung văn bản tập truyện vào đây..."
-                        value={content}
-                        onChange={(e) => setContent(e.target.value)}
-                        required
-                    />
-                    <p className="contentHint">
-                        {content.length} ký tự • Nghe thử sẽ đọc 300 ký tự đầu
-                    </p>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="actionButtons">
-                    <button
-                        className="preview"
-                        type="button"
-                        onClick={handlePreview}
-                        disabled={ttsStatus !== "idle" || addMutation.isPending}
-                    >
-                        {ttsStatus === "generating" ? (
-                            <>
-                                <FaSpinner className="animate-spin" />
-                                Đang chuyển đổi...
-                            </>
-                        ) : (
-                            <>
-                                <FaPlay />
-                                Nghe thử AI
-                            </>
-                        )}
-                    </button>
-
-                    <button
-                        className="publish"
-                        type="submit"
-                        disabled={ttsStatus !== "idle" || addMutation.isPending}
-                    >
-                        {addMutation.isPending ? (
-                            <>
-                                <FaSpinner className="animate-spin" />
-                                Đang tải lên...
-                            </>
-                        ) : (
-                            <>
-                                <FaCloudUploadAlt />
-                                Đăng tải audio
-                            </>
-                        )}
-                    </button>
                 </div>
             </form>
 
-            <hr />
-
-            {/* Voice Selector Panel */}
-            <div className="voiceCard">
-                <div className="voiceHeader">
-                    <h3>🎙 Danh sách giọng đọc AI ({voices.length} giọng)</h3>
-                    <p>Nhấn <strong>"Nghe thử"</strong> để xem trước, nhấn <strong>"Chọn giọng"</strong> để áp dụng.</p>
-                </div>
-
-                {/* Filters */}
-                <div className="voiceFilters">
-                    <div className="searchBox">
-                        <FaSearch />
-                        <input
-                            type="text"
-                            placeholder="Tìm kiếm giọng đọc..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                        {searchQuery && (
-                            <button className="clearSearch" onClick={() => setSearchQuery("")}>×</button>
-                        )}
-                    </div>
-
-                    <div className="filterGroup">
-                        <FaFilter />
-                        <select value={filterGender} onChange={(e) => setFilterGender(e.target.value)}>
-                            <option value="all">Tất cả giới tính</option>
-                            <option value="Nữ">Giọng Nữ</option>
-                            <option value="Nam">Giọng Nam</option>
-                        </select>
-
-                        <select value={filterRegion} onChange={(e) => setFilterRegion(e.target.value)}>
-                            <option value="all">Tất cả vùng miền</option>
-                            {regions.filter(r => r !== "all").map(r => (
-                                <option key={r} value={r}>{r}</option>
-                            ))}
-                        </select>
-
-                        {(searchQuery || filterGender !== "all" || filterRegion !== "all") && (
-                            <button
-                                className="resetFilters"
-                                onClick={() => {
-                                    setSearchQuery("");
-                                    setFilterGender("all");
-                                    setFilterRegion("all");
-                                }}
-                            >
-                                <FaRedo /> Đặt lại
-                            </button>
-                        )}
-                    </div>
-
-                    <span className="voiceCount">{filteredVoices.length} giọng</span>
-                </div>
-
-                {/* Voice Grid */}
-                <div className="voiceGrid">
-                    {filteredVoices.length === 0 ? (
-                        <div className="noVoices">
-                            <p>Không tìm thấy giọng nào phù hợp với bộ lọc.</p>
-                        </div>
-                    ) : (
-                        filteredVoices.map((v) => (
-                            <div
-                                key={v.id}
-                                className={`voiceItem ${selectedVoice === v.id ? "selected" : ""} ${demoPlayingVoice === v.id ? "playing" : ""}`}
-                            >
-                                <div className="voiceItemHeader">
-                                    <div className="voiceNameGroup">
-                                        <span className="voiceGenderIcon">
-                                            {v.gender === "Nữ" ? <FaFemale /> : <FaMale />}
-                                        </span>
-                                        <div>
-                                            <strong className="voiceItemName">{v.name}</strong>
-                                            {selectedVoice === v.id && (
-                                                <FaCheckCircle className="selectedIcon" title="Đang sử dụng" />
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className="voiceTags">
-                                        <span className={`genderTag ${v.gender === "Nữ" ? "female" : "male"}`}>
-                                            {v.gender}
-                                        </span>
-                                        <span className="regionTagSmall">
-                                            <FaMapMarkerAlt />
-                                            {v.region}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <p className="voiceItemDesc">{v.desc}</p>
-
-                                <div className="voiceItemActions">
-                                    <button
-                                        type="button"
-                                        className={`btnDemo ${demoPlayingVoice === v.id ? "playing" : ""}`}
-                                        onClick={() => handlePlayDemoVoice(v.id)}
-                                        disabled={ttsStatus !== "idle" && demoPlayingVoice !== v.id}
-                                        title="Nghe thử giọng này"
-                                    >
-                                        {demoPlayingVoice === v.id ? (
-                                            <>
-                                                <FaStop /> Dừng
-                                            </>
-                                        ) : (
-                                            <>
-                                                <FaPlay /> Nghe thử
-                                            </>
-                                        )}
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        className={`btnSelect ${selectedVoice === v.id ? "active" : ""}`}
-                                        onClick={() => handleVoiceSelect(v.id)}
-                                        title={selectedVoice === v.id ? "Đang sử dụng" : "Chọn giọng này"}
-                                    >
-                                        {selectedVoice === v.id ? (
-                                            <>
-                                                <FaCheckCircle /> Đang dùng
-                                            </>
-                                        ) : (
-                                            <>
-                                                <FaCheckCircle /> Chọn giọng
-                                            </>
-                                        )}
-                                    </button>
-                                </div>
-                            </div>
-                        ))
-                    )}
-                </div>
-            </div>
-
-            {/* Loading Overlay */}
+            {/* Loading Overlay with % Progress */}
             {ttsStatus !== "idle" && !demoPlayingVoice && (
-                <div className="tts-loading-overlay">
-                    <div className="tts-loading-content">
-                        <FaSpinner className="spinner-icon" />
-                        <p>Đang xử lý chuyển đổi văn bản sang âm thanh tại máy chủ...</p>
+                <div className="wp-tts-loading-overlay">
+                    <div className="wp-tts-loading-modal">
+                        <div className="wp-loading-spinner" />
+                        <h4 className="loading-title">
+                            {progress >= 100
+                                ? "Hoàn tất xử lý âm thanh!"
+                                : "Đang chuyển đổi văn bản sang âm thanh AI..."}
+                        </h4>
+
+                        {/* Thanh tiến trình & % */}
+                        <div className="tts-progress-container">
+                            <div className="tts-progress-bar-wrap">
+                                <div
+                                    className="tts-progress-bar-fill"
+                                    style={{ width: `${progress}%` }}
+                                />
+                            </div>
+                            <div className="tts-progress-percent">{progress}%</div>
+                        </div>
+
+                        <p className="loading-desc">
+                            {progress < 25 && "Khởi động mô hình & phân tích cấu trúc câu..."}
+                            {progress >= 25 && progress < 60 && "Mô hình Piper-TTS đang xử lý ngữ điệu và hòa âm..."}
+                            {progress >= 60 && progress < 85 && "Đang kết xuất luồng âm thanh WAV chất lượng cao..."}
+                            {progress >= 85 && progress < 100 && "Đang hoàn tất xử lý tại máy chủ..."}
+                            {progress >= 100 && "Đã tạo âm thanh thành công! Đang tải audio..."}
+                        </p>
                     </div>
                 </div>
             )}
@@ -852,3 +1073,4 @@ return saved ? parseFloat(saved) : 1.0;
 };
 
 export default AddFileRead;
+

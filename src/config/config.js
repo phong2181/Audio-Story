@@ -6,7 +6,7 @@ export const API_URL =
   process.env.REACT_APP_API_URL || "http://bloger.test/api/";
 export const BACKEND_URL =
   process.env.REACT_APP_BACKEND_URL || "http://bloger.test";
-export const API_TIMEOUT = parseInt(process.env.REACT_API_TIMEOUT, 10) || 20000;
+export const API_TIMEOUT = parseInt(process.env.REACT_APP_API_TIMEOUT, 10) || 20000;
 
 /**
  * Trả về URL đầy đủ của ảnh từ storage.
@@ -15,6 +15,15 @@ export const API_TIMEOUT = parseInt(process.env.REACT_API_TIMEOUT, 10) || 20000;
  */
 export const getStorageUrl = (url, fallback = "") => {
   if (!url) return fallback;
+  if (typeof url === "string") {
+    // Nếu chuỗi bị lặp tiền tố do lỗi nối chuỗi trước đó (vd: http://.../storage/http://...)
+    const lastHttpIndex = url.lastIndexOf("http://");
+    const lastHttpsIndex = url.lastIndexOf("https://");
+    const lastIndex = Math.max(lastHttpIndex, lastHttpsIndex);
+    if (lastIndex > 0) {
+      url = url.substring(lastIndex);
+    }
+  }
   if (url.startsWith("http://") || url.startsWith("https://")) return url;
   const base = STORAGE_URL.replace(/\/$/, "");
   const path = url.replace(/^\//, "");

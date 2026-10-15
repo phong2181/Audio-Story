@@ -8,14 +8,17 @@ import {
     FaUser,
     FaCrown,
     FaMoon,
-    FaSun
+    FaSun,
+    FaSearch
 } from "react-icons/fa";
 import { RiArticleLine } from "react-icons/ri";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import AuthDialog from "../../LoginRigister/index";
+import NotificationDropdown from "./NotificationDropdown";
 import "./style.scss";
 import { STORAGE_URL } from "config/config";
 import { useTheme } from "context/ThemeContext";
+import { useGetPublicHeaderSettings } from "api/homePage/queries";
 
 // Helper lấy URL avatar đúng
 const getAvatarUrl = (avatar) => {
@@ -76,9 +79,17 @@ const Header = () => {
     const [isLoginMode, setIsLoginMode] = useState(true);
     const headerRef = useRef(null);
 
+    const { data: headerSettingsRes } = useGetPublicHeaderSettings();
+    const headerSettings = headerSettingsRes?.data;
+    const effectiveSeason = headerSettings?.effective_season || "spring_tet";
+
+    const customLogo = headerSettings?.logo_url
+        ? (headerSettings.logo_url.startsWith("http") ? headerSettings.logo_url : `${STORAGE_URL}/${headerSettings.logo_url}`)
+        : (process.env.PUBLIC_URL + "/logoaudio.ico");
+    const siteTitle = headerSettings?.site_title || "Audio Story";
+
     useEffect(() => {
         const handleClickOutside = (event) => {
-            // Nếu click ra ngoài headerRef thì đóng mobile menu
             if (headerRef.current && !headerRef.current.contains(event.target)) {
                 setIsMobileMenuOpen(false);
             }
@@ -139,16 +150,26 @@ const Header = () => {
     ];
 
     return (
-        <header className="site-header" ref={headerRef}>
+        <header className={`site-header season-${effectiveSeason} ${headerSettings?.is_sticky !== false ? "is-sticky" : ""}`} ref={headerRef}>
+            {/* Top Announcement Bar if configured */}
+            {headerSettings?.custom_announcement && (
+                <div className={`site-announcement-bar season-${effectiveSeason}`}>
+                    <div className="announcement-inner">
+                        <span>{headerSettings.custom_announcement}</span>
+                    </div>
+                </div>
+            )}
+
             <div className="header-container">
                 {/* Logo */}
                 <Link to="/" className="logo-wrapper">
                     <div className="logo-icon">
-                        <img src={process.env.PUBLIC_URL + "/logoaudio.ico"} alt="BookAudio Logo" className="footer-brand-img" />
+                        <img src={customLogo} alt={siteTitle} className="footer-brand-img" />
                     </div>
-                    <span className="logo-text">Audio <span className="logo-sub">Sotry</span></span>
+                    <span className="logo-text">
+                        {siteTitle} {headerSettings?.tagline && <span className="logo-tagline">{headerSettings.tagline}</span>}
+                    </span>
                 </Link>
-
 
                 {/* Menu điều hướng desktop */}
                 <nav className="nav-menu">
@@ -163,17 +184,35 @@ const Header = () => {
                     </NavLink>
                 </nav>
 
+                {/* Thanh tìm kiếm nhanh desktop nếu bật */}
+                {headerSettings?.show_search !== false && (
+                    <div className="header-search-bar">
+                        <FaSearch className="search-icon" />
+                        <input
+                            type="text"
+                            placeholder="Tìm kiếm truyện audio..."
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter" && e.target.value.trim()) {
+                                    navigate(`/truyen?search=${encodeURIComponent(e.target.value.trim())}`);
+                                }
+                            }}
+                        />
+                    </div>
+                )}
+
                 {/* Khu vực tài khoản */}
                 <div className="user-section">
                     <div className="user-actions">
-                        {/* Nút chuyển chế độ sáng/tối */}
-                        <ThemeToggleButton />
+                        {/* Nút chuyển chế độ sáng/tối nếu bật */}
+                        {headerSettings?.show_theme_toggle !== false && <ThemeToggleButton />}
 
                         {userInfo ? (
                             <div className="user-logged">
-                                {/* Avatar thay cho tên + icon */}
-                                {!isUserVip && (
-                                    <Link to="/membership" title="Mở Thành Viên">
+                                {/* Chuông thông báo người dùng */}
+                                <NotificationDropdown />
+
+                                {headerSettings?.show_vip_button !== false && !isUserVip && (
+                                    <Link to="/membership" className="vip-upgrade-link" title="Mở Thành Viên">
                                         <FaCrown />
                                     </Link>
                                 )}

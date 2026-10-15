@@ -1,37 +1,56 @@
-import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState, useMemo } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import {
-    FaSearch, FaFilter, FaEye, FaHeadphones, FaChevronRight,
-    FaTags, FaBookOpen, FaStar, FaTimes, FaUndo, FaListOl,
-    FaClock
+    FaSearch,
+    FaEye,
+    FaHeadphones,
+    FaChevronRight,
+    FaBookOpen,
+    FaStar,
+    FaUndo,
+    FaListOl,
+    FaClock,
+    FaFilter,
+    FaCompass
 } from "react-icons/fa";
-
 import {
     useGetStoriesClient,
     useCategoriesClient
 } from "api/homePage";
-import "./style.scss";
 import moment from "moment/moment";
 import { STORAGE_URL } from "config/config";
+import BrandAdBanner from "components/BrandAdBanner";
+import "./style.scss";
 
-// Thay đổi helper check 3 ngày dựa trên ngày đăng chương mới
+// Helper kiểm tra chương mới trong 7 ngày
 const isRecentlyUpdated = (chaptersMaxCreatedAt, storyCreatedAt) => {
     const targetDate = chaptersMaxCreatedAt || storyCreatedAt;
     if (!targetDate) return false;
     const diff = Date.now() - new Date(targetDate).getTime();
-    return diff < 7 * 24 * 60 * 60 * 1000; // Trong vòng 7 ngày
+    return diff < 7 * 24 * 60 * 60 * 1000;
+};
+
+// Helper ảnh thumbnail
+const getThumbnailUrl = (thumb) => {
+    if (!thumb) {
+        return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='400' fill='%23cbd5e1'%3E%3Crect width='300' height='400'/%3E%3C/svg%3E";
+    }
+    if (thumb.startsWith("http://") || thumb.startsWith("https://")) return thumb;
+    return `${STORAGE_URL}${thumb}`;
 };
 
 const StoryList = () => {
+    const [searchParams] = useSearchParams();
+    const categoryParam = searchParams.get("category");
+
     useEffect(() => {
-        document.title = "Kho truyện Audio - Danh sách đầy đủ";
+        document.title = "Kho Truyện Audio Đặc Sắc - Audio Story";
     }, []);
 
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("all");
     const [selectedStatus, setSelectedStatus] = useState("all");
     const [sortBy, setSortBy] = useState("updated");
-    const [isFilterOpen, setIsFilterOpen] = useState(false);
 
     const { data: storiesData, isLoading: isStoriesLoading } = useGetStoriesClient();
     const { data: categoriesData } = useCategoriesClient();
@@ -39,232 +58,251 @@ const StoryList = () => {
     const stories = Array.isArray(storiesData) ? storiesData : (storiesData?.data || []);
     const categories = Array.isArray(categoriesData) ? categoriesData : (categoriesData?.data || []);
 
-    const filteredStories = stories
-        .filter(story => {
-            const matchesSearch =
-                story.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                story.summary?.toLowerCase().includes(searchTerm.toLowerCase());
-            const matchesCategory =
-                selectedCategory === "all" ||
-                String(story.category_audio_id) === String(selectedCategory);
-            const matchesStatus =
-                selectedStatus === "all" || story.status === selectedStatus;
-            return matchesSearch && matchesCategory && matchesStatus;
-        })
-        .sort((a, b) => {
-            // TRƯỜNG HỢP 1: Truyện mới đăng (Tính theo ngày tạo bộ truyện)
-            if (sortBy === "newest") {
-                const dateA = new Date(a.created_at || 0).getTime();
-                const dateB = new Date(b.created_at || 0).getTime();
+    // Đồng bộ param URL nếu có
+    useEffect(() => {
+        if (categoryParam && categories.length > 0) {
+            const found = categories.find(c => (c.slug === categoryParam || c.id === Number(categoryParam)));
+            if (found) setSelectedCategory(String(found.id));
+        }
+    }, [categoryParam, categories]);
+
+    const filteredStories = useMemo(() => {
+        return stories
+            .filter((story) => {
+                const matchesSearch =
+                    (story.title || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    (story.summary || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    (story.author || "").toLowerCase().includes(searchTerm.toLowerCase());
+
+                const matchesCategory =
+                    selectedCategory === "all" ||
+                    String(story.category_audio_id) === String(selectedCategory);
+
+                const matchesStatus =
+                    selectedStatus === "all" || story.status === selectedStatus;
+
+                return matchesSearch && matchesCategory && matchesStatus;
+            })
+            .sort((a, b) => {
+                if (sortBy === "newest") {
+                    const dateA = new Date(a.created_at || 0).getTime();
+                    const dateB = new Date(b.created_at || 0).getTime();
+                    return dateB - dateA;
+                }
+                if (sortBy === "views") {
+                    return (b.views || 0) - (a.views || 0);
+                }
+                if (sortBy === "rating") {
+                    return (b.average_rating || 0) - (a.average_rating || 0);
+                }
+                // Mặc định: updated theo chương mới nhất
+                const dateA = new Date(a.chapters_max_created_at || a.created_at || 0).getTime();
+                const dateB = new Date(b.chapters_max_created_at || b.created_at || 0).getTime();
                 return dateB - dateA;
-            }
-
-            // TRƯỜNG HỢP 2: Nghe nhiều nhất
-            if (sortBy === "views") {
-                return (b.views || 0) - (a.views || 0);
-            }
-
-            // TRƯỜNG HỢP 3: Đánh giá cao
-            if (sortBy === "rating") {
-                return (b.average_rating || 0) - (a.average_rating || 0);
-            }
-
-            // TRƯỜNG HỢP MẶC ĐỊNH / "updated": Có chương mới đăng lên đầu
-            // Sử dụng chính xác trường 'chapters_max_created_at' do Laravel trả về
-            const dateA = new Date(a.chapters_max_created_at || a.created_at || 0).getTime();
-            const dateB = new Date(b.chapters_max_created_at || b.created_at || 0).getTime();
-
-            return dateB - dateA;
-        });
+            });
+    }, [stories, searchTerm, selectedCategory, selectedStatus, sortBy]);
 
     const handleResetFilter = () => {
         setSelectedCategory("all");
         setSelectedStatus("all");
         setSortBy("updated");
+        setSearchTerm("");
     };
 
     return (
-        <div className="story-list-container">
-            {/* Header */}
-            <div className="page-header">
-                <div className="breadcrumbs">
-                    <Link to="/">Trang chủ</Link>
-                    <FaChevronRight />
-                    <span>Kho truyện</span>
-                </div>
-                <h1>Kho truyện Audio</h1>
-                <p>Tổng hợp {filteredStories.length} bộ truyện audio đặc sắc nhất.</p>
-            </div>
-
-            {/* Thanh công cụ Tìm kiếm & Nút Lọc */}
-            <div className="toolbar-wrapper">
-                <div className="search-main">
-                    <FaSearch className="search-icon" />
-                    <input
-                        type="text"
-                        placeholder="Tìm truyện, tác giả..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                </div>
-
-                <button
-                    className={`btn-filter-toggle ${isFilterOpen ? 'active' : ''}`}
-                    onClick={() => setIsFilterOpen(true)}
-                >
-                    <FaFilter /> <span>Lọc nâng cao</span>
-                </button>
-            </div>
-
-            {/* Sidebar Bộ lọc (Dùng cho Mobile & Tablet) */}
-            <div className={`filter-sidebar-overlay ${isFilterOpen ? 'show' : ''}`} onClick={() => setIsFilterOpen(false)}>
-                <div className="filter-sidebar" onClick={e => e.stopPropagation()}>
-                    <div className="sidebar-header">
-                        <h3>Bộ lọc truyện</h3>
-                        <button className="close-btn" onClick={() => setIsFilterOpen(false)}><FaTimes /></button>
+        <div className="wp-archive-stories-page">
+            {/* Header Archive */}
+            <div className="archive-header-banner">
+                <div className="container">
+                    <div className="breadcrumbs">
+                        <Link to="/">Trang chủ</Link>
+                        <FaChevronRight className="sep" />
+                        <span>Kho truyện Audio</span>
                     </div>
 
-                    <div className="sidebar-body">
-                        <div className="filter-section">
-                            <label><FaTags /> Thể loại</label>
-                            <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
-                                <option value="all">Tất cả thể loại</option>
-                                {categories.map(cat => (
-                                    <option key={cat.id} value={cat.id}>{cat.name || cat.title}</option>
-                                ))}
-                            </select>
+                    <div className="header-flex">
+                        <div>
+                            <h1 className="archive-title">Kho Truyện Audio Đặc Sắc</h1>
+                            <p className="archive-desc">
+                                Khám phá hàng ngàn bộ truyện audio tuyển chọn được thu âm và lồng tiếng tự động chất lượng cao
+                            </p>
                         </div>
+                        <div className="archive-count-pill">
+                            <FaBookOpen />
+                            <span>{filteredStories.length} bộ truyện</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                        <div className="filter-section">
-                            <label><FaBookOpen /> Trạng thái</label>
-                            <select value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)}>
+            <div className="container main-content-wrap">
+                {/* Dải Thể Loại (Pill Ribbons) */}
+                <div className="category-pills-bar">
+                    <button
+                        type="button"
+                        className={`cat-pill ${selectedCategory === "all" ? "active" : ""}`}
+                        onClick={() => setSelectedCategory("all")}
+                    >
+                        <FaCompass /> Tất cả thể loại
+                    </button>
+                    {categories.map((cat) => (
+                        <button
+                            key={cat.id}
+                            type="button"
+                            className={`cat-pill ${String(selectedCategory) === String(cat.id) ? "active" : ""}`}
+                            onClick={() => setSelectedCategory(String(cat.id))}
+                        >
+                            {cat.name || cat.title}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Toolbar Tìm Kiếm & Sắp Xếp */}
+                <div className="archive-toolbar">
+                    <div className="search-wrap">
+                        <FaSearch className="search-icon" />
+                        <input
+                            type="search"
+                            placeholder="Tìm kiếm tên truyện, tác giả, nội dung..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+
+                    <div className="filters-group">
+                        <div className="select-wrap">
+                            <span className="label-prefix">Trạng thái:</span>
+                            <select
+                                value={selectedStatus}
+                                onChange={(e) => setSelectedStatus(e.target.value)}
+                            >
                                 <option value="all">Tất cả</option>
                                 <option value="updating">Đang cập nhật</option>
-                                <option value="completed">Hoàn thành</option>
+                                <option value="completed">Đã hoàn thành</option>
                             </select>
                         </div>
 
-                        <div className="filter-section">
-                            <label><FaStar /> Sắp xếp</label>
-                            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-                                <option value="updated">Mới cập nhật</option>
+                        <div className="select-wrap">
+                            <span className="label-prefix">Sắp xếp:</span>
+                            <select
+                                value={sortBy}
+                                onChange={(e) => setSortBy(e.target.value)}
+                            >
+                                <option value="updated">Chương mới nhất</option>
+                                <option value="views">Lượt nghe nhiều nhất</option>
+                                <option value="rating">Đánh giá cao nhất</option>
                                 <option value="newest">Truyện mới đăng</option>
-                                <option value="views">Nghe nhiều nhất</option>
-                                <option value="rating">Đánh giá cao</option>
                             </select>
                         </div>
-                    </div>
 
-                    <div className="sidebar-footer">
-                        <button className="btn-reset" onClick={handleResetFilter}><FaUndo /> Đặt lại</button>
-                        <button className="btn-apply" onClick={() => setIsFilterOpen(false)}>Áp dụng</button>
+                        {(searchTerm || selectedCategory !== "all" || selectedStatus !== "all" || sortBy !== "updated") && (
+                            <button
+                                type="button"
+                                className="btn-reset-filter"
+                                onClick={handleResetFilter}
+                                title="Đặt lại bộ lọc"
+                            >
+                                <FaUndo /> Đặt lại
+                            </button>
+                        )}
                     </div>
                 </div>
-            </div>
 
-            {/* Danh sách truyện */}
-            {isStoriesLoading ? (
-                <div className="story-grid-skeleton">
+                {/* Banner quảng cáo Brand (Nếu có thì hiện, không có thì ẩn) */}
+                <BrandAdBanner position="story_list" />
 
-                    {Array.from({ length: 8 }).map((_, index) => (
-                        <div className="skeleton-card" key={index}>
-
-                            {/* IMAGE */}
-                            <div className="sk-img"></div>
-
-                            {/* CATEGORY */}
-                            <div className="sk-badge"></div>
-
-                            {/* TITLE */}
-                            <div className="sk-title"></div>
-                            <div className="sk-title short"></div>
-
-                            {/* AUTHOR + META */}
-                            <div className="sk-meta"></div>
-
-                            {/* SUMMARY */}
-                            <div className="sk-line"></div>
-                            <div className="sk-line"></div>
-                            <div className="sk-line short"></div>
-
-                            {/* FOOTER */}
-                            <div className="sk-footer">
-                                <div className="sk-view"></div>
-                                <div className="sk-btn"></div>
-                            </div>
-
-                        </div>
-                    ))}
-
-                </div>
-
-            ) : filteredStories.length > 0 ? (
-                <div className="stories-grid">
-                    {filteredStories.map(story => {
-                        const categoryObj = categories.find(c => c.id === story.category_audio_id);
-                        const categoryName = categoryObj ? (categoryObj.name || categoryObj.title) : "Truyện";
-
-                        return (
-                            <div className="story-card" key={story.id}>
-                                <Link to={`/story/${story.slug}`} className="card-image-wrapper">
-                                    <img
-                                        src={story.thumbnail ? `${STORAGE_URL}${story.thumbnail}` : "https://placehold.co/300x400"}
-                                        alt={story.title}
-                                        onError={(e) => { e.target.src = "https://placehold.co/300x400"; }}
-                                    />
-                                    <span className="category-badge">{categoryName}</span>
-                                    {isRecentlyUpdated(story.chapters_max_created_at, story.created_at) && (
-                                        <span className="new-badge">Mới cập nhật</span>
-                                    )}
-                                    <div className="status-overlay">
-                                        {story.status === "completed" ? "Full" : "Đang ra"}
-                                    </div>
-                                </Link>
-
-                                <div className="card-content">
-                                    <div className="meta-top">
-                                        <Link
-                                            to={`/authors/${encodeURIComponent(story.author_slug || story.author)}`}
-                                            className="author-link"
-                                            style={{
-                                                textDecoration: 'none'
-                                            }}
-                                        >
-                                            <span className="author" style={{ color: 'gray', fontWeight: 'bold' }}>{story.author || "Khuyết danh"}</span>
-                                        </Link>
-                                        <span className="rating"><FaStar /> {story.average_rating || "chưa có đánh giá nào"}</span>
-                                    </div>
-
-                                    <Link to={`/story/${story.slug}`} className="title-link">
-                                        <h3 className="card-title">{story.title}</h3>
-                                    </Link>
-
-                                    {/* Hiển thị thời gian dựa trên chương mới nhất thay vì updated_at tổng */}
-                                    <div className="chapter-count">
-                                        <FaListOl /> <span>{story.chapters_count || 0} tập</span>
-                                        <FaClock /> {moment(story.chapters_max_created_at || story.created_at).fromNow()}
-                                    </div>
-
-                                    <p className="card-summary">{story.summary}</p>
-
-                                    <div className="card-footer">
-                                        <span className="views"><FaEye /> {(story.views || 0).toLocaleString()}</span>
-                                        <Link to={`/story/${story.slug}`} className="btn-listen">
-                                            Nghe ngay <FaHeadphones />
-                                        </Link>
-                                    </div>
+                {/* Grid Truyện */}
+                {isStoriesLoading ? (
+                    <div className="stories-grid-skeleton">
+                        {Array.from({ length: 8 }).map((_, index) => (
+                            <div className="skeleton-card" key={index}>
+                                <div className="sk-img"></div>
+                                <div className="sk-body">
+                                    <div className="sk-badge"></div>
+                                    <div className="sk-title"></div>
+                                    <div className="sk-meta"></div>
                                 </div>
                             </div>
-                        );
-                    })}
-                </div>
-            ) : (
-                <div className="no-results">
-                    <img src="https://cdn-icons-png.flaticon.com/512/6134/6134065.png" alt="empty" width="80" />
-                    <p>Không tìm thấy truyện phù hợp.</p>
-                    <button onClick={handleResetFilter}>Xem tất cả truyện</button>
-                </div>
-            )}
+                        ))}
+                    </div>
+                ) : filteredStories.length > 0 ? (
+                    <div className="archive-stories-grid">
+                        {filteredStories.map((story) => {
+                            const categoryObj = categories.find((c) => c.id === story.category_audio_id);
+                            const categoryName = categoryObj ? (categoryObj.name || categoryObj.title) : "Truyện";
+                            const hasNewChapter = isRecentlyUpdated(story.chapters_max_created_at, story.created_at);
+
+                            return (
+                                <article className="story-card" key={story.id}>
+                                    <Link to={`/story/${story.slug}`} className="card-thumb-wrap">
+                                        <img
+                                          src={getThumbnailUrl(story.thumbnail)}
+                                          alt={story.title}
+                                          loading="lazy"
+                                          onError={(e) => {
+                                            e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='400' fill='%23cbd5e1'%3E%3Crect width='300' height='400'/%3E%3C/svg%3E";
+                                          }}
+                                        />
+                                        <div className="thumb-badges">
+                                            <span className="cat-badge">{categoryName}</span>
+                                            {hasNewChapter && (
+                                                <span className="new-badge">Mới</span>
+                                            )}
+                                        </div>
+                                        <span className={`status-pill ${story.status === "completed" ? "full" : "updating"}`}>
+                                            {story.status === "completed" ? "Đã Full" : "Đang Ra"}
+                                        </span>
+                                    </Link>
+
+                                    <div className="card-info">
+                                        <div className="card-meta-top">
+                                            <span className="author-name">
+                                                {story.author || "Khuyết danh"}
+                                            </span>
+                                            <span className="rating-badge">
+                                                <FaStar /> {story.average_rating ? Number(story.average_rating).toFixed(1) : "5.0"}
+                                            </span>
+                                        </div>
+
+                                        <h3 className="card-title">
+                                            <Link to={`/story/${story.slug}`}>{story.title}</Link>
+                                        </h3>
+
+                                        <div className="card-stats">
+                                            <span className="stat-item">
+                                                <FaListOl /> {story.chapters_count || 0} tập
+                                            </span>
+                                            <span className="stat-item">
+                                                <FaClock /> {moment(story.chapters_max_created_at || story.created_at).fromNow()}
+                                            </span>
+                                        </div>
+
+                                        <p className="card-summary">{story.summary || "Nội dung truyện audio đang được cập nhật..."}</p>
+
+                                        <div className="card-footer">
+                                            <span className="views-count">
+                                                <FaEye /> {(story.views || 0).toLocaleString()} lượt nghe
+                                            </span>
+                                            <Link to={`/story/${story.slug}`} className="btn-listen-now">
+                                                Nghe ngay <FaHeadphones />
+                                            </Link>
+                                        </div>
+                                    </div>
+                                </article>
+                            );
+                        })}
+                    </div>
+                ) : (
+                    <div className="archive-empty-state">
+                        <FaBookOpen className="empty-icon" />
+                        <h3>Không tìm thấy bộ truyện phù hợp</h3>
+                        <p>Thử tìm với từ khóa khác hoặc bỏ các bộ lọc để xem toàn bộ kho truyện.</p>
+                        <button type="button" onClick={handleResetFilter} className="btn-view-all">
+                            Xem tất cả truyện
+                        </button>
+                    </div>
+                )}
+            </div>
         </div>
     );
 };

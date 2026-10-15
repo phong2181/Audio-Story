@@ -1,402 +1,1446 @@
-@import "bootstrap/dist/css/bootstrap.min.css";
+// =============================================================================
+// FACEBOOK-STYLE AUTHOR PROFILE STYLES
+// =============================================================================
 
-.profile-wrapper {
-  background: linear-gradient(180deg, #f8f9fa 0%, #f0f4f8 100%);
+.fb-profile-page {
+  background: var(--bg-surface, #f0f2f5);
   min-height: 100vh;
   padding-bottom: 60px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: var(--text-color, #1c1e21);
 
-  .hero-section {
-    height: 320px;
-    background-size: cover;
-    background-position: center;
-    position: relative;
-    
-    .overlay {
-      position: absolute;
+  // TOP SHEET (Cover, Header & Nav Tabs)
+  .fb-profile-sheet {
+    background: var(--bg-card, #ffffff);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--border-color, #e4e6eb);
+
+    // 1. Cover Photo
+    .fb-cover-container {
+      position: relative;
       width: 100%;
-      height: 100%;
-      background: linear-gradient(135deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.2) 100%);
-      backdrop-filter: blur(2px);
+      height: 360px;
+      max-width: 1200px;
+      margin: 0 auto;
+      border-bottom-left-radius: 8px;
+      border-bottom-right-radius: 8px;
+      overflow: hidden;
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+
+      @media (max-width: 992px) {
+        height: 280px;
+        border-radius: 0;
+      }
+
+      @media (max-width: 576px) {
+        height: 180px;
+      }
+
+      .fb-cover-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        display: block;
+      }
+
+      .fb-cover-placeholder {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #3b82f6 0%, #1e40af 50%, #4f46e5 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        .cover-art-overlay {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          .cover-art-brand {
+            font-size: 2.2rem;
+            font-weight: 900;
+            letter-spacing: 4px;
+            color: rgba(255, 255, 255, 0.18);
+            user-select: none;
+            text-align: center;
+            padding: 0 20px;
+
+            @media (max-width: 576px) {
+              font-size: 1.2rem;
+              letter-spacing: 2px;
+            }
+          }
+        }
+      }
+
+      .fb-cover-gradient-shade {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 100px;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.35), transparent);
+        pointer-events: none;
+      }
     }
-  }
 
-  .profile-container {
-    margin-top: -120px;
-    position: relative;
-    z-index: 2;
-  }
+    // 2. Profile Header Bar (Avatar, Name & Action buttons)
+    .fb-header-bar {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 32px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 20px;
+      flex-wrap: wrap;
 
-  .avatar-img {
-    width: 140px;
-    height: 140px;
-    border-radius: 50%;
-    border: 6px solid #fff;
-    object-fit: cover;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      @media (max-width: 768px) {
+        padding: 0 16px 16px;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
 
-    &:hover {
-      transform: scale(1.08) rotateZ(5deg);
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+      .fb-header-main {
+        display: flex;
+        align-items: flex-end;
+        gap: 24px;
+        flex: 1;
+        min-width: 0;
+
+        @media (max-width: 768px) {
+          flex-direction: column;
+          align-items: center;
+          width: 100%;
+          gap: 12px;
+        }
+
+        // Avatar tròn lớn đè lên ảnh bìa
+        .fb-avatar-container {
+          position: relative;
+          margin-top: -64px;
+          flex-shrink: 0;
+          z-index: 10;
+
+          @media (max-width: 768px) {
+            margin-top: -60px;
+          }
+
+          .fb-avatar-img,
+          .fb-avatar-fallback {
+            width: 168px;
+            height: 168px;
+            border-radius: 50%;
+            border: 5px solid var(--bg-card, #ffffff);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+            object-fit: cover;
+            display: block;
+            background: #ffffff;
+
+            @media (max-width: 768px) {
+              width: 130px;
+              height: 130px;
+              border-width: 4px;
+            }
+          }
+
+          .fb-avatar-fallback {
+            background: linear-gradient(135deg, #1877f2 0%, #4f46e5 100%);
+            color: #ffffff;
+            font-size: 64px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            @media (max-width: 768px) {
+              font-size: 48px;
+            }
+          }
+
+          .fb-online-badge {
+            position: absolute;
+            bottom: 12px;
+            right: 12px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #16a34a;
+            color: #ffffff;
+            border: 3px solid var(--bg-card, #ffffff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+          }
+        }
+
+        // Tên & danh hiệu tác giả
+        .fb-author-info {
+          padding-bottom: 8px;
+          min-width: 0;
+
+          @media (max-width: 768px) {
+            padding-bottom: 0;
+          }
+
+          .author-name-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+
+            @media (max-width: 768px) {
+              justify-content: center;
+            }
+
+            .fb-author-name {
+              margin: 0;
+              font-size: 2rem;
+              font-weight: 800;
+              color: var(--text-title, #050505);
+              line-height: 1.2;
+
+              @media (max-width: 768px) {
+                font-size: 1.5rem;
+              }
+            }
+
+            .fb-verified-badge {
+              display: inline-flex;
+              align-items: center;
+              gap: 4px;
+              padding: 3px 10px;
+              border-radius: 20px;
+              background: #e7f3ff;
+              color: #1877f2;
+              font-size: 12px;
+              font-weight: 700;
+            }
+          }
+
+          .fb-author-subtitle {
+            margin: 6px 0 0;
+            font-size: 14.5px;
+            color: var(--text-muted, #65676b);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+
+            @media (max-width: 768px) {
+              justify-content: center;
+              font-size: 13px;
+            }
+
+            .dot-sep {
+              color: #8c9096;
+            }
+
+            .creator-role {
+              font-weight: 600;
+              color: #1877f2;
+            }
+          }
+        }
+      }
+
+      // Hàng nút hành động chuẩn Facebook
+      .fb-action-buttons {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding-bottom: 8px;
+
+        @media (max-width: 768px) {
+          width: 100%;
+          justify-content: center;
+          flex-wrap: wrap;
+        }
+
+        .fb-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 16px;
+          font-size: 14px;
+          font-weight: 600;
+          border-radius: 6px;
+          border: none;
+          cursor: pointer;
+          text-decoration: none;
+          transition: all 0.15s ease;
+
+          &.fb-btn-primary {
+            background: #1877f2;
+            color: #ffffff;
+
+            &:hover {
+              background: #166fe5;
+            }
+
+            .icon-pulse {
+              color: #fecdd3;
+            }
+          }
+
+          &.fb-btn-secondary {
+            background: var(--bg-button-secondary, #e4e6eb);
+            color: var(--text-title, #050505);
+
+            &:hover {
+              background: #d8dadf;
+            }
+          }
+
+          &.fb-btn-icon {
+            padding: 8px 12px;
+            font-size: 16px;
+            background: var(--bg-button-secondary, #e4e6eb);
+            color: var(--text-title, #050505);
+
+            &:hover {
+              background: #d8dadf;
+              color: #1877f2;
+            }
+          }
+        }
+      }
     }
-  }
 
-  .contact-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 14px;
-    border-radius: 10px;
-    text-decoration: none;
-    color: #475569;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border-left: 3px solid transparent;
-    font-weight: 500;
-    font-size: 0.9rem;
+    // 3. Horizontal Nav Tabs (Thanh menu tab Facebook)
+    .fb-nav-tabs-wrapper {
+      border-top: 1px solid var(--border-color, #e4e6eb);
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 32px;
 
-    svg {
-      font-size: 1.1rem;
-      transition: all 0.3s ease;
-    }
+      @media (max-width: 768px) {
+        padding: 0 8px;
+        overflow-x: auto;
+      }
 
-    &:hover {
-      background: linear-gradient(135deg, #dbeafe 0%, #f0e7fe 100%);
-      color: #0d6efd;
-      border-left-color: #0d6efd;
-      transform: translateX(4px);
+      .fb-nav-tabs {
+        display: flex;
+        gap: 6px;
+        align-items: center;
 
-      svg {
-        transform: scale(1.2);
+        @media (max-width: 768px) {
+          width: max-content;
+        }
+
+        .fb-tab-item {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 14px 18px;
+          background: transparent;
+          border: none;
+          border-radius: 6px;
+          color: var(--text-muted, #65676b);
+          font-size: 14.5px;
+          font-weight: 600;
+          cursor: pointer;
+          position: relative;
+          transition: all 0.15s ease;
+          white-space: nowrap;
+
+          &:hover {
+            background: rgba(0, 0, 0, 0.05);
+            color: var(--text-title, #050505);
+          }
+
+          &.active {
+            color: #1877f2;
+
+            &::after {
+              content: "";
+              position: absolute;
+              bottom: 0;
+              left: 0;
+              right: 0;
+              height: 3px;
+              background: #1877f2;
+              border-top-left-radius: 3px;
+              border-top-right-radius: 3px;
+            }
+          }
+
+          .fb-tab-count {
+            background: #e4e6eb;
+            color: #050505;
+            font-size: 11px;
+            padding: 1px 7px;
+            border-radius: 10px;
+            font-weight: 700;
+          }
+        }
       }
     }
   }
 
-  .qr-container {
-    background: linear-gradient(135deg, #fff 0%, #f8fafc 100%);
-    border-radius: 16px;
-    padding: 24px;
-    text-align: center;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-    border: 1.5px solid #e2e8f0;
-    transition: all 0.4s ease;
+  // 4. MAIN BODY CONTAINER (2 Cột chuẩn Facebook)
+  .fb-body-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 16px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
 
-    &:hover {
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
-      transform: translateY(-4px);
-      border-color: #cbd5e1;
+    @media (max-width: 900px) {
+      flex-direction: column;
     }
 
-    h6 {
+    // Shared Card Styles
+    .fb-card {
+      background: var(--bg-card, #ffffff);
+      border-radius: 8px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      border: 1px solid var(--border-color, #e4e6eb);
+      overflow: hidden;
+      margin-bottom: 16px;
+
+      .fb-card-title {
+        margin: 0 0 14px;
+        font-size: 17px;
+        font-weight: 700;
+        color: var(--text-title, #050505);
+      }
+    }
+
+    // ==========================================
+    // CỘT TRÁI (LEFT SIDEBAR: 380px)
+    // ==========================================
+    .fb-left-column {
+      width: 380px;
+      flex-shrink: 0;
+
+      @media (max-width: 900px) {
+        width: 100%;
+      }
+
+      // Card: Giới thiệu (Intro)
+      .fb-intro-card {
+        padding: 18px 20px;
+
+        .fb-bio-text {
+          font-size: 14px;
+          color: var(--text-color, #334155);
+          line-height: 1.5;
+          margin: 0 0 16px;
+        }
+
+        .fb-intro-list {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          padding-top: 12px;
+          border-top: 1px solid var(--border-color, #e4e6eb);
+
+          .fb-intro-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13.5px;
+            color: var(--text-color, #1c1e21);
+
+            .intro-icon {
+              font-size: 16px;
+              color: #65676b;
+              flex-shrink: 0;
+
+              &.zalo-icon {
+                color: #0284c7;
+              }
+            }
+          }
+        }
+
+        .fb-social-pills {
+          display: flex;
+          gap: 10px;
+          margin-top: 16px;
+          padding-top: 12px;
+          border-top: 1px solid var(--border-color, #e4e6eb);
+          flex-wrap: wrap;
+
+          .fb-social-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: opacity 0.15s ease;
+
+            &.facebook {
+              background: #e7f3ff;
+              color: #1877f2;
+            }
+
+            &.tiktok {
+              background: #f1f5f9;
+              color: #0f172a;
+            }
+
+            .ext-icon {
+              font-size: 10px;
+              opacity: 0.7;
+            }
+
+            &:hover {
+              opacity: 0.85;
+            }
+          }
+        }
+      }
+
+      // Card: Widget QR Ủng hộ
+      .fb-donate-widget {
+        padding: 18px 20px;
+
+        .donate-widget-header {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 14px;
+
+          .donate-icon {
+            font-size: 22px;
+            color: #dc2626;
+          }
+
+          .donate-title {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-title, #050505);
+          }
+
+          .donate-desc {
+            font-size: 12px;
+            color: var(--text-muted, #65676b);
+          }
+        }
+
+        .donate-qr-wrapper {
+          background: #f8fafc;
+          border: 1px dashed #cbd5e1;
+          border-radius: 10px;
+          padding: 12px;
+          text-align: center;
+          cursor: pointer;
+          transition: all 0.2s ease;
+
+          &:hover {
+            border-color: #1877f2;
+            background: #eff6ff;
+          }
+
+          .donate-qr-img {
+            max-width: 170px;
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            display: block;
+            margin: 0 auto;
+          }
+
+          .zoom-hint {
+            display: block;
+            margin-top: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #1877f2;
+          }
+        }
+
+        .donate-note {
+          margin: 12px 0 0;
+          font-size: 12px;
+          color: var(--text-muted, #65676b);
+          line-height: 1.45;
+          text-align: center;
+        }
+      }
+
+      // Card: Tác phẩm nổi bật mini
+      .fb-highlights-card {
+        padding: 18px 20px;
+
+        .card-header-flex {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 12px;
+
+          .link-all {
+            background: transparent;
+            border: none;
+            color: #1877f2;
+            font-size: 13.5px;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 0;
+
+            &:hover {
+              text-decoration: underline;
+            }
+          }
+        }
+
+        .highlights-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 8px;
+
+          .highlight-item {
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+
+            .highlight-img,
+            .highlight-placeholder {
+              width: 100%;
+              aspect-ratio: 1;
+              border-radius: 6px;
+              object-fit: cover;
+              box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+              transition: transform 0.2s ease;
+            }
+
+            .highlight-placeholder {
+              background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+              color: #4f46e5;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 20px;
+            }
+
+            &:hover .highlight-img {
+              transform: scale(1.05);
+            }
+
+            .highlight-title {
+              font-size: 11.5px;
+              font-weight: 600;
+              color: var(--text-title, #050505);
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              line-height: 1.3;
+            }
+          }
+        }
+      }
+    }
+
+    // ==========================================
+    // CỘT PHẢI (RIGHT FEED: FLEX 1)
+    // ==========================================
+    .fb-right-column {
+      flex: 1;
+      min-width: 0;
+
+      // Filter bar
+      .fb-feed-filter-bar {
+        padding: 12px 18px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+
+        .feed-search-box {
+          position: relative;
+          flex: 1;
+          min-width: 220px;
+          display: flex;
+          align-items: center;
+
+          .search-icon {
+            position: absolute;
+            left: 12px;
+            color: #65676b;
+            font-size: 13px;
+          }
+
+          input {
+            width: 100%;
+            padding: 8px 32px 8px 34px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color, #e4e6eb);
+            background: var(--bg-surface, #f0f2f5);
+            font-size: 13.5px;
+            color: var(--text-color, #050505);
+            outline: none;
+            transition: all 0.2s ease;
+
+            &:focus {
+              background: #ffffff;
+              border-color: #1877f2;
+              box-shadow: 0 0 0 2px rgba(24, 119, 242, 0.15);
+            }
+          }
+
+          .clear-search-btn {
+            position: absolute;
+            right: 10px;
+            background: transparent;
+            border: none;
+            color: #8c9096;
+            cursor: pointer;
+            padding: 2px;
+            font-size: 12px;
+          }
+        }
+
+        .feed-count-summary {
+          font-size: 13px;
+          color: var(--text-muted, #65676b);
+        }
+      }
+
+      // Stream Section Title
+      .stream-section-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--text-title, #050505);
+        margin: 16px 0 10px;
+        padding-left: 4px;
+
+        .title-icon {
+          color: #1877f2;
+          font-size: 15px;
+        }
+      }
+
+      // ==========================================
+      // FACEBOOK POST CARDS (STORY / ARTICLE)
+      // ==========================================
+      .fb-feed-stream {
+        display: flex;
+        flex-direction: column;
+
+        .fb-post-card {
+          padding: 16px;
+          transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+          &:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+          }
+
+          // Header
+          .post-card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+
+            .post-author-avatar-wrap {
+              width: 42px;
+              height: 42px;
+              flex-shrink: 0;
+
+              .post-author-avatar,
+              .post-author-fallback {
+                width: 100%;
+                height: 100%;
+                border-radius: 50%;
+                object-fit: cover;
+                display: block;
+              }
+
+              .post-author-fallback {
+                background: linear-gradient(135deg, #1877f2, #4f46e5);
+                color: #ffffff;
+                font-weight: 700;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 17px;
+              }
+            }
+
+            .post-meta-wrap {
+              flex: 1;
+              min-width: 0;
+
+              .author-row {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+
+                .post-author-name {
+                  font-size: 14.5px;
+                  font-weight: 700;
+                  color: var(--text-title, #050505);
+                }
+
+                .post-badge-tag {
+                  font-size: 11px;
+                  font-weight: 700;
+                  padding: 1px 7px;
+                  border-radius: 4px;
+
+                  &.story {
+                    background: #ede9fe;
+                    color: #7c3aed;
+                  }
+
+                  &.article {
+                    background: #dbeafe;
+                    color: #1d4ed8;
+                  }
+                }
+              }
+
+              .post-time-row {
+                font-size: 12px;
+                color: var(--text-muted, #65676b);
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                margin-top: 1px;
+
+                .dot {
+                  font-size: 10px;
+                }
+
+                .globe-icon {
+                  font-size: 11px;
+                }
+              }
+            }
+          }
+
+          // Body
+          .post-card-body {
+            .post-title-link {
+              text-decoration: none;
+
+              .post-title {
+                margin: 0 0 8px;
+                font-size: 16.5px;
+                font-weight: 700;
+                color: var(--text-title, #050505);
+                line-height: 1.4;
+                transition: color 0.15s ease;
+
+                &:hover {
+                  color: #1877f2;
+                }
+              }
+            }
+
+            .post-summary-text {
+              margin: 0 0 12px;
+              font-size: 13.5px;
+              color: var(--text-color, #475569);
+              line-height: 1.5;
+              display: -webkit-box;
+              -webkit-line-clamp: 3;
+              -webkit-box-orient: vertical;
+              overflow: hidden;
+            }
+
+            // Media Frame (Thumbnail)
+            .post-media-frame {
+              display: block;
+              position: relative;
+              width: 100%;
+              max-height: 380px;
+              border-radius: 8px;
+              overflow: hidden;
+              background: #0f172a;
+              text-decoration: none;
+
+              .post-media-image {
+                width: 100%;
+                height: 100%;
+                max-height: 380px;
+                object-fit: cover;
+                display: block;
+                transition: transform 0.3s ease;
+              }
+
+              &:hover .post-media-image {
+                transform: scale(1.02);
+              }
+
+              .media-play-overlay {
+                position: absolute;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.35);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                color: #ffffff;
+                font-size: 15px;
+                font-weight: 700;
+                opacity: 0;
+                transition: opacity 0.2s ease;
+
+                .play-icon {
+                  font-size: 24px;
+                }
+              }
+
+              &:hover .media-play-overlay {
+                opacity: 1;
+              }
+            }
+          }
+
+          // Footer
+          .post-card-footer {
+            margin-top: 14px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border-color, #e4e6eb);
+
+            .post-stats-row {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              font-size: 12.5px;
+              color: var(--text-muted, #65676b);
+              margin-bottom: 8px;
+
+              .stat-item {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+
+                .stat-icon {
+                  color: #1877f2;
+                }
+              }
+
+              .category-pill {
+                background: #f1f5f9;
+                padding: 2px 8px;
+                border-radius: 4px;
+                font-size: 11.5px;
+                font-weight: 600;
+                color: #475569;
+              }
+            }
+
+            .post-actions-row {
+              display: flex;
+              gap: 8px;
+
+              .btn-action-listen {
+                flex: 1;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                padding: 8px 14px;
+                border-radius: 6px;
+                background: #e7f3ff;
+                color: #1877f2;
+                font-size: 13.5px;
+                font-weight: 700;
+                text-decoration: none;
+                transition: background 0.15s ease;
+
+                &:hover {
+                  background: #dbeafe;
+                }
+
+                &.read {
+                  background: #f1f5f9;
+                  color: #334155;
+
+                  &:hover {
+                    background: #e2e8f0;
+                  }
+                }
+              }
+
+              .btn-action-share {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                padding: 8px 14px;
+                border-radius: 6px;
+                background: var(--bg-surface, #f0f2f5);
+                border: none;
+                color: var(--text-title, #050505);
+                font-size: 13px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: background 0.15s ease;
+
+                &:hover {
+                  background: #e4e6eb;
+                }
+              }
+            }
+          }
+        }
+
+        // Empty state
+        .fb-empty-state {
+          padding: 48px 24px;
+          text-align: center;
+
+          .empty-icon-circle {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: #f1f5f9;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin: 0 auto 12px;
+          }
+
+          h4 {
+            margin: 0 0 6px;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-title, #050505);
+          }
+
+          p {
+            margin: 0 0 16px;
+            font-size: 13.5px;
+            color: var(--text-muted, #65676b);
+          }
+
+          .btn-reset-filter {
+            padding: 8px 16px;
+            border-radius: 6px;
+            background: #1877f2;
+            color: #ffffff;
+            border: none;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+
+            &:hover {
+              background: #166fe5;
+            }
+          }
+        }
+      }
+
+      // Tab Giới thiệu Chi tiết
+      .fb-about-detail-card {
+        padding: 24px;
+
+        .section-heading {
+          margin: 0 0 18px;
+          font-size: 18px;
+          font-weight: 700;
+          color: var(--text-title, #050505);
+        }
+
+        .about-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 16px;
+
+          @media (max-width: 600px) {
+            grid-template-columns: 1fr;
+          }
+
+          .about-field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            background: var(--bg-surface, #f8fafc);
+            padding: 12px 14px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color, #e2e8f0);
+
+            .field-label {
+              font-size: 12px;
+              color: var(--text-muted, #64748b);
+              font-weight: 500;
+            }
+
+            .field-val {
+              font-size: 14px;
+              font-weight: 600;
+              color: var(--text-title, #1e293b);
+
+              &.highlight {
+                color: #1877f2;
+                font-size: 15px;
+              }
+            }
+          }
+        }
+
+        .about-social-section {
+          margin-top: 20px;
+          padding-top: 16px;
+          border-top: 1px solid var(--border-color, #e4e6eb);
+
+          .field-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted, #64748b);
+            margin-bottom: 10px;
+          }
+
+          .social-links-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+
+            .social-link {
+              display: inline-flex;
+              align-items: center;
+              gap: 10px;
+              font-size: 14px;
+              color: #1877f2;
+              text-decoration: none;
+              font-weight: 500;
+
+              &:hover {
+                text-decoration: underline;
+              }
+            }
+          }
+        }
+      }
+
+      // Tab Ủng hộ Chi tiết
+      .fb-donate-detail-card {
+        padding: 36px 24px;
+        text-align: center;
+
+        .donate-detail-header {
+          max-width: 500px;
+          margin: 0 auto 24px;
+
+          .big-heart-icon {
+            font-size: 40px;
+            color: #dc2626;
+            margin-bottom: 12px;
+          }
+
+          h3 {
+            margin: 0 0 8px;
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--text-title, #050505);
+          }
+
+          p {
+            margin: 0;
+            font-size: 14px;
+            color: var(--text-muted, #65676b);
+            line-height: 1.5;
+          }
+        }
+
+        .qr-big-box {
+          display: inline-block;
+          background: #ffffff;
+          padding: 16px;
+          border-radius: 12px;
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+          border: 1px solid #e2e8f0;
+
+          .qr-big-image {
+            max-width: 260px;
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            display: block;
+            margin: 0 auto;
+          }
+
+          .qr-scan-guide {
+            display: block;
+            margin-top: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1877f2;
+          }
+        }
+
+        .no-qr-box {
+          padding: 40px 20px;
+          color: #94a3b8;
+        }
+      }
+    }
+  }
+
+  // ==========================================
+  // MODAL PHÓNG TO QR CODE ỦNG HỘ
+  // ==========================================
+  .fb-qr-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    padding: 16px;
+
+    .fb-qr-modal-dialog {
+      background: var(--bg-card, #ffffff);
+      width: 100%;
+      max-width: 440px;
+      border-radius: 12px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+      overflow: hidden;
+      animation: modalFadeIn 0.2s ease-out;
+
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 18px;
+        border-bottom: 1px solid var(--border-color, #e4e6eb);
+
+        .modal-title-box {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+
+          .heart-icon {
+            color: #dc2626;
+            font-size: 16px;
+          }
+
+          h4 {
+            margin: 0;
+            font-size: 15.5px;
+            font-weight: 700;
+            color: var(--text-title, #050505);
+          }
+        }
+
+        .close-btn {
+          background: transparent;
+          border: none;
+          color: #65676b;
+          font-size: 16px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+      }
+
+      .modal-body {
+        padding: 24px;
+        text-align: center;
+
+        .qr-modal-frame {
+          display: inline-block;
+          background: #ffffff;
+          padding: 12px;
+          border-radius: 10px;
+          border: 1px solid #e2e8f0;
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+
+          .qr-modal-img {
+            max-width: 240px;
+            width: 100%;
+            height: auto;
+            border-radius: 6px;
+            display: block;
+          }
+        }
+
+        .qr-modal-instruction {
+          margin: 16px 0 0;
+          font-size: 13px;
+          color: var(--text-muted, #65676b);
+          line-height: 1.45;
+        }
+      }
+
+      .modal-footer {
+        padding: 12px 18px;
+        background: var(--bg-surface, #f8fafc);
+        border-top: 1px solid var(--border-color, #e4e6eb);
+        display: flex;
+        justify-content: flex-end;
+
+        .btn-close-modal {
+          padding: 8px 18px;
+          border-radius: 6px;
+          border: 1px solid #cbd5e1;
+          background: #ffffff;
+          color: #334155;
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+
+          &:hover {
+            background: #f1f5f9;
+          }
+        }
+      }
+    }
+  }
+
+  // ==========================================
+  // ERROR CONTAINER
+  // ==========================================
+  .fb-error-container {
+    max-width: 500px;
+    margin: 80px auto;
+    padding: 40px 24px;
+    background: var(--bg-card, #ffffff);
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    text-align: center;
+
+    .error-icon-box {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: #fee2e2;
+      color: #dc2626;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
-      margin-bottom: 18px;
-      font-size: 1rem;
-      font-weight: 700;
-      color: #1e293b;
-
-      svg {
-        color: #7c3aed;
-        font-size: 1.2rem;
-      }
+      font-size: 28px;
+      margin: 0 auto 16px;
     }
 
-    .qr-code-img {
-      width: 100%;
-      max-width: 200px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      border: 2px solid #e2e8f0;
-    }
-  }
-
-  .nav-pills .nav-link {
-    cursor: pointer;
-    background: linear-gradient(135deg, #fff 0%, #f8fafc 100%);
-    color: #64748b;
-    font-weight: 700;
-    border-radius: 12px;
-    border: 1.5px solid #e2e8f0;
-    padding: 10px 18px;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    font-size: 0.95rem;
-    position: relative;
-    overflow: hidden;
-
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-      transition: all 0.4s ease;
-      z-index: -1;
-      border-radius: 12px;
+    h3 {
+      font-size: 18px;
+      font-weight: 800;
+      color: #991b1b;
+      margin: 0 0 8px;
     }
 
-    &:hover {
-      transform: translateY(-2px);
-      border-color: #3b82f6;
-      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+    .error-log {
+      background: #fef2f2;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      color: #b91c1c;
+      white-space: pre-wrap;
+      word-break: break-word;
+      margin: 16px 0;
     }
 
-    &.active {
-      background: linear-gradient(135deg, #3b82f6, #2563eb);
-      color: #fff;
-      border: none;
-      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
-
-      &::before {
-        left: 0;
-      }
-    }
-  }
-
-  .item-card {
-    background: linear-gradient(135deg, #fff 0%, #f8fafc 100%);
-    padding: 20px 24px;
-    margin-bottom: 16px;
-    border-radius: 14px;
-    border: 1.5px solid #e2e8f0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
-
-    &::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0;
-      height: 100%;
-      width: 4px;
-      background: linear-gradient(180deg, #3b82f6, #8b5cf6);
-      transform: scaleY(0);
-      transform-origin: center;
-      transition: all 0.4s ease;
-    }
-
-    h5 {
-      margin: 0;
-      font-size: 1rem;
-      font-weight: 700;
-      color: #1e293b;
-      transition: all 0.3s ease;
-    }
-
-    .date-badge {
-      background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
-      padding: 6px 12px;
-      border-radius: 8px;
-      color: #64748b;
+    .btn-back-home {
+      display: inline-block;
+      padding: 10px 20px;
+      border-radius: 6px;
+      background: #1877f2;
+      color: #ffffff;
+      text-decoration: none;
       font-weight: 600;
-      font-size: 0.8rem;
-    }
-
-    &:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
-      border-color: #cbd5e1;
-
-      &::before {
-        transform: scaleY(1);
-      }
-
-      h5 {
-        color: #3b82f6;
-      }
+      font-size: 14px;
     }
   }
 }
 
-@media (max-width: 768px) {
-  .profile-wrapper .hero-section {
-    height: 240px;
-  }
-
-  .profile-wrapper .profile-container {
-    margin-top: -70px;
-  }
-
-  .profile-wrapper .avatar-img,
-  .avatar-fallback {
-    width: 110px;
-    height: 110px;
-    font-size: 44px;
-  }
-
-  .profile-wrapper .nav-pills .nav-link {
-    padding: 8px 12px;
-    font-size: 0.85rem;
-  }
-
-  .profile-wrapper .item-card {
-    padding: 16px 18px;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-}
-
-/* ================= SHIMMER CORE ================= */
+// =============================================================================
+// SKELETON LOADING ANIMATIONS
+// =============================================================================
 .shimmer {
-  background: linear-gradient(
-    90deg,
-    #f3f4f6 0%,
-    #e5e7eb 50%,
-    #f3f4f6 100%
-  );
+  background: linear-gradient(90deg, #e4e6eb 0%, #f0f2f5 50%, #e4e6eb 100%);
   background-size: 200% 100%;
-  animation: shimmerMove 1.3s infinite;
-  border-radius: 10px;
-}
-
-@keyframes shimmerMove {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-/* ================= HERO ================= */
-.hero-skeleton {
-  height: 220px;
-  width: 100%;
-}
-
-/* ================= LEFT ================= */
-.avatar-skeleton {
-  width: 110px;
-  height: 110px;
-  border-radius: 50%;
-  margin: 20px auto;
-}
-
-.line {
-  height: 12px;
+  animation: fbShimmer 1.4s infinite;
   border-radius: 6px;
 }
 
-.w-60 { width: 60%; }
-.w-90 { width: 90%; }
-
-.badge-skeleton {
-  width: 120px;
-  height: 22px;
-  border-radius: 20px;
-  margin-top: 10px;
+@keyframes fbShimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
-/* ================= QR ================= */
-.qr-skeleton {
-  height: 180px;
-  border-radius: 12px;
-  margin-top: 10px;
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
-/* ================= TABS ================= */
-.tab {
-  height: 40px;
-  border-radius: 10px;
+.fb-cover-skeleton {
+  width: 100%;
+  height: 340px;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
 }
 
-/* ================= LIST ================= */
-.list-skeleton {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.item-skeleton {
-  height: 60px;
-  border-radius: 12px;
-}
-
-.avatar-fallback {
-  width: 140px;
-  height: 140px;
-  margin: 0 auto;
+.fb-avatar-skeleton {
+  width: 168px;
+  height: 168px;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-  color: #fff;
-  font-size: 56px;
-  font-weight: 700;
-  text-transform: uppercase;
-  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.3);
-  border: 6px solid #fff;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: 5px solid #ffffff;
+  margin-top: -64px;
+}
 
-  &:hover {
-    transform: scale(1.08) rotateZ(5deg);
-    box-shadow: 0 12px 32px rgba(59, 130, 246, 0.4);
+.skeleton-mode {
+  .line-name {
+    width: 220px;
+    height: 24px;
+    margin-bottom: 8px;
+  }
+
+  .line-sub {
+    width: 140px;
+    height: 14px;
+  }
+
+  .btn-skel {
+    width: 110px;
+    height: 36px;
+  }
+
+  .tab-skel {
+    width: 90px;
+    height: 38px;
   }
 }
 
-/* ================= PROFILE CARD ================= */
-.profile-card {
-  background: linear-gradient(135deg, #fff 0%, #f8fafc 100%) !important;
-  border-radius: 16px !important;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08) !important;
-  border: 1.5px solid #e2e8f0 !important;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 3px;
-    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-    transition: all 0.6s ease;
-  }
-
-  &:hover {
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12) !important;
-    transform: translateY(-4px);
-    border-color: #cbd5e1 !important;
-
-    &::before {
-      left: 0;
-    }
-  }
-
-  .card-body {
-    padding: 28px 20px;
-  }
-
-  h3 {
-    font-size: 1.4rem;
-    font-weight: 800;
-    color: #1e293b;
-    margin-bottom: 12px;
-    letter-spacing: -0.3px;
-    text-transform: capitalize;
-  }
-
-  .badge {
-    font-size: 0.8rem;
-    font-weight: 700;
-    padding: 6px 16px;
-    background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
-    color: #fff !important;
-    border-radius: 25px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
-    transition: all 0.3s ease;
-
-    &:hover {
-      transform: scale(1.05);
-      box-shadow: 0 6px 16px rgba(59, 130, 246, 0.3);
-    }
-  }
+.w-30 { width: 30%; }
+.w-40 { width: 40%; }
+.w-80 { width: 80%; }
+.w-85 { width: 85%; }
+.w-90 { width: 90%; }
+.w-100 { width: 100%; }
+.h-10 { height: 10px; }
+.h-14 { height: 14px; }
+.h-20 { height: 20px; }
+.h-40 { height: 40px; }
+.h-200 { height: 200px; }
+.avatar-mini {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
 }

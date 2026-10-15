@@ -1,41 +1,53 @@
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import HomePage from "./pages/users/homePage";
 import { ADMIN_PATH, ROUTES } from "./utils/route";
 import MasterLayout from "./pages/users/theme/masterLayout";
 import ProfilePage from "./pages/users/ProfilePage";
 import PostDetailPage from "./pages/users/PostDetailPage";
-import PostListView  from "pages/users/PostListView";
-import CourseGrid from "pages/users/homePage/PostList/postlist";
+import PostListView from "pages/users/PostListView";
 import StoryList from "pages/users/AudioList";
 import AuthorPage from "pages/users/AuthorProfile";
-
-import LoginAdmin from "./pages/admin/LoginAdmin";
-import MasterADLayout from "pages/admin/theme/masterADLayout";
-import AdminDashboard from "pages/admin/Dasboard";
-import AddPost from "pages/admin/AddPosts";
-import AllPost from "pages/admin/AllPost";
-import CategoryPosts from "pages/admin/CategoryPosts";
-import Footers from "pages/admin/Footers";
-import ProtectedRoute from "./components/ProtectedRoute";
-import StoryManagement from "pages/admin/Audio/ManageAudioSeries";
-import ProfileAdmin from "pages/admin/Authors/InformationAuthor";
-import UserManagement from "pages/admin/Authors/ManagerAuthors";
-import CategoryManagement from "pages/admin/Audio/ManageAudioCategory";
-import ChapterManagement from "pages/admin/Audio/ManageAudioAdd";
 import StoryDetail from "pages/users/StoryDetail";
 import AuthCallback from "pages/users/AuthCallback";
-import EditPosts from "pages/admin/EditPosts";
-import Notification from "pages/admin/Nofication";
 import Membership from "pages/users/Membership";
 import NotFound from "pages/users/NotFound";
-import AddMember from "pages/admin/MembershipManager/AddMember";
-import MembershipManager from "pages/admin/MembershipManager/AllMember";
-import RevenueStatistics from "pages/admin/Revenue/Statistical";
-import TransactionStatistics from "pages/admin/Revenue/Transaction";
-import ManagerAuthorsUser from "pages/admin/Authors/ManagerAuthorsUser";
-import AddFileRead from "pages/admin/Audio/Addfileread";
-import ManageBackgroundMusic from "pages/admin/Audio/ManageBackgroundMusic";
+import ProtectedRoute from "./components/ProtectedRoute";
+import LoginAdmin from "./pages/admin/LoginAdmin";
+import MasterADLayout from "pages/admin/theme/masterADLayout";
+
+// Lazy-loaded Admin Pages để tối ưu dung lượng Bundle ban đầu
+const AdminDashboard = lazy(() => import("pages/admin/Dasboard"));
+const AddPost = lazy(() => import("pages/admin/AddPosts"));
+const AllPost = lazy(() => import("pages/admin/AllPost"));
+const CategoryPosts = lazy(() => import("pages/admin/CategoryPosts"));
+const Footers = lazy(() => import("pages/admin/Footers"));
+const HeaderCustomizer = lazy(() => import("pages/admin/Appearance/HeaderCustomizer"));
+const ChapterManagement = lazy(() => import("pages/admin/Audio/ManageAudioAdd"));
+const CategoryManagement = lazy(() => import("pages/admin/Audio/ManageAudioCategory"));
+const StoryManagement = lazy(() => import("pages/admin/Audio/ManageAudioSeries"));
+const ProfileAdmin = lazy(() => import("pages/admin/Authors/InformationAuthor"));
+const UserManagement = lazy(() => import("pages/admin/Authors/ManagerAuthors"));
+const EditPosts = lazy(() => import("pages/admin/EditPosts"));
+const Notification = lazy(() => import("pages/admin/Nofication"));
+const AddMember = lazy(() => import("pages/admin/MembershipManager/AddMember"));
+const MembershipManager = lazy(() => import("pages/admin/MembershipManager/AllMember"));
+const VietQRSettings = lazy(() => import("pages/admin/MembershipManager/VietQRSettings"));
+const RevenueStatistics = lazy(() => import("pages/admin/Revenue/Statistical"));
+const TransactionStatistics = lazy(() => import("pages/admin/Revenue/Transaction"));
+const ManagerAuthorsUser = lazy(() => import("pages/admin/Authors/ManagerAuthorsUser"));
+const AddFileRead = lazy(() => import("pages/admin/Audio/Addfileread"));
+const ManageBackgroundMusic = lazy(() => import("pages/admin/Audio/ManageBackgroundMusic"));
+const AdvertisementsManager = lazy(() => import("pages/admin/Advertisements"));
+const ReportsManager = lazy(() => import("pages/admin/Reports"));
+const MaintenanceManager = lazy(() => import("pages/admin/MaintenanceManager"));
+
+const AdminLoadingFallback = () => (
+  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh', gap: '10px' }}>
+    <div style={{ width: '28px', height: '28px', border: '3px solid rgba(0,0,0,0.1)', borderTopColor: '#2271b1', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+    <span style={{ fontSize: '14px', color: '#64748b' }}>Đang tải trang quản trị...</span>
+  </div>
+);
 
 const renderUsersRoutes = () => {
   const usersRoutes = [
@@ -49,7 +61,7 @@ const renderUsersRoutes = () => {
     },
     {
       path: ROUTES.USER.POSTS,
-      component: <CourseGrid />,
+      component: <Navigate to={ROUTES.USER.POST_LIST_VIEW} replace />,
     },
     {
       path: ROUTES.USER.PROFILE,
@@ -86,7 +98,6 @@ const renderUsersRoutes = () => {
         <Routes>
           {usersRoutes.map((item, key) => (
               <Route key={key} path={item.path} element={item.component} />
-              
           ))}
           <Route path="*" element={<NotFound />} />
         </Routes>
@@ -132,6 +143,11 @@ const renderAdminRoutes = () => {
       protected: true,
     },
     {
+      path: ROUTES.ADMIN.HEADER_CUSTOMIZER,
+      component: <ProtectedRoute><HeaderCustomizer /></ProtectedRoute>,
+      protected: true,
+    },
+    {
       path: ROUTES.ADMIN.AUDIO_ADD,
       component: <ProtectedRoute><ChapterManagement /></ProtectedRoute>,
       protected: true,
@@ -162,6 +178,11 @@ const renderAdminRoutes = () => {
       protected: true,
     },
     {
+      path: `${ROUTES.ADMIN.EDITPOSTS}/:id`,
+      component: <ProtectedRoute><EditPosts /></ProtectedRoute>,
+      protected: true,
+    },
+    {
       path: ROUTES.ADMIN.ADD_MEMBERSHIP,
       component: <ProtectedRoute><AddMember /></ProtectedRoute>,
       protected: true,
@@ -169,6 +190,11 @@ const renderAdminRoutes = () => {
     {
       path: ROUTES.ADMIN.MANAGE_USERS_MEMBERSHIP,
       component: <ProtectedRoute><MembershipManager /></ProtectedRoute>,
+      protected: true,
+    },
+    {
+      path: ROUTES.ADMIN.MEMBERSHIP_VIETQR,
+      component: <ProtectedRoute><VietQRSettings /></ProtectedRoute>,
       protected: true,
     },
     {
@@ -186,7 +212,7 @@ const renderAdminRoutes = () => {
       component: <ProtectedRoute><ManagerAuthorsUser /></ProtectedRoute>,
       protected: true,
     },
-{
+    {
       path: ROUTES.ADMIN.ADDFILEREAD,
       component: <ProtectedRoute><AddFileRead /></ProtectedRoute>,
       protected: true,
@@ -195,12 +221,27 @@ const renderAdminRoutes = () => {
       path: ROUTES.ADMIN.MANAGE_BACKGROUND_MUSIC,
       component: <ProtectedRoute><ManageBackgroundMusic /></ProtectedRoute>,
       protected: true,
+    },
+    {
+      path: ROUTES.ADMIN.MANAGE_ADVERTISEMENTS,
+      component: <ProtectedRoute><AdvertisementsManager /></ProtectedRoute>,
+      protected: true,
+    },
+    {
+      path: ROUTES.ADMIN.MANAGE_REPORTS,
+      component: <ProtectedRoute><ReportsManager /></ProtectedRoute>,
+      protected: true,
+    },
+    {
+      path: ROUTES.ADMIN.MAINTENANCE,
+      component: <ProtectedRoute><MaintenanceManager /></ProtectedRoute>,
+      protected: true,
     }
-
   ];
 
   return (
     <MasterADLayout>
+      <Suspense fallback={<AdminLoadingFallback />}>
         <Routes>
           {/* Chuyển hướng khi người dùng gõ /admin trực tiếp */}
           <Route path="/admin" element={<Navigate to={ROUTES.ADMIN.LOGIN} replace />} />
@@ -209,6 +250,7 @@ const renderAdminRoutes = () => {
               <Route key={key} path={item.path} element={item.component} />
           ))}
         </Routes>
+      </Suspense>
     </MasterADLayout>
   );
 };

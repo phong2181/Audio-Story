@@ -6,6 +6,7 @@ import {
     updateCategoryAPI, 
     deleteCategoryAPI, 
     getFootersAPI,
+    getPublicFooterAPI,
     postFooterAPI,
     updateFooterAPI,
     deleteFooterAPI,
@@ -76,7 +77,40 @@ getActiveUser,
     getBackgroundMusicsAPI,
     addBackgroundMusicAPI,
     deleteBackgroundMusicAPI,
-    getBackgroundMusicsPublicAPI
+    getBackgroundMusicsPublicAPI,
+    getAdvertisementsADAPI,
+    storeAdvertisementADAPI,
+    updateAdvertisementADAPI,
+    deleteAdvertisementADAPI,
+    getActiveAdvertisementsClientAPI,
+    recordAdClickAPI,
+    deleteUserADAPI,
+    getModerationUsersAPI,
+    banUserPermanentAPI,
+    banUserTemporaryAPI,
+    unlockUserAPI,
+    sendWarningUserAPI,
+    deleteModerationUserAPI,
+    getDashboardAnalyticsAPI,
+    getHeaderSettingsAPI,
+    updateHeaderSettingsAPI,
+    getPublicHeaderSettingsAPI,
+    getVietQRSettingAPI,
+    updateVietQRSettingAPI,
+    postReportCommentAPI,
+    getAdminReportsAPI,
+    postResolveAdminReportAPI,
+    postDismissAdminReportAPI,
+    deleteAdminReportAPI,
+    postPunishAdminReportAPI,
+    getUserNotificationsAPI,
+    markUserNotificationReadAPI,
+    markAllUserNotificationsReadAPI,
+    deleteUserNotificationAPI,
+    getMaintenanceStatusAPI,
+    getAdminMaintenanceSettingsAPI,
+    updateAdminMaintenanceSettingsAPI,
+    sendMaintenanceNotificationAPI,
 } from "./request";
 
 // 🚀 Hook gửi mã OTP khôi phục mật khẩu
@@ -112,11 +146,10 @@ export const useDeleteChapterAD = () => {
 };
 
 // 🚀 Hook lấy chi tiết thông báo đổ vào Form Admin
-export const useGetAdminNotificationDetail = (id) => {
+export const useGetAdminNotificationDetail = () => {
     return useQuery({
-        queryKey: ["adminNotificationDetail", id],
-        queryFn: () => getAdminNotificationDetailAPI(id),
-        enabled: !!id, // Chỉ tự động chạy khi có id truyền vào
+        queryKey: ["adminNotificationDetail"],
+        queryFn: () => getAdminNotificationDetailAPI(),
         retry: 1,
         refetchOnWindowFocus: false,
     });
@@ -239,6 +272,7 @@ export const useDeletePost = () => {
         mutationFn: (id) => getdeletePostAPI(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['GetPostsAPI'] });
+            queryClient.invalidateQueries({ queryKey: ['getAddNewPostsAD'] });
         }
     });
 };
@@ -247,9 +281,9 @@ export const useAddComment = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (data) => addCommentAPI(data),
-        onSuccess: (_, variables) => {
+        onSuccess: () => {
             queryClient.invalidateQueries({
-                queryKey: ["comments", variables.story_id]
+                queryKey: ["comments"]
             });
         }
     });
@@ -258,12 +292,12 @@ export const useAddComment = () => {
 export const useUpdateComment = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: ({ id, content, story_id }) =>
+        mutationFn: ({ id, content }) =>
             updateCommentAPI(id, content),
 
-        onSuccess: (_, variables) => {
+        onSuccess: () => {
             queryClient.invalidateQueries({
-                queryKey: ["comments", variables.story_id]
+                queryKey: ["comments"]
             });
         }
     });
@@ -273,20 +307,23 @@ export const useDeleteComment = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: ({ id }) => deleteCommentAPI(id),
-        onSuccess: (_, variables) => {
+        onSuccess: () => {
             queryClient.invalidateQueries({
-                queryKey: ["comments", variables.story_id]
+                queryKey: ["comments"]
             });
         }
     });
 };
 
 export const useLikeComment = () => {
+    const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (id) => likeCommentAPI(id),
-        staleTime: 5 * 60 * 1000,
-        gcTime: 15 * 60 * 1000,
-        refetchOnWindowFocus: false,
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ["comments"]
+            });
+        }
     });
 };
 
@@ -435,12 +472,22 @@ export const useGetFootersAD = () => {
     });
 };
 
+export const useGetPublicFooter = () => {
+    return useQuery({
+        queryKey: ['PublicFooter'],
+        queryFn: () => getPublicFooterAPI(),
+        staleTime: 1000 * 60 * 5,
+        refetchOnWindowFocus: false,
+    });
+};
+
 export const useAddFooterAD = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (footerData) => postFooterAPI(footerData),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['GetFootersAPI'] });
+            queryClient.invalidateQueries({ queryKey: ['PublicFooter'] });
         },
     });
 };
@@ -448,9 +495,15 @@ export const useAddFooterAD = () => {
 export const useUpdateFooterAD = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: ({ id, data }) => updateFooterAPI(id, data),
+        mutationFn: ({ id, data, type }) => {
+            if (id) {
+                return updateFooterAPI(id, { type, data });
+            }
+            return postFooterAPI({ type, data });
+        },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['GetFootersAPI'] });
+            queryClient.invalidateQueries({ queryKey: ['PublicFooter'] });
         },
     });
 };
@@ -458,9 +511,15 @@ export const useUpdateFooterAD = () => {
 export const useDeleteFooterAD = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (id) => deleteFooterAPI(id),
+        mutationFn: ({ id, type }) => {
+            if (typeof id === 'object' && id !== null) {
+                return deleteFooterAPI(id.id, id.type);
+            }
+            return deleteFooterAPI(id, type);
+        },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['GetFootersAPI'] });
+            queryClient.invalidateQueries({ queryKey: ['PublicFooter'] });
         },
     });
 };
@@ -841,7 +900,6 @@ export const useGetClientPostCategories = () => {
 };
 
 export const useUpdateProfileAdmin = () => {
-    const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (formData) => updateProfileAdminAPI(formData),
     });
@@ -965,3 +1023,372 @@ export const useGetBackgroundMusicsPublic = () => {
         refetchOnWindowFocus: false,
     });
 };
+
+// =========================================================================
+// Brand Advertisements (Quảng Cáo Brand)
+// =========================================================================
+
+export const useGetAdvertisementsAD = (params = {}) => {
+    return useQuery({
+        queryKey: ["advertisementsAD", params],
+        queryFn: async () => {
+            const res = await getAdvertisementsADAPI(params);
+            return res?.data || res || [];
+        },
+        retry: 1,
+        refetchOnWindowFocus: false,
+    });
+};
+
+export const useAddAdvertisementAD = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (formData) => storeAdvertisementADAPI(formData),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["advertisementsAD"] });
+            queryClient.invalidateQueries({ queryKey: ["activeAdvertisementsClient"] });
+        },
+    });
+};
+
+export const useUpdateAdvertisementAD = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ id, data }) => updateAdvertisementADAPI(id, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["advertisementsAD"] });
+            queryClient.invalidateQueries({ queryKey: ["activeAdvertisementsClient"] });
+        },
+    });
+};
+
+export const useDeleteAdvertisementAD = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (id) => deleteAdvertisementADAPI(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["advertisementsAD"] });
+            queryClient.invalidateQueries({ queryKey: ["activeAdvertisementsClient"] });
+        },
+    });
+};
+
+export const useGetActiveAdvertisementsClient = (position = "all") => {
+    return useQuery({
+        queryKey: ["activeAdvertisementsClient", position],
+        queryFn: async () => {
+            const res = await getActiveAdvertisementsClientAPI(position);
+            return res?.data || res || [];
+        },
+        staleTime: 2 * 60 * 1000,
+        gcTime: 5 * 60 * 1000,
+        refetchOnWindowFocus: false,
+    });
+};
+
+export const useRecordAdClick = () => {
+    return useMutation({
+        mutationFn: (id) => recordAdClickAPI(id),
+    });
+};
+
+// 🚀 Hook Xóa thành viên quản trị
+export const useDeleteUserAD = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (id) => deleteUserADAPI(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["users"] });
+        }
+    });
+};
+
+// 🚀 Hook Lấy danh sách người dùng kiểm duyệt
+export const useGetModerationUsers = (filters = {}) => {
+    return useQuery({
+        queryKey: ["moderationUsers", filters],
+        queryFn: async () => {
+            const res = await getModerationUsersAPI(filters);
+            return res?.data || res || [];
+        },
+        refetchOnWindowFocus: false,
+    });
+};
+
+// 🚀 Hook Khóa vĩnh viễn
+export const useBanUserPermanent = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ id, reason }) => banUserPermanentAPI({ id, reason }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["moderationUsers"] });
+        }
+    });
+};
+
+// 🚀 Hook Khóa tạm thời có thời hạn
+export const useBanUserTemporary = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ id, days, reason }) => banUserTemporaryAPI({ id, days, reason }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["moderationUsers"] });
+        }
+    });
+};
+
+// 🚀 Hook Mở khóa tài khoản
+export const useUnlockUser = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (id) => unlockUserAPI(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["moderationUsers"] });
+        }
+    });
+};
+
+// 🚀 Hook Gửi cảnh báo vi phạm
+export const useSendWarningUser = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ id, warning_message }) => sendWarningUserAPI({ id, warning_message }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["moderationUsers"] });
+        }
+    });
+};
+
+// 🚀 Hook Xóa tài khoản người dùng kiểm duyệt
+export const useDeleteModerationUser = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (id) => deleteModerationUserAPI(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["moderationUsers"] });
+        }
+    });
+};
+
+// ==========================================
+// 📊 HOOKS CHO DASHBOARD ANALYTICS & CHARTS
+// ==========================================
+export const useGetDashboardAnalytics = (params = {}) => {
+    return useQuery({
+        queryKey: ["dashboardAnalytics", params],
+        queryFn: () => getDashboardAnalyticsAPI(params),
+        staleTime: 60000,
+    });
+};
+
+// ==========================================
+// 🎨 HOOKS CHO HEADER & MÙA LỄ TẾT
+// ==========================================
+export const useGetHeaderSettings = () => {
+    return useQuery({
+        queryKey: ["headerSettings"],
+        queryFn: () => getHeaderSettingsAPI(),
+    });
+};
+
+export const useUpdateHeaderSettings = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (data) => updateHeaderSettingsAPI(data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["headerSettings"] });
+            queryClient.invalidateQueries({ queryKey: ["publicHeaderSettings"] });
+        },
+    });
+};
+
+export const useGetPublicHeaderSettings = () => {
+    return useQuery({
+        queryKey: ["publicHeaderSettings"],
+        queryFn: () => getPublicHeaderSettingsAPI(),
+        staleTime: 120000,
+    });
+};
+
+// ==========================================
+// 💳 HOOKS CHO CẤU HÌNH LIÊN KẾT NGÂN HÀNG VIETQR (ADMIN)
+// ==========================================
+export const useGetVietQRSettingAD = () => {
+    return useQuery({
+        queryKey: ["vietqrSetting"],
+        queryFn: () => getVietQRSettingAPI(),
+        staleTime: 60000,
+    });
+};
+
+export const useUpdateVietQRSettingAD = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (data) => updateVietQRSettingAPI(data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["vietqrSetting"] });
+        },
+    });
+};
+
+// ==========================================
+// 🚩 HOOKS CHO BÁO CÁO & TỐ CÁO BÌNH LUẬN (REPORT)
+// ==========================================
+
+// Client: Gửi tố cáo bình luận
+export const useReportComment = () => {
+    return useMutation({
+        mutationFn: ({ commentId, data }) => postReportCommentAPI({ commentId, data }),
+    });
+};
+
+// Admin: Lấy danh sách báo cáo vi phạm
+export const useGetAdminReports = (params = {}) => {
+    return useQuery({
+        queryKey: ["adminReports", params],
+        queryFn: () => getAdminReportsAPI(params),
+        keepPreviousData: true,
+    });
+};
+
+// Admin: Duyệt tố cáo và xử lý (xóa bình luận)
+export const useResolveAdminReport = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ id, data }) => postResolveAdminReportAPI({ id, data }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["adminReports"] });
+            queryClient.invalidateQueries({ queryKey: ["comments"] });
+        },
+    });
+};
+
+// Admin: Bác bỏ tố cáo
+export const useDismissAdminReport = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ id, data }) => postDismissAdminReportAPI({ id, data }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["adminReports"] });
+        },
+    });
+};
+
+// Admin: Xóa hồ sơ tố cáo
+export const useDeleteAdminReport = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (id) => deleteAdminReportAPI(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["adminReports"] });
+        },
+    });
+};
+
+// Admin: Xử phạt người dùng bị tố cáo (cấm bình luận & đánh giá)
+export const usePunishAdminReport = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ id, data }) => postPunishAdminReportAPI({ id, data }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["adminReports"] });
+            queryClient.invalidateQueries({ queryKey: ["comments"] });
+        },
+    });
+};
+
+// ==========================================
+// 🔔 HOOKS CHO THÔNG BÁO NGƯỜI DÙNG (USER NOTIFICATIONS)
+// ==========================================
+
+// User: Lấy danh sách thông báo
+export const useGetUserNotifications = (params = {}, options = {}) => {
+    return useQuery({
+        queryKey: ["userNotifications", params],
+        queryFn: () => getUserNotificationsAPI(params),
+        refetchInterval: 30000, // Cập nhật ngầm mỗi 30 giây
+        ...options,
+    });
+};
+
+// User: Đánh dấu 1 thông báo đã đọc
+export const useMarkUserNotificationRead = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (id) => markUserNotificationReadAPI(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["userNotifications"] });
+        },
+    });
+};
+
+// User: Đánh dấu tất cả thông báo đã đọc
+export const useMarkAllUserNotificationsRead = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: () => markAllUserNotificationsReadAPI(),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["userNotifications"] });
+        },
+    });
+};
+
+// User: Xóa 1 thông báo
+export const useDeleteUserNotification = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (id) => deleteUserNotificationAPI(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["userNotifications"] });
+        },
+    });
+};
+
+// ==========================================
+// 🛠️ MAINTENANCE (BẢO TRÌ & CẬP NHẬT HỆ THỐNG)
+// ==========================================
+
+// Client & Public: Lấy trạng thái bảo trì
+export const useGetMaintenanceStatus = (options = {}) => {
+    return useQuery({
+        queryKey: ["maintenanceStatus"],
+        queryFn: () => getMaintenanceStatusAPI(),
+        refetchInterval: 60000, // Tự động kiểm tra mỗi phút
+        retry: 1,
+        ...options,
+    });
+};
+
+// Admin: Lấy toàn bộ cấu hình bảo trì
+export const useGetAdminMaintenanceSettings = () => {
+    return useQuery({
+        queryKey: ["adminMaintenanceSettings"],
+        queryFn: () => getAdminMaintenanceSettingsAPI(),
+        refetchOnWindowFocus: false,
+    });
+};
+
+// Admin: Cập nhật cấu hình bảo trì
+export const useUpdateAdminMaintenanceSettings = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (data) => updateAdminMaintenanceSettingsAPI(data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["adminMaintenanceSettings"] });
+            queryClient.invalidateQueries({ queryKey: ["maintenanceStatus"] });
+        },
+    });
+};
+
+// Admin: Gửi thông báo bảo trì đến hòm thư tất cả người dùng
+export const useSendMaintenanceNotification = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (data) => sendMaintenanceNotificationAPI(data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["adminMaintenanceSettings"] });
+            queryClient.invalidateQueries({ queryKey: ["userNotifications"] });
+        },
+    });
+};
+

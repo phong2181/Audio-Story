@@ -1,337 +1,647 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { FaPlus, FaMusic, FaCloudUploadAlt, FaTrashAlt, FaCrown, FaUnlock } from "react-icons/fa";
-import { useGetStoriesAD, useGetChaptersByStoryAD, useAddChapterAD, useDeleteChapterAD } from "api/homePage"; // Điều chỉnh path cho đúng
-import "./style.scss";
-import { debounce } from "lodash";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { NavLink } from "react-router-dom";
+import { memo, useEffect, useState, useMemo } from "react";
+import { useLocation, useNavigate, NavLink } from "react-router-dom";
+import {
+  FaPlus,
+  FaMusic,
+  FaCloudUploadAlt,
+  FaTrashAlt,
+  FaCrown,
+  FaUnlock,
+  FaSearch,
+  FaMicrophone,
+  FaBook,
+  FaArrowLeft,
+  FaTimes,
+  FaCheck,
+  FaHeadphones,
+  FaCalendarAlt,
+  FaSyncAlt,
+  FaUser,
+} from "react-icons/fa";
+import {
+  useGetStoriesAD,
+  useGetChaptersByStoryAD,
+  useAddChapterAD,
+  useDeleteChapterAD,
+} from "api/homePage";
+import { getAdminInfo } from "utils/adminAuth";
+import toast, { Toaster } from "react-hot-toast";
+import { STORAGE_URL } from "config/config";
 import { ROUTES } from "utils/route";
+import "./style.scss";
 
 const ChapterManagement = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
 
-    const [selectedStoryId, setSelectedStoryId] = useState("");
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    
-    // 🎯 THÊM TRƯỜNG is_vip VÀO FORM DATA (Mặc định bằng 0 - Miễn phí)
-    const [formData, setFormData] = useState({ 
-        chapter_name: "", 
-        audio_file: null,
-        is_vip: 0 
+  // Đọc story_id từ query param nếu được chuyển từ trang Quản lý bộ truyện
+  const queryParams = new URLSearchParams(location.search);
+  const initialStoryId = queryParams.get("story_id") || "";
+
+  // State
+  const [selectedStoryId, setSelectedStoryId] = useState(initialStoryId);
+  const [filterVip, setFilterVip] = useState("all"); // 'all' | '0' | '1'
+  const [searchChapter, setSearchChapter] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    chapter_name: "",
+    audio_file: null,
+    is_vip: 0,
+  });
+
+  // Queries & Mutations
+  const { data: allStories = [], isLoading: loadingStories } = useGetStoriesAD();
+  const {
+    data: rawChapters = [],
+    isLoading: loadingChapters,
+    isFetching: isFetchingChapters,
+  } = useGetChaptersByStoryAD(selectedStoryId);
+  const addMutation = useAddChapterAD();
+  const deleteMutation = useDeleteChapterAD();
+  const adminInfo = getAdminInfo();
+
+  useEffect(() => {
+    document.title = "Quản lý chương Audio ‹ Quản trị";
+  }, []);
+
+  // Chuẩn hóa danh sách truyện
+  const storiesList = useMemo(() => {
+    if (!allStories) return [];
+    if (Array.isArray(allStories)) return allStories;
+    if (Array.isArray(allStories.data)) return allStories.data;
+    return [];
+  }, [allStories]);
+
+  // Tự động chọn truyện đầu tiên nếu chưa chọn và danh sách có dữ liệu
+  useEffect(() => {
+    if (!selectedStoryId && storiesList.length > 0) {
+      setSelectedStoryId(String(storiesList[0].id));
+    }
+  }, [storiesList, selectedStoryId]);
+
+  // Bộ truyện hiện tại đang được chọn
+  const currentStory = useMemo(() => {
+    return storiesList.find((s) => String(s.id) === String(selectedStoryId));
+  }, [storiesList, selectedStoryId]);
+
+  // Chuẩn hóa danh sách chương
+  const chaptersList = useMemo(() => {
+    if (!rawChapters) return [];
+    if (Array.isArray(rawChapters)) return rawChapters;
+    if (Array.isArray(rawChapters.data)) return rawChapters.data;
+    return [];
+  }, [rawChapters]);
+
+  // Lọc chương theo VIP và tìm kiếm
+  const filteredChapters = useMemo(() => {
+    return chaptersList.filter((ch) => {
+      if (filterVip === "0" && parseInt(ch.is_vip) !== 0) return false;
+      if (filterVip === "1" && parseInt(ch.is_vip) !== 1) return false;
+
+      if (searchChapter.trim()) {
+        const query = searchChapter.toLowerCase().trim();
+        const nameMatch = ch.chapter_name?.toLowerCase().includes(query);
+        const numMatch = String(ch.chapter_number).includes(query);
+        if (!nameMatch && !numMatch) return false;
+      }
+
+      return true;
     });
+  }, [chaptersList, filterVip, searchChapter]);
 
-    // 🚀 GỌI MUTATION XÓA CHƯƠNG TỪ HOOK
-    const deleteMutation = useDeleteChapterAD();
+  // Helper ảnh bìa
+  const getThumbnailUrl = (thumbnail) => {
+    if (!thumbnail) return "/placeholder.png";
+    if (thumbnail.startsWith("http://") || thumbnail.startsWith("https://")) {
+      return thumbnail;
+    }
+    return `${STORAGE_URL}${thumbnail}`;
+  };
 
-    // 1. Lấy tất cả truyện - Sau đó mình sẽ lọc chỉ lấy 'updating' ở phần hiển thị
-    const { data: allStories } = useGetStoriesAD();
-    
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData((prev) => ({ ...prev, audio_file: file }));
+    }
+  };
 
-    // 2. Lấy danh sách chương theo bộ truyện đã chọn
-    const { data: chapters, isLoading: loadingChapters } = useGetChaptersByStoryAD(selectedStoryId);
+  // Submit Upload Chapter
+  const handleSubmit = (e) => {
+    e.preventDefault();
 
-    // 3. Mutation thêm chương
-    const addMutation = useAddChapterAD();
+    if (!selectedStoryId) {
+      toast.error("Vui lòng chọn một bộ truyện trước!");
+      return;
+    }
+    if (!formData.chapter_name.trim()) {
+      toast.error("Vui lòng nhập tên chương!");
+      return;
+    }
+    if (!formData.audio_file) {
+      toast.error("Vui lòng chọn tệp âm thanh (MP3, M4A, WAV)!");
+      return;
+    }
 
-    // Lọc danh sách truyện: Chỉ lấy những bộ truyện có status là "updating"
-    const updatingStories = allStories?.filter(story => story.status === "updating") || [];
+    const data = new FormData();
+    data.append("story_id", selectedStoryId);
+    data.append("chapter_name", formData.chapter_name.trim());
+    data.append("audio_file", formData.audio_file);
+    data.append("is_vip", formData.is_vip);
+    data.append("admin_name", adminInfo?.name || adminInfo?.username || "Admin");
 
-    // Giảm truy vấn khi search
-    const debouncedSearch = useCallback(
-        debounce((nextValue) => {
-            console.log("Tìm kiếm chương:", nextValue);
-        }, 500),
-        [] 
+    toast.promise(
+      addMutation.mutateAsync(data),
+      {
+        loading: "Đang tải lên và xử lý tệp âm thanh...",
+        success: "Đã tải lên chương audio thành công!",
+        error: (err) => err.response?.data?.message || "Lỗi khi tải lên tệp âm thanh!",
+      },
+      { position: "top-right" }
     );
 
-    useEffect(() => {
-        document.title = "Quản lý chương Audio";
-    }, []);
+    setIsModalOpen(false);
+    setFormData({ chapter_name: "", audio_file: null, is_vip: 0 });
+  };
 
-    // Xử lý search
-    const handleSearchChange = (e) => {
-        const { value } = e.target;
-        debouncedSearch(value);
-    };
-
-    const handleFileChange = (e) => {
-        setFormData({ ...formData, audio_file: e.target.files[0] });
-    };
-
-    // 🚀 HÀM THỰC THI XÓA SAU KHI ĐÃ XÁC NHẬN TRÊN TOAST
-    const confirmDelete = (chapterId, toastId) => {
-        toast.dismiss(toastId); // Đóng nhanh thông báo xác nhận đi
-
-        deleteMutation.mutate(chapterId, {
-            onSuccess: () => {
-                toast.success("Xóa chương audio thành công!");
-            },
-            onError: (err) => {
-                const errorMsg = err.response?.data?.message || "Không thể xóa chương này";
-                toast.error(`Lỗi: ${errorMsg}`);
-            }
-        });
-    };
-
-    // 🚀 HÀM HIỂN THỊ THÔNG BÁO XÁC NHẬN XOÁ (Custom Toast)
-    const handleDeleteClick = (chapterId, chapterName) => {
-        const toastId = toast.info(
-            <div className="custom-toast-confirm">
-                <p style={{ margin: "0 0 10px 0", fontSize: "14px", fontWeight: "500", color: "#1e293b" }}>
-                    Xóa vĩnh viễn <strong>{chapterName}</strong>?
-                </p>
-                <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
-                    <button 
-                        onClick={() => toast.dismiss(toastId)}
-                        style={{ background: "#cbd5e1", color: "#334155", border: "none", padding: "4px 10px", borderRadius: "4px", cursor: "pointer", fontSize: "12px" }}
-                    >
-                        Hủy
-                    </button>
-                    <button 
-                        onClick={() => confirmDelete(chapterId, toastId)}
-                        style={{ background: "#ef4444", color: "#fff", border: "none", padding: "4px 10px", borderRadius: "4px", cursor: "pointer", fontSize: "12px", fontWeight: "bold" }}
-                    >
-                        Xóa liền
-                    </button>
-                </div>
-            </div>,
-            {
-                position: "top-center", // Hiện ở giữa phía trên cho admin dễ thấy
-                autoClose: false,      // Không tự động đóng, phải bấm mới tắt
-                closeOnClick: false,   // Bấm ra ngoài không tắt nhầm
-                draggable: false,
-                icon: false            // Tắt icon mặc định để giao diện custom đẹp hơn
-            }
-        );
-    };
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        if (!selectedStoryId) {
-            toast.warn("Vui lòng chọn một bộ truyện trước!");
-            return;
-        }
-        if (!formData.audio_file) {
-            toast.warn("Vui lòng chọn tệp âm thanh (Audio)!");
-            return;
-        }
-
-        const data = new FormData();
-        data.append("story_id", selectedStoryId);
-        data.append("chapter_name", formData.chapter_name);
-        data.append("audio_file", formData.audio_file);
-        
-        // 🎯 GỬI THÊM TRẠNG THÁI VIP LÊN BACKEND
-        data.append("is_vip", formData.is_vip);
-        
-        const adminInfo = JSON.parse(localStorage.getItem("adminInfo")); 
-        data.append("admin_name", adminInfo?.name || "Admin");
-
-        addMutation.mutate(data, {
-            onSuccess: () => {
-                toast.success("Đăng chương audio thành công!");
-                setIsModalOpen(false);
-                // Reset form về mặc định
-                setFormData({ chapter_name: "", audio_file: null, is_vip: 0 });
-            },
-            onError: (err) => {
-                const errorMsg = err.response?.data?.message || "Không thể tải lên tệp âm thanh";
-                toast.error(`Lỗi: ${errorMsg}`);
-            }
-        });
-    };
-
-    return (
-        <div className="chapter-management-container">
-            <ToastContainer position="top-right" autoClose={3000} closeOnClick pauseOnHover />
-
-            <div className="page-header">
-                <div className="header-title">
-                    <div className="icon-circle"><FaMusic /></div>
-                    <div>
-                        <h2>Quản lý chương Audio</h2>
-                        <p>Đăng tải nội dung cho các bộ truyện đang cập nhật</p>
-                    </div>
-                </div>
-                <NavLink className="btn-add-chapter" style={{textDecoration: "none"}} to={ROUTES.ADMIN.ADDFILEREAD}>
-                    <FaPlus /> Thêm chương mới
-                </NavLink>
-                <button className="btn-add-chapter" onClick={() => setIsModalOpen(true)}>
-                    <FaPlus /> Tệp audio mp3
-                </button>
-            </div>
-
-            <div className="control-bar">
-                <div className="select-story-group">
-                    <label>Bộ truyện đang cập nhật:</label>
-                    <select 
-                        className="story-select"
-                        value={selectedStoryId}
-                        onChange={(e) => setSelectedStoryId(e.target.value)}
-                    >
-                        <option value="">-- Chọn bộ truyện để xem chương --</option>
-                        {updatingStories.map(story => (
-                            <option key={story.id} value={story.id}>{story.title}</option>
-                        ))}
-                    </select>
-                </div>
-            </div>
-
-            <div className="table-card">
-                <table className="chapter-table">
-                    <thead>
-                        <tr>
-                            <th>STT</th>
-                            <th>Tên chương</th>
-                            <th>Quyền truy cập</th>
-                            <th>Người đăng</th>
-                            <th>Trình phát</th>
-                            <th className="text-center">Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {!selectedStoryId ? (
-                            <tr>
-                                <td colSpan="6" className="text-center">
-                                    <div className="empty-state" style={{ padding: '20px', color: '#64748b' }}>
-                                        <p>Vui lòng chọn một bộ truyện để hiển thị danh sách chương</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        ) : loadingChapters ? (
-                            <tr>
-                                <td colSpan="6" className="text-center" style={{ padding: '20px' }}>
-                                    Đang tải danh sách chương...
-                                </td>
-                            </tr>
-                        ) : chapters && chapters.length > 0 ? (
-                            chapters.map((ch) => (
-                                <tr key={ch.id}>
-                                    <td><span className="chapter-badge">Chương {ch.chapter_number}</span></td>
-                                    <td className="chapter-name">{ch.chapter_name}</td>
-                                    
-                                    {/* 🎯 HIỂN THỊ BADGE PHÂN BIỆT CHƯƠNG VIP / MIỄN PHÍ TRÊN TABLE */}
-                                    <td>
-                                        {parseInt(ch.is_vip) === 1 ? (
-                                            <span className="badge-vip-status vip"><FaCrown /> Gói VIP</span>
-                                        ) : (
-                                            <span className="badge-vip-status free"><FaUnlock /> Miễn phí</span>
-                                        )}
-                                    </td>
-
-                                    <td><span className="author-tag">{ch.author_post}</span></td>
-                                    <td>
-                                        <div className="audio-player-mini">
-                                            <audio 
-                                                controls 
-                                                src={`${ch.audio_url}`}
-                                                preload="metadata"
-                                            >
-                                                Trình duyệt không hỗ trợ nghe trực tuyến.
-                                            </audio>
-                                        </div>
-                                    </td>
-                                    <td className="text-center">
-                                        {/* 🎯 KHI CLICK SẼ GỌI TOAST XÁC NHẬN CUSTOM */}
-                                        <button 
-                                            className="btn-delete" 
-                                            disabled={deleteMutation.isPending}
-                                            onClick={() => handleDeleteClick(ch.id, ch.chapter_name)}
-                                            title="Xóa chương truyện"
-                                        >
-                                            <FaTrashAlt />
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))
-                        ) : (
-                            <tr>
-                                <td colSpan="6" className="text-center">
-                                    <div className="empty-state" style={{ padding: '20px', color: '#64748b' }}>
-                                        <p>Bộ truyện này hiện chưa có chương nào. Hãy bấm "Thêm chương mới"!</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
-            </div>
-
-            {isModalOpen && (
-                <div className="modal-overlay">
-                    <div className="modal-content">
-                        <div className="modal-header">
-                            <h3><FaCloudUploadAlt /> Đăng chương truyện mới</h3>
-                            <button className="close-xs" onClick={() => setIsModalOpen(false)}>&times;</button>
-                        </div>
-                        <form className="modal-form" onSubmit={handleSubmit}>
-                            <div className="form-group" style={{margin: '0px 5px'}}>
-                                <label>Tên chương</label>
-                                <input 
-                                    type="text" 
-                                    placeholder="Ví dụ: Tiết tử / Chương 1" 
-                                    required 
-                                    value={formData.chapter_name}
-                                    onChange={(e) => setFormData({...formData, chapter_name: e.target.value})}
-                                />
-                            </div>
-
-                            {/* 🎯 KHU VỰC CẤU HÌNH QUYỀN TRUY CẬP (VIP / MIỄN PHÍ) */}
-                            <div className="form-group" style={{margin: '15px 5px'}}>
-                                <label>Quyền xem chương này</label>
-                                <div className="vip-toggle-group">
-                                    <label className={`radio-label ${formData.is_vip === 0 ? 'active' : ''}`}>
-                                        <input 
-                                            type="radio" 
-                                            name="is_vip" 
-                                            value="0" 
-                                            checked={formData.is_vip === 0}
-                                            onChange={() => setFormData({...formData, is_vip: 0})}
-                                        />
-                                        <FaUnlock /> Độc giả miễn phí
-                                    </label>
-                                    <label className={`radio-label ${formData.is_vip === 1 ? 'active-vip' : ''}`}>
-                                        <input 
-                                            type="radio" 
-                                            name="is_vip" 
-                                            value="1" 
-                                            checked={formData.is_vip === 1}
-                                            onChange={() => setFormData({...formData, is_vip: 1})}
-                                        />
-                                        <FaCrown /> Chỉ dành cho Hội viên VIP
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div className="form-group" style={{margin: '0px 5px'}}>
-                                <label>Tệp âm thanh (Audio)</label>
-                                <div className="file-upload-wrapper">
-                                    <input 
-                                        type="file" 
-                                        accept="audio/*" 
-                                        id="audio-upload" 
-                                        hidden 
-                                        onChange={handleFileChange}
-                                    />
-                                    <label htmlFor="audio-upload" className="file-label">
-                                        <FaCloudUploadAlt />
-                                        <span>{formData.audio_file ? formData.audio_file.name : "Chọn tệp .mp3, .m4a hoặc kéo thả vào đây"}</span>
-                                    </label>
-                                </div>
-                            </div>
-                            <div className="modal-footer">
-                                <button type="button" className="btn-cancel" style={{background: '#f53b3b', color: '#fff'}} onClick={() => setIsModalOpen(false)}>Hủy bỏ</button>
-                                <button type="button" className="btn-warning" style={{ backgroundColor: '#f59e0b', borderColor: '#f59e0b' , color: '#fff' }} onClick={() => toast.info("Đã lưu tạm vào bản nháp!")}>Lưu Nháp</button>
-                                <button type="submit" className="btn-submit" disabled={addMutation.isPending}>
-                                    {addMutation.isPending ? "Đang tải lên..." : "Bắt đầu tải lên"}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
+  // Xóa chương truyện
+  const handleDeleteChapter = (chapterId, chapterName) => {
+    toast(
+      (t) => (
+        <div className="wp-confirm-dialog">
+          <div className="confirm-icon">⚠️</div>
+          <div className="confirm-body">
+            <h4 className="confirm-title">Xóa vĩnh viễn chương này?</h4>
+            <p className="confirm-desc">
+              Bạn có chắc chắn muốn xóa "<strong>{chapterName}</strong>"? Tệp âm thanh trên máy chủ cũng sẽ bị xóa vĩnh viễn.
+            </p>
+          </div>
+          <div className="confirm-actions">
+            <button
+              className="btn-cancel"
+              onClick={() => toast.dismiss(t.id)}
+            >
+              Hủy
+            </button>
+            <button
+              className="btn-confirm-delete"
+              onClick={() => {
+                toast.dismiss(t.id);
+                toast.promise(
+                  deleteMutation.mutateAsync(chapterId),
+                  {
+                    loading: "Đang xóa chương audio...",
+                    success: "Đã xóa chương audio thành công!",
+                    error: (err) => err.response?.data?.message || "Không thể xóa chương này!",
+                  },
+                  { position: "top-right" }
+                );
+              }}
+            >
+              Xác nhận xóa
+            </button>
+          </div>
         </div>
+      ),
+      { duration: 6000, position: "top-center" }
     );
+  };
+
+  return (
+    <div className="wp-chapters-page">
+      <Toaster position="top-right" reverseOrder={false} />
+
+      {/* WordPress Admin Header */}
+      <div className="wp-page-header">
+        <div className="wp-header-title-row">
+          <h1 className="wp-page-title">
+            <FaMusic className="title-icon" />
+            Chương truyện Audio
+          </h1>
+
+          <div className="header-action-buttons">
+            <button
+              className="wp-button-action primary"
+              onClick={() => setIsModalOpen(true)}
+              disabled={!selectedStoryId}
+            >
+              <FaCloudUploadAlt /> Tải lên audio (MP3)
+            </button>
+
+            <NavLink
+              to={ROUTES.ADMIN.ADDFILEREAD}
+              className="wp-button-action studio"
+              title="Mở Studio chuyển đổi văn bản thành giọng đọc AI"
+            >
+              <FaMicrophone /> Studio Giọng đọc AI (TTS)
+            </NavLink>
+
+            <NavLink
+              to={ROUTES.ADMIN.MANAGE_COMMENTS_AUDIO}
+              className="wp-button-action secondary"
+            >
+              <FaArrowLeft /> Danh sách bộ truyện
+            </NavLink>
+          </div>
+
+          {isFetchingChapters && !loadingChapters && (
+            <span className="wp-refreshing-badge">
+              <FaSyncAlt className="spin" /> Đang cập nhật...
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Story Selector & Information Box (WordPress Style Card) */}
+      <div className="wp-story-selector-card">
+        <div className="selector-row">
+          <div className="story-dropdown-group">
+            <label className="group-label">
+              <FaBook className="label-icon" /> Chọn bộ truyện cần quản lý:
+            </label>
+            <select
+              className="wp-story-select"
+              value={selectedStoryId}
+              onChange={(e) => setSelectedStoryId(e.target.value)}
+            >
+              <option value="">-- Chọn bộ truyện --</option>
+              {storiesList.map((story) => (
+                <option key={story.id} value={story.id}>
+                  {story.title} {story.chapters_count ? `(${story.chapters_count} chương)` : ""}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {currentStory && (
+            <div className="current-story-badge-info">
+              <img
+                src={getThumbnailUrl(currentStory.thumbnail)}
+                alt={currentStory.title}
+                className="story-mini-cover"
+                onError={(e) => {
+                  e.target.src = "/placeholder.png";
+                }}
+              />
+              <div className="story-mini-meta">
+                <h3 className="story-meta-title">{currentStory.title}</h3>
+                <div className="story-meta-tags">
+                  <span className="meta-tag author">
+                    <FaUser /> {currentStory.author || "Chưa rõ"}
+                  </span>
+                  <span className="meta-tag category">
+                    {currentStory.category?.name || "Chưa phân loại"}
+                  </span>
+                  <span className="meta-tag count">
+                    <FaHeadphones /> {chaptersList.length} chương đã đăng
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* WordPress Tablenav Filter Bar */}
+      <div className="wp-tablenav top">
+        <div className="alignleft actions">
+          {/* Lọc theo VIP */}
+          <div className="vip-filter-tabs">
+            <button
+              className={`filter-tab ${filterVip === "all" ? "active" : ""}`}
+              onClick={() => setFilterVip("all")}
+            >
+              Tất cả ({chaptersList.length})
+            </button>
+            <button
+              className={`filter-tab ${filterVip === "0" ? "active" : ""}`}
+              onClick={() => setFilterVip("0")}
+            >
+              <FaUnlock /> Miễn phí ({chaptersList.filter((c) => parseInt(c.is_vip) === 0).length})
+            </button>
+            <button
+              className={`filter-tab ${filterVip === "1" ? "active" : ""}`}
+              onClick={() => setFilterVip("1")}
+            >
+              <FaCrown /> Gói VIP ({chaptersList.filter((c) => parseInt(c.is_vip) === 1).length})
+            </button>
+          </div>
+        </div>
+
+        {/* Search Chương */}
+        <div className="alignright search-box-wrapper">
+          <div className="wp-search-box">
+            <FaSearch className="search-icon" />
+            <input
+              type="search"
+              className="wp-search-input"
+              placeholder="Tìm tên hoặc số chương..."
+              value={searchChapter}
+              onChange={(e) => setSearchChapter(e.target.value)}
+            />
+            {searchChapter && (
+              <button
+                type="button"
+                className="clear-btn"
+                onClick={() => setSearchChapter("")}
+                title="Xóa tìm kiếm"
+              >
+                <FaTimes />
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* WordPress Chapters Table */}
+      <div className="wp-table-container">
+        <table className="wp-list-table widefat fixed striped chapters">
+          <thead>
+            <tr>
+              <th className="manage-column column-number">STT</th>
+              <th className="manage-column column-title column-primary">Tên chương truyện</th>
+              <th className="manage-column column-vip">Quyền truy cập</th>
+              <th className="manage-column column-audio">Trình phát Audio</th>
+              <th className="manage-column column-author">Người đăng</th>
+              <th className="manage-column column-date">Ngày đăng</th>
+              <th className="manage-column column-actions text-right">Thao tác</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {!selectedStoryId ? (
+              <tr>
+                <td colSpan="7" className="wp-no-items">
+                  <div className="empty-box">
+                    <FaBook className="empty-icon" />
+                    <p className="empty-text">Vui lòng chọn một bộ truyện ở trên để xem danh sách chương.</p>
+                  </div>
+                </td>
+              </tr>
+            ) : loadingChapters ? (
+              <tr>
+                <td colSpan="7" className="wp-loading-cell">
+                  <div className="wp-spinner-wrap">
+                    <div className="wp-spinner"></div>
+                    <p>Đang tải danh sách chương...</p>
+                  </div>
+                </td>
+              </tr>
+            ) : filteredChapters.length > 0 ? (
+              filteredChapters.map((ch) => {
+                const isVip = parseInt(ch.is_vip) === 1;
+
+                return (
+                  <tr key={ch.id} className="chapter-row">
+                    {/* STT / Chapter Number */}
+                    <td className="column-number">
+                      <span className="chapter-num-badge">
+                        Chương {ch.chapter_number}
+                      </span>
+                    </td>
+
+                    {/* Chapter Name */}
+                    <td className="column-title column-primary">
+                      <strong className="row-title">
+                        {ch.chapter_name}
+                      </strong>
+                    </td>
+
+                    {/* Access Level (Free / VIP) */}
+                    <td className="column-vip">
+                      {isVip ? (
+                        <span className="badge-vip-status vip">
+                          <FaCrown /> Gói VIP
+                        </span>
+                      ) : (
+                        <span className="badge-vip-status free">
+                          <FaUnlock /> Miễn phí
+                        </span>
+                      )}
+                    </td>
+
+                    {/* HTML5 Audio Player Mini */}
+                    <td className="column-audio">
+                      <div className="wp-audio-player-wrapper">
+                        <audio
+                          controls
+                          src={ch.audio_url}
+                          preload="metadata"
+                          className="wp-audio-element"
+                        >
+                          Trình duyệt không hỗ trợ nghe trực tuyến.
+                        </audio>
+                      </div>
+                    </td>
+
+                    {/* Author Post */}
+                    <td className="column-author">
+                      <span className="author-tag">
+                        {ch.author_post || "Admin"}
+                      </span>
+                    </td>
+
+                    {/* Date */}
+                    <td className="column-date">
+                      <span className="date-text">
+                        <FaCalendarAlt className="date-icon" />
+                        {ch.created_at
+                          ? new Date(ch.created_at).toLocaleDateString("vi-VN")
+                          : "—"}
+                      </span>
+                    </td>
+
+                    {/* Actions */}
+                    <td className="column-actions text-right">
+                      <button
+                        type="button"
+                        className="button-delete-chapter"
+                        onClick={() => handleDeleteChapter(ch.id, ch.chapter_name)}
+                        disabled={deleteMutation.isPending}
+                        title="Xóa chương này"
+                      >
+                        <FaTrashAlt /> Xóa
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })
+            ) : (
+              <tr>
+                <td colSpan="7" className="wp-no-items">
+                  <div className="empty-box">
+                    <FaMusic className="empty-icon" />
+                    <p className="empty-text">
+                      {searchChapter || filterVip !== "all"
+                        ? "Không tìm thấy chương nào phù hợp với bộ lọc."
+                        : "Bộ truyện này hiện chưa có chương nào."}
+                    </p>
+                    <span className="empty-sub">
+                      Bấm nút "Tải lên audio (MP3)" hoặc "Studio Giọng đọc AI" để thêm chương đầu tiên!
+                    </span>
+                  </div>
+                </td>
+              </tr>
+            )}
+          </tbody>
+
+          <tfoot>
+            <tr>
+              <th className="manage-column column-number">STT</th>
+              <th className="manage-column column-title column-primary">Tên chương truyện</th>
+              <th className="manage-column column-vip">Quyền truy cập</th>
+              <th className="manage-column column-audio">Trình phát Audio</th>
+              <th className="manage-column column-author">Người đăng</th>
+              <th className="manage-column column-date">Ngày đăng</th>
+              <th className="manage-column column-actions text-right">Thao tác</th>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      {/* WordPress Tablenav Bottom */}
+      <div className="wp-tablenav bottom">
+        <div className="tablenav-pages">
+          <span className="displaying-num">
+            {filteredChapters.length} chương truyện
+          </span>
+        </div>
+      </div>
+
+      {/* Modal Tải lên chương audio kiểu WordPress */}
+      {isModalOpen && (
+        <div className="wp-modal-backdrop">
+          <div className="wp-upload-chapter-modal">
+            <div className="modal-header">
+              <h3>
+                <FaCloudUploadAlt /> Tải lên chương audio mới
+              </h3>
+              <button
+                type="button"
+                className="close-btn"
+                onClick={() => setIsModalOpen(false)}
+              >
+                <FaTimes />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit}>
+              <div className="modal-body">
+                {/* Bộ truyện đã chọn */}
+                <div className="form-field">
+                  <label>Bộ truyện</label>
+                  <div className="selected-story-display">
+                    <strong>{currentStory?.title || "Chưa chọn bộ truyện"}</strong>
+                  </div>
+                </div>
+
+                {/* Tên chương */}
+                <div className="form-field">
+                  <label>
+                    Tên chương truyện <span className="req">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    className="wp-input"
+                    placeholder="Ví dụ: Chương 1: Tiết tử / Chương 1: Khởi đầu"
+                    value={formData.chapter_name}
+                    onChange={(e) =>
+                      setFormData({ ...formData, chapter_name: e.target.value })
+                    }
+                    required
+                  />
+                  <p className="description">
+                    Số thứ tự chương sẽ được hệ thống tự động cộng dồn theo bộ truyện.
+                  </p>
+                </div>
+
+                {/* Quyền xem VIP / Free */}
+                <div className="form-field">
+                  <label>Quyền truy cập của thính giả</label>
+                  <div className="vip-toggle-options">
+                    <label className={`radio-card ${formData.is_vip === 0 ? "selected" : ""}`}>
+                      <input
+                        type="radio"
+                        name="is_vip"
+                        value="0"
+                        checked={formData.is_vip === 0}
+                        onChange={() => setFormData({ ...formData, is_vip: 0 })}
+                      />
+                      <div className="radio-content">
+                        <span className="radio-title">
+                          <FaUnlock /> Độc giả miễn phí
+                        </span>
+                        <span className="radio-desc">Tất cả người nghe đều có thể nghe</span>
+                      </div>
+                    </label>
+
+                    <label className={`radio-card ${formData.is_vip === 1 ? "selected vip" : ""}`}>
+                      <input
+                        type="radio"
+                        name="is_vip"
+                        value="1"
+                        checked={formData.is_vip === 1}
+                        onChange={() => setFormData({ ...formData, is_vip: 1 })}
+                      />
+                      <div className="radio-content">
+                        <span className="radio-title">
+                          <FaCrown /> Chỉ dành cho Hội viên VIP
+                        </span>
+                        <span className="radio-desc">Yêu cầu người nghe có gói hội viên còn hạn</span>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Tệp âm thanh upload */}
+                <div className="form-field">
+                  <label>
+                    Tệp âm thanh (Audio file) <span className="req">*</span>
+                  </label>
+                  <div className="audio-upload-dropzone">
+                    <input
+                      type="file"
+                      id="chapter-audio-input"
+                      accept="audio/*,.mp3,.wav,.m4a,.aac"
+                      onChange={handleFileChange}
+                      style={{ display: "none" }}
+                    />
+                    <label htmlFor="chapter-audio-input" className="dropzone-label">
+                      <FaCloudUploadAlt className="dropzone-icon" />
+                      <span className="dropzone-title">
+                        {formData.audio_file
+                          ? formData.audio_file.name
+                          : "Nhấp để chọn tệp âm thanh hoặc kéo thả vào đây"}
+                      </span>
+                      <span className="dropzone-hint">
+                        Hỗ trợ MP3, WAV, M4A, AAC (Dung lượng tối đa 50MB)
+                      </span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="button btn-cancel"
+                  onClick={() => setIsModalOpen(false)}
+                >
+                  Hủy bỏ
+                </button>
+                <button
+                  type="submit"
+                  className="button button-primary btn-upload"
+                  disabled={addMutation.isPending}
+                >
+                  <FaCheck /> {addMutation.isPending ? "Đang tải lên..." : "Bắt đầu tải lên"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
-export default ChapterManagement;
+export default memo(ChapterManagement);

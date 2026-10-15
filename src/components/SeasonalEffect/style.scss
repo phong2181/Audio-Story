@@ -1,0 +1,44 @@
+// Seasonal Effect Floating Particles
+.seasonal-effect-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 998;
+  overflow: hidden;
+  will-change: transform;
+
+  .seasonal-particle {
+    position: absolute;
+    top: -40px;
+    user-select: none;
+    pointer-events: none;
+    line-height: 1;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+    animation: seasonalFall linear infinite;
+  }
+
+  @keyframes seasonalFall {
+    0% {
+      transform: translateY(-40px) translateX(0) rotate(0deg);
+      opacity: 0;
+    }
+    10% {
+      opacity: 1;
+    }
+    90% {
+      opacity: 0.9;
+    }
+    100% {
+      transform: translateY(105vh) translateX(var(--sway, 40px)) rotate(360deg);
+      opacity: 0;
+    }
+  }
+
+  // Tắt hiệu ứng nếu người dùng giảm chuyển động
+  @media (prefers-reduced-motion: reduce) {
+    display: none !important;
+  }
+}

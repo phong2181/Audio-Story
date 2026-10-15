@@ -1,15 +1,18 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { isAdminLoggedIn } from '../utils/adminAuth';
+import { isAdminLoggedIn, getAdminInfo } from '../utils/adminAuth';
 import { ROUTES } from '../utils/route';
 
 /**
  * ProtectedRoute component.
- * Redirects to admin login if user is not authenticated.
+ * Redirects to admin login if user is not authenticated or not an admin/staff.
  * Otherwise renders the children (protected content).
  */
 const ProtectedRoute = ({ children }) => {
-  if (!isAdminLoggedIn()) {
+  const adminInfo = getAdminInfo();
+  const hasAdminRole = adminInfo && (adminInfo.role === 'admin' || adminInfo.role === 'staff');
+
+  if (!isAdminLoggedIn() || !hasAdminRole) {
     return <Navigate to={ROUTES.ADMIN.LOGIN} replace />;
   }
 

@@ -12,3 +12,22 @@
 section {
     padding: 0 20px;
 }
+
+.admin-layout-root {
+  min-height: 100vh;
+  background-color: #f8f9fb;
+  transition: background-color 0.3s ease;
+
+  .main-content {
+    background-color: transparent;
+    min-height: calc(100vh - 70px);
+  }
+}
+
+[data-theme="dark"] .admin-layout-root {
+  background-color: var(--bg-page, #0f131a);
+
+  .main-content {
+    background-color: transparent;
+  }
+}

@@ -1,15 +1,33 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { FaSearch, FaCalendarAlt, FaChevronLeft, FaChevronRight, FaEye } from 'react-icons/fa';
+import {
+  FaSearch,
+  FaCalendarAlt,
+  FaChevronLeft,
+  FaChevronRight,
+  FaEye,
+  FaHome,
+  FaFolder,
+  FaClock,
+  FaUser,
+  FaFire,
+  FaHeadphones,
+  FaArrowRight
+} from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import './style.scss';
-// Import 2 hooks công khai mới dành cho Client
-import { useGetClientPosts, useGetClientPostCategories } from 'api/homePage'; 
+import BrandAdBanner from 'components/BrandAdBanner';
+// Import hooks công khai dành cho Client
+import {
+  useGetClientPosts,
+  useGetClientPostCategories,
+  useGetStoriesClient
+} from 'api/homePage';
 import { STORAGE_URL } from 'config/config';
 
 // Helper định dạng lượt xem
 const formatViews = (n) => {
-  if (!n) return 0;
-  return n >= 1000 ? (n / 1000).toFixed(1) + "k" : n;
+  if (!n) return "0";
+  return n >= 1000 ? (n / 1000).toFixed(1) + "k" : String(n);
 };
 
 // Helper lấy URL ảnh đại diện (Đồng bộ với Laravel storage)
@@ -23,32 +41,32 @@ const PostListView = () => {
   const [selectedCategoryId, setSelectedCategoryId] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const postsPerPage = 6; 
+  const postsPerPage = 6;
 
-
-  // 1. Fetch dữ liệu thật thông qua Route công khai
+  // 1. Fetch dữ liệu bài viết, danh mục và truyện audio
   const { data: postsResponse, isLoading: isPostsLoading } = useGetClientPosts();
   const { data: categoriesResponse, isLoading: isCategoriesLoading } = useGetClientPostCategories();
+  const { data: storiesResponse } = useGetStoriesClient();
 
   useEffect(() => {
-        document.title = "Bài viết";
-    }, []); 
+    document.title = "Bài Viết & Cẩm Nang - Audio Story Magazine";
+  }, []);
 
-  // 2. Chuyển đổi danh sách bài viết nhận về an toàn
+  // 2. Chuyển đổi danh sách bài viết
   const posts = useMemo(() => {
-    return Array.isArray(postsResponse) 
-      ? postsResponse 
+    return Array.isArray(postsResponse)
+      ? postsResponse
       : (postsResponse?.data?.data || postsResponse?.data || []);
   }, [postsResponse]);
 
-  // 3. Xử lý danh sách Danh mục từ Backend
+  // 3. Xử lý danh sách Danh mục
   const categories = useMemo(() => {
-    const rawCategories = Array.isArray(categoriesResponse) 
-      ? categoriesResponse 
+    const rawCategories = Array.isArray(categoriesResponse)
+      ? categoriesResponse
       : (categoriesResponse?.data?.data || categoriesResponse?.data || []);
-    
+
     return [
-      { id: 'all', name: 'Tất cả' }, 
+      { id: 'all', name: 'Tất cả chuyên mục' },
       ...rawCategories.map(cat => ({
         id: cat.id,
         name: cat.name || cat.title
@@ -56,30 +74,46 @@ const PostListView = () => {
     ];
   }, [categoriesResponse]);
 
-  // 4. Chọn bài viết đầu tiên làm bài viết nổi bật (Featured Post - Bài mới nhất)
+  // 4. Kho truyện audio cho sidebar
+  const featuredStories = useMemo(() => {
+    const rawStories = Array.isArray(storiesResponse)
+      ? storiesResponse
+      : (storiesResponse?.data?.data || storiesResponse?.data || []);
+    return rawStories.slice(0, 4);
+  }, [storiesResponse]);
+
+  // 5. Bài viết xem nhiều nhất cho sidebar (sắp xếp theo views)
+  const popularPosts = useMemo(() => {
+    if (!posts || posts.length === 0) return [];
+    return [...posts]
+      .sort((a, b) => (b.views || 0) - (a.views || 0))
+      .slice(0, 5);
+  }, [posts]);
+
+  // 6. Bài viết nổi bật (Featured Post - Bài mới nhất)
   const featuredPost = useMemo(() => {
     return posts[0] || null;
   }, [posts]);
 
-  // Kiểm tra xem hiện tại có đang hiển thị bài viết nổi bật ở trên đầu hay không
+  // Kiểm tra điều kiện hiển thị bài viết nổi bật ở đầu trang
   const isShowingFeatured = useMemo(() => {
     return featuredPost && selectedCategoryId === 'all' && !searchQuery && currentPage === 1;
   }, [featuredPost, selectedCategoryId, searchQuery, currentPage]);
 
-  // 5. LOGIC LỌC BÀI VIẾT: Đồng bộ theo category_id nhận từ Laravel
+  // 7. Lọc bài viết theo danh mục và tìm kiếm
   const filteredPosts = useMemo(() => {
     return posts.filter(post => {
-      // So sánh category_id của bài viết với ID danh mục đang được click chọn
       const matchesCategory = selectedCategoryId === 'all' || Number(post.category_id) === Number(selectedCategoryId);
-      
-      const matchesSearch = (post.title || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
-                            (post.description || '').toLowerCase().includes(searchQuery.toLowerCase());
-                            
+      const query = searchQuery.trim().toLowerCase();
+      const matchesSearch = !query ||
+        (post.title || '').toLowerCase().includes(query) ||
+        (post.description || '').toLowerCase().includes(query);
+
       return matchesCategory && matchesSearch;
     });
   }, [posts, selectedCategoryId, searchQuery]);
 
-  // 6. LOẠI TRỪ BÀI VIẾT NỔI BẬT: Nếu đang hiển thị ở trên đầu thì loại ra khỏi danh sách lưới ở dưới
+  // 8. Loại trừ bài viết nổi bật khỏi lưới bài viết nếu đang hiển thị ở banner trên cùng
   const gridPosts = useMemo(() => {
     if (isShowingFeatured && featuredPost) {
       return filteredPosts.filter(post => post.id !== featuredPost.id);
@@ -87,7 +121,7 @@ const PostListView = () => {
     return filteredPosts;
   }, [filteredPosts, isShowingFeatured, featuredPost]);
 
-  // 7. Tính toán phân trang dựa trên danh sách lưới đã loại trừ
+  // 9. Phân trang
   const totalPages = Math.ceil(gridPosts.length / postsPerPage);
   const paginatedPosts = useMemo(() => {
     const startIndex = (currentPage - 1) * postsPerPage;
@@ -97,310 +131,368 @@ const PostListView = () => {
   const handlePageChange = (pageNumber) => {
     if (pageNumber >= 1 && pageNumber <= totalPages) {
       setCurrentPage(pageNumber);
-      window.scrollTo({ top: 400, behavior: 'smooth' });
+      window.scrollTo({ top: 380, behavior: 'smooth' });
     }
   };
 
+  // Skeleton Loading State
   if (isPostsLoading || isCategoriesLoading) {
-  return (
-    <div className="post-skeleton-page">
-
-      {/* HERO SKELETON */}
-      <div className="skeleton-hero">
-        <div className="shimmer line w60"></div>
-        <div className="shimmer line w80"></div>
-        <div className="shimmer search"></div>
-      </div>
-
-      {/* FEATURED */}
-      <div className="skeleton-featured">
-        <div className="shimmer featured-img"></div>
-        <div className="featured-content">
-          <div className="shimmer line w40"></div>
-          <div className="shimmer line w90"></div>
-          <div className="shimmer line w70"></div>
-          <div className="shimmer line w50"></div>
+    return (
+      <div className="post-list-wp-container skeleton-loading-active">
+        <div className="skeleton-breadcrumbs sk-item"></div>
+        <div className="skeleton-hero sk-item"></div>
+        <div className="skeleton-featured-card sk-item"></div>
+        <div className="layout-wp-2col">
+          <div className="skeleton-grid">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="skeleton-post-card sk-item"></div>
+            ))}
+          </div>
+          <div className="skeleton-sidebar">
+            <div className="skeleton-widget sk-item"></div>
+            <div className="skeleton-widget sk-item"></div>
+          </div>
         </div>
       </div>
-
-      {/* CATEGORY TABS */}
-      <div className="skeleton-tabs">
-        {[1,2,3,4,5].map(i => (
-          <div key={i} className="shimmer tab"></div>
-        ))}
-      </div>
-
-      {/* GRID */}
-      <div className="skeleton-grid">
-        {[1,2,3,4,5,6].map(i => (
-          <div key={i} className="skeleton-card">
-            <div className="shimmer card-img"></div>
-            <div className="card-body">
-              <div className="shimmer line w80"></div>
-              <div className="shimmer line w60"></div>
-              <div className="shimmer line w90"></div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* STYLE */}
-      <style jsx="true">{`
-        .post-skeleton-page {
-          max-width: 1200px;
-          margin: 40px auto;
-          padding: 20px;
-        }
-
-        /* SHIMMER EFFECT */
-        .shimmer {
-          position: relative;
-          overflow: hidden;
-          background: #e5e7eb;
-          border-radius: 10px;
-        }
-
-        .shimmer::after {
-          content: "";
-          position: absolute;
-          top: 0;
-          left: -150px;
-          width: 150px;
-          height: 100%;
-          background: linear-gradient(
-            90deg,
-            transparent,
-            rgba(255,255,255,0.7),
-            transparent
-          );
-          animation: shimmer 1.2s infinite;
-        }
-
-        @keyframes shimmer {
-          0% { left: -150px; }
-          100% { left: 100%; }
-        }
-
-        /* HERO */
-        .skeleton-hero {
-          margin-bottom: 30px;
-        }
-
-        .line {
-          height: 14px;
-          margin: 10px 0;
-        }
-
-        .w40 { width: 40%; }
-        .w50 { width: 50%; }
-        .w60 { width: 60%; }
-        .w70 { width: 70%; }
-        .w80 { width: 80%; }
-        .w90 { width: 90%; }
-
-        .search {
-          height: 42px;
-          width: 100%;
-          margin-top: 15px;
-        }
-
-        /* FEATURED */
-        .skeleton-featured {
-          display: grid;
-          grid-template-columns: 1fr 2fr;
-          gap: 20px;
-          margin-bottom: 30px;
-        }
-
-        .featured-img {
-          height: 180px;
-          border-radius: 12px;
-        }
-
-        .featured-content {
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
-        }
-
-        /* TABS */
-        .skeleton-tabs {
-          display: flex;
-          gap: 10px;
-          margin-bottom: 20px;
-        }
-
-        .tab {
-          width: 90px;
-          height: 32px;
-          border-radius: 20px;
-        }
-
-        /* GRID */
-        .skeleton-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-          gap: 20px;
-        }
-
-        .skeleton-card {
-          background: #fff;
-          border-radius: 12px;
-          overflow: hidden;
-          box-shadow: 0 6px 20px rgba(0,0,0,0.05);
-        }
-
-        .card-img {
-          height: 160px;
-          width: 100%;
-        }
-
-        .card-body {
-          padding: 12px;
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
-        }
-      `}</style>
-    </div>
-  );
-}
+    );
+  }
 
   return (
-    <div className="post-list-container">
-      {/* Banner & Search Section */}
-      <section className="list-hero">
-        <h1 className="hero-title">Góc Chia Sẻ Kiến Thức</h1>
-        <p className="hero-subtitle">Nơi tổng hợp các bài viết về lập trình web, mẹo tối ưu và đời sống developer.</p>
-        
-        <div className="search-bar">
+    <div className="post-list-wp-container">
+      {/* WordPress Breadcrumb Bar */}
+      <nav className="post-list-breadcrumbs" aria-label="Breadcrumb">
+        <Link to="/" className="crumb-link"><FaHome /> Trang chủ</Link>
+        <FaChevronRight className="crumb-sep" />
+        <span className="crumb-current">Bài viết & Cẩm nang</span>
+      </nav>
+
+      {/* WordPress Magazine Hero Section */}
+      <header className="magazine-hero-section">
+        <div className="hero-text-wrap">
+          <span className="hero-kicker">Tạp Chí & Blog Kiến Thức</span>
+          <h1 className="hero-main-title">Góc Chia Sẻ & Cẩm Nang Hay</h1>
+          <p className="hero-lead">
+            Tổng hợp các bài viết review sách, phân tích cốt truyện, kinh nghiệm đọc audio và đời sống văn hóa mỗi ngày.
+          </p>
+        </div>
+
+        {/* Thanh tìm kiếm phong cách WordPress */}
+        <div className="wp-search-wrapper">
           <FaSearch className="search-icon" />
-          <input 
-            type="text" 
-            placeholder="Tìm kiếm bài viết..." 
+          <input
+            type="text"
+            placeholder="Tìm kiếm bài viết, chủ đề bạn quan tâm..."
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
-              setCurrentPage(1); 
+              setCurrentPage(1);
             }}
           />
+          {searchQuery && (
+            <button
+              className="btn-clear-search"
+              onClick={() => setSearchQuery('')}
+              title="Xóa tìm kiếm"
+            >
+              ✕
+            </button>
+          )}
         </div>
-      </section>
+      </header>
 
-      {/* Featured Post (Chỉ hiển thị khi thỏa mãn điều kiện hiển thị ở trang đầu) */}
+      {/* Featured Post Banner (Bài viết tiêu điểm kiểu WordPress Magazine) */}
       {isShowingFeatured && (
-        <section className="featured-section">
-          <div className="featured-card">
-            <div className="featured-image">
-              <img src={getThumbnailUrl(featuredPost.avatar_post || featuredPost.thumbnail)} alt={featuredPost.title} />
+        <section className="wp-featured-magazine-card">
+          <div className="featured-media-col">
+            <Link to={`/post/${featuredPost.id}`} className="media-link">
+              <img
+                src={getThumbnailUrl(featuredPost.avatar_post || featuredPost.thumbnail)}
+                alt={featuredPost.title}
+                className="featured-cover"
+              />
+              <span className="featured-ribbon-tag">Tiêu điểm</span>
+            </Link>
+          </div>
+
+          <div className="featured-body-col">
+            <div className="post-cat-pill">
+              {featuredPost.category?.name || 'Bài viết mới'}
             </div>
-            <div className="featured-info">
-              <span className="post-tag">{featuredPost.category?.name || 'Bài viết'}</span>
-              <h2 className="featured-title">{featuredPost.title}</h2>
-              <p className="featured-excerpt">{featuredPost.description || featuredPost.excerpt}</p>
-              <div className="featured-meta">
-                <span className="post-date">
-                  <FaCalendarAlt /> {new Date(featuredPost.created_at).toLocaleDateString('vi-VN')}
-                </span>
-                {featuredPost.views !== undefined && (
-                  <span className="post-views" style={{ marginLeft: '15px' }}>
-                    <FaEye /> {formatViews(featuredPost.views)} lượt xem
-                  </span>
-                )}
-                <Link to={`/post/${featuredPost.id}`} className="btn-read-more">
-                  Đọc bài viết
-                </Link>
+            <h2 className="featured-headline">
+              <Link to={`/post/${featuredPost.id}`}>
+                {featuredPost.title}
+              </Link>
+            </h2>
+            <p className="featured-summary">
+              {featuredPost.description || featuredPost.excerpt || 'Đọc bài viết chi tiết để khám phá các góc nhìn sâu sắc và thông tin hữu ích...'}
+            </p>
+
+            <div className="featured-meta-row">
+              <div className="meta-author">
+                <FaUser className="user-icon" />
+                <span>{featuredPost.user?.name || featuredPost.author || 'Ban Biên Tập'}</span>
               </div>
+              <span className="meta-divider">·</span>
+              <div className="meta-date">
+                <FaCalendarAlt /> {new Date(featuredPost.created_at).toLocaleDateString('vi-VN')}
+              </div>
+              {featuredPost.views !== undefined && (
+                <>
+                  <span className="meta-divider">·</span>
+                  <div className="meta-views">
+                    <FaEye /> {formatViews(featuredPost.views)} xem
+                  </div>
+                </>
+              )}
+            </div>
+
+            <div className="featured-action">
+              <Link to={`/post/${featuredPost.id}`} className="btn-read-featured">
+                Đọc bài viết <FaArrowRight />
+              </Link>
             </div>
           </div>
         </section>
       )}
 
-      {/* Category Tabs */}
-      <nav className="category-tabs">
-        {categories.map((cat) => (
-          <button 
-            key={cat.id} 
-            className={`tab-item ${selectedCategoryId === cat.id ? 'active' : ''}`}
-            onClick={() => {
-              setSelectedCategoryId(cat.id);
-              setCurrentPage(1); 
-            }}
-          >
-            {cat.name}
-          </button>
-        ))}
-      </nav>
-
-      {/* Main Grid List */}
-      <main className="posts-grid-wrapper">
-        {paginatedPosts.length > 0 ? (
-          <div className="posts-grid">
-            {paginatedPosts.map((post) => (
-              <article key={post.id} className="post-card">
-                <div className="card-image">
-                  <img src={getThumbnailUrl(post.avatar_post || post.thumbnail)} alt={post.title} />
-                  <span className="card-tag">{post.category?.name || 'Tin tức'}</span>
-                </div>
-                <div className="card-body">
-                  <div className="card-meta">
-                    <span className="card-date">
-                      <FaCalendarAlt /> {new Date(post.created_at).toLocaleDateString('vi-VN')}
-                    </span>
-                    {post.views !== undefined && (
-                      <span className="card-views" style={{ float: 'right' }}>
-                        <FaEye /> {formatViews(post.views)}
-                      </span>
-                    )}
-                  </div>
-                  <h3 className="card-title">{post.title}</h3>
-                  <p className="card-excerpt">{post.description || post.excerpt}</p>
-                </div>
-                <div className="card-footer">
-                  <Link to={`/post/${post.id}`} className="btn-link">
-                    Đọc tiếp
-                  </Link>
-                </div>
-              </article>
-            ))}
-          </div>
-        ) : (
-          <div className="no-results">
-            <p>Không tìm thấy bài viết nào phù hợp với yêu cầu của bạn.</p>
-          </div>
-        )}
-      </main>
-
-      {/* Pagination (Tính toán dựa trên số lượng bài viết gridPosts đã loại trừ) */}
-      {gridPosts.length > postsPerPage && (
-        <div className="pagination">
-          <button 
-            className={`page-btn ${currentPage === 1 ? 'disabled' : ''}`}
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-          >
-            <FaChevronLeft />
-          </button>
-          
-          {Array.from({ length: totalPages }, (_, index) => (
-            <button 
-              key={index + 1} 
-              className={`page-btn ${currentPage === index + 1 ? 'active' : ''}`}
-              onClick={() => handlePageChange(index + 1)}
+      {/* Dải phân loại chuyên mục (WordPress Category Ribbon) */}
+      <nav className="wp-categories-ribbon" aria-label="Chuyên mục bài viết">
+        <div className="ribbon-scroll">
+          {categories.map((cat) => (
+            <button
+              key={cat.id}
+              className={`ribbon-chip ${selectedCategoryId === cat.id ? 'active' : ''}`}
+              onClick={() => {
+                setSelectedCategoryId(cat.id);
+                setCurrentPage(1);
+              }}
             >
-              {index + 1}
+              {cat.id === 'all' && <FaFolder className="cat-icon" />}
+              <span>{cat.name}</span>
             </button>
           ))}
-          
-          <button 
-            className={`page-btn ${currentPage === totalPages ? 'disabled' : ''}`}
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-          >
-            <FaChevronRight />
-          </button>
         </div>
-      )}
+      </nav>
+
+      {/* Brand Advertisement Banner */}
+      <BrandAdBanner position="blog_page" />
+
+      {/* Bố cục 2 Cột WordPress: Lưới bài viết (70%) + Sidebar Widget (30%) */}
+      <div className="post-list-wp-layout">
+
+        {/* CỘT CHÍNH: LƯỚI BÀI VIẾT (70%) */}
+        <main className="posts-list-main">
+
+          {/* Tiêu đề phần danh sách */}
+          <div className="section-heading-row">
+            <h3 className="section-title">
+              {searchQuery
+                ? `Kết quả tìm kiếm cho "${searchQuery}"`
+                : selectedCategoryId !== 'all'
+                ? `Chuyên mục: ${categories.find(c => c.id === selectedCategoryId)?.name || ''}`
+                : 'Tất cả bài viết'}
+            </h3>
+            <span className="total-badge">{gridPosts.length} bài viết</span>
+          </div>
+
+          {/* Lưới bài viết */}
+          {paginatedPosts.length > 0 ? (
+            <div className="posts-magazine-grid">
+              {paginatedPosts.map((post) => (
+                <article key={post.id} className="wp-post-card">
+                  <div className="card-thumb-frame">
+                    <Link to={`/post/${post.id}`} className="thumb-link">
+                      <img
+                        src={getThumbnailUrl(post.avatar_post || post.thumbnail)}
+                        alt={post.title}
+                        className="thumb-image"
+                        loading="lazy"
+                      />
+                      <span className="card-category-badge">
+                        {post.category?.name || 'Tin tức'}
+                      </span>
+                    </Link>
+                  </div>
+
+                  <div className="card-body-content">
+                    <div className="card-meta-line">
+                      <span className="meta-date">
+                        <FaCalendarAlt /> {new Date(post.created_at).toLocaleDateString('vi-VN')}
+                      </span>
+                      {post.views !== undefined && (
+                        <span className="meta-views">
+                          <FaEye /> {formatViews(post.views)}
+                        </span>
+                      )}
+                    </div>
+
+                    <h4 className="card-post-title">
+                      <Link to={`/post/${post.id}`}>
+                        {post.title}
+                      </Link>
+                    </h4>
+
+                    <p className="card-post-excerpt">
+                      {post.description || post.excerpt || 'Khám phá bài viết để cập nhật những thông tin và kiến thức bổ ích...'}
+                    </p>
+
+                    <div className="card-footer-row">
+                      <span className="author-byline">
+                        <FaUser className="user-icon" /> {post.user?.name || post.author || 'Tác giả'}
+                      </span>
+                      <Link to={`/post/${post.id}`} className="link-read-more">
+                        Đọc tiếp <FaArrowRight />
+                      </Link>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className="no-posts-found">
+              <FaFolder className="empty-icon" />
+              <h4>Không tìm thấy bài viết phù hợp</h4>
+              <p>Hãy thử tìm kiếm với từ khóa khác hoặc chuyển sang chuyên mục khác.</p>
+              <button
+                className="btn-reset-filter"
+                onClick={() => {
+                  setSearchQuery('');
+                  setSelectedCategoryId('all');
+                }}
+              >
+                Xem tất cả bài viết
+              </button>
+            </div>
+          )}
+
+          {/* Phân trang WordPress Pagination */}
+          {totalPages > 1 && (
+            <nav className="wp-pagination-bar" aria-label="Phân trang bài viết">
+              <button
+                className={`page-arrow-btn ${currentPage === 1 ? 'disabled' : ''}`}
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                aria-label="Trang trước"
+              >
+                <FaChevronLeft />
+              </button>
+
+              {Array.from({ length: totalPages }, (_, index) => {
+                const page = index + 1;
+                return (
+                  <button
+                    key={page}
+                    className={`page-num-btn ${currentPage === page ? 'active' : ''}`}
+                    onClick={() => handlePageChange(page)}
+                  >
+                    {page}
+                  </button>
+                );
+              })}
+
+              <button
+                className={`page-arrow-btn ${currentPage === totalPages ? 'disabled' : ''}`}
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                aria-label="Trang sau"
+              >
+                <FaChevronRight />
+              </button>
+            </nav>
+          )}
+
+        </main>
+
+        {/* CỘT PHẢI: SIDEBAR WIDGETS (30%) */}
+        <aside className="posts-list-sidebar">
+
+          {/* Widget 1: Giới thiệu blog */}
+          <div className="sidebar-widget widget-intro">
+            <div className="widget-header">
+              <h4><FaFire /> Về Audio Story Blog</h4>
+            </div>
+            <p className="intro-text">
+              Chuyên trang chia sẻ kiến thức, bài viết sâu sắc về văn hóa đọc, tác phẩm âm thanh và kinh nghiệm sáng tạo nội dung.
+            </p>
+          </div>
+
+          {/* Widget 2: Bài viết đọc nhiều nhất */}
+          {popularPosts.length > 0 && (
+            <div className="sidebar-widget widget-popular">
+              <div className="widget-header">
+                <h4><FaEye /> Bài viết xem nhiều</h4>
+              </div>
+              <div className="popular-list">
+                {popularPosts.map((post, idx) => (
+                  <Link key={post.id} to={`/post/${post.id}`} className="popular-item">
+                    <span className="rank-badge">0{idx + 1}</span>
+                    <div className="popular-text">
+                      <h5 className="popular-title">{post.title}</h5>
+                      <span className="popular-meta">
+                        <FaEye /> {formatViews(post.views)} lượt xem
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Widget 3: Chuyên mục bài viết */}
+          <div className="sidebar-widget widget-categories-list">
+            <div className="widget-header">
+              <h4><FaFolder /> Chuyên mục nổi bật</h4>
+            </div>
+            <ul className="category-menu">
+              {categories.filter(c => c.id !== 'all').map((cat) => (
+                <li key={cat.id}>
+                  <button
+                    className={`category-item-btn ${selectedCategoryId === cat.id ? 'active' : ''}`}
+                    onClick={() => {
+                      setSelectedCategoryId(cat.id);
+                      setCurrentPage(1);
+                    }}
+                  >
+                    <span>{cat.name}</span>
+                    <FaArrowRight className="arrow-icon" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Widget 4: Truyện audio hấp dẫn */}
+          {featuredStories.length > 0 && (
+            <div className="sidebar-widget widget-stories-promo">
+              <div className="widget-header">
+                <h4><FaHeadphones /> Kho Truyện Audio Hot</h4>
+              </div>
+              <div className="stories-mini-list">
+                {featuredStories.map((story) => (
+                  <Link key={story.id} to={`/story/${story.slug}`} className="story-mini-card">
+                    <img
+                      src={getThumbnailUrl(story.thumbnail)}
+                      alt={story.title}
+                      className="story-mini-thumb"
+                    />
+                    <div className="story-mini-meta">
+                      <strong className="story-title">{story.title}</strong>
+                      <span className="story-views">
+                        <FaHeadphones /> {formatViews(story.views)} lượt nghe
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+              <Link to="/truyen" className="btn-all-stories">
+                Khám phá kho truyện <FaArrowRight />
+              </Link>
+            </div>
+          )}
+
+        </aside>
+
+      </div>
     </div>
   );
 };
